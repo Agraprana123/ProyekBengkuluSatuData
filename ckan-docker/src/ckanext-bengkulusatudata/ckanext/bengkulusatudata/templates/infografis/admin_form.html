@@ -1,0 +1,62 @@
+{% extends "page.html" %}
+{% block subtitle %}Admin - {% if mode == 'tambah' %}Tambah{% else %}Edit{% endif %} Infografis{% endblock %}
+{% block breadcrumb_content %}
+  <li><a href="/infografis">Infografis</a></li>
+  <li class="active">{% if mode == 'tambah' %}Tambah{% else %}Edit{% endif %}</li>
+{% endblock %}
+
+{% block primary %}
+<div class="module">
+  <div class="module-content">
+    <h1 class="page-heading">{% if mode == 'tambah' %}Tambah{% else %}Edit{% endif %} Infografis</h1>
+    <form method="POST" enctype="multipart/form-data" class="dataset-form form-horizontal">
+      {{ h.csrf_input() }}
+      <div class="control-group">
+        <label class="control-label">Judul <span class="control-required">*</span></label>
+        <div class="controls">
+          <input type="text" name="judul" required value="{{ data.judul if data else '' }}" class="control-full">
+        </div>
+      </div>
+      <div class="control-group">
+        <label class="control-label">Kategori <span class="control-required">*</span></label>
+        <div class="controls">
+          <select name="kategori" required class="control-full">
+            <option value="">-- Pilih --</option>
+            {% for k in kategori_list %}
+            <option value="{{ k }}" {% if data and data.kategori == k %}selected{% endif %}>{{ k }}</option>
+            {% endfor %}
+          </select>
+        </div>
+      </div>
+      <div class="control-group">
+        <label class="control-label">Deskripsi</label>
+        <div class="controls">
+          <textarea name="deskripsi" rows="4" class="control-full">{{ data.deskripsi if data else '' }}</textarea>
+        </div>
+      </div>
+      <div class="control-group">
+        <label class="control-label">Gambar <span class="control-required">*</span></label>
+        <div class="controls">
+          {% if data and data.gambar_file %}
+          <div style="margin-bottom:10px"><img src="/uploads/infografis/{{ data.gambar_file }}" style="max-width:300px;border-radius:5px"></div>
+          {% endif %}
+          <input type="file" name="gambar" accept="image/*" {% if not data %}required{% endif %}>
+          <p class="help-block">PNG/JPG/JPEG, maks 10MB</p>
+        </div>
+      </div>
+      <div class="control-group">
+        <label class="control-label">PDF (Opsional)</label>
+        <div class="controls">
+          {% if data and data.file_pdf %}<p>File: {{ data.file_pdf }}</p>{% endif %}
+          <input type="file" name="file_pdf" accept=".pdf">
+        </div>
+      </div>
+      <div class="form-actions">
+        <button type="submit" class="btn btn-primary"><i class="fa fa-save"></i> Simpan</button>
+        <a href="/infografis" class="btn">Batal</a>
+      </div>
+    </form>
+  </div>
+</div>
+{% endblock %}
+{% block secondary %}{% endblock %}

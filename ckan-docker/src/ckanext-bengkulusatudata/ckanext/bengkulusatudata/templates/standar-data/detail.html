@@ -1,0 +1,427 @@
+{% extends "page.html" %}
+
+{% block subtitle %}{{ data.konsep }} — Standar Data{% endblock %}
+
+{% block custom_styles %}
+{{ super() }}
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap');
+
+  *, *::before, *::after { box-sizing: border-box; }
+  body { background: #f4f6f9 !important; font-family: 'Plus Jakarta Sans', sans-serif !important; }
+  #content, .wrapper, .main, .container,
+  .primary, .secondary, .module, .module-content {
+    background: transparent !important; border: none !important; box-shadow: none !important;
+  }
+  .sd-page { max-width: 1100px; margin: 0 auto; padding: 24px 16px 56px; }
+
+  /* Breadcrumb */
+  .sd-breadcrumb { display: flex; align-items: center; gap: 8px; font-size: 13px; font-weight: 600; color: #64748b; margin-bottom: 24px; }
+  .sd-breadcrumb a { color: #64748b; text-decoration: none; transition: color .2s; display: flex; align-items: center; gap: 4px; }
+  .sd-breadcrumb a:hover { color: #B00000; }
+  .sd-breadcrumb .sep { color: #cbd5e1; font-size: 10px; }
+  .sd-breadcrumb .current { color: #B00000; font-weight: 700; }
+
+  /* Detail header */
+  .detail-header {
+    background: linear-gradient(135deg, #7f0000 0%, #B00000 60%, #c62828 100%);
+    border-radius: 20px; padding: 32px 36px; margin-bottom: 28px;
+    position: relative; overflow: hidden;
+  }
+  .detail-header::after {
+    content: ''; position: absolute; top: -40px; right: -40px;
+    width: 200px; height: 200px; border-radius: 50%;
+    background: rgba(255,255,255,0.06); pointer-events: none;
+  }
+  .detail-header-inner { position: relative; z-index: 1; display: flex; justify-content: space-between; align-items: flex-start; flex-wrap: wrap; gap: 16px; }
+  .detail-kode-wrap { display: flex; align-items: center; gap: 12px; margin-bottom: 10px; }
+  .detail-kode-tag {
+    background: rgba(255,255,255,0.2); color: #fff;
+    padding: 5px 14px; border-radius: 8px;
+    font-size: 13px; font-weight: 800; font-family: monospace; letter-spacing: 0.5px;
+  }
+  .status-badge-aktif {
+    background: #d1fae5; color: #065f46;
+    padding: 4px 12px; border-radius: 20px;
+    font-size: 12px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.4px;
+  }
+  .status-badge-nonaktif {
+    background: #f3f4f6; color: #6b7280;
+    padding: 4px 12px; border-radius: 20px;
+    font-size: 12px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.4px;
+  }
+  .detail-konsep { font-size: 1.65rem; font-weight: 800; color: #fff; margin: 0; line-height: 1.25; letter-spacing: -0.2px; }
+  .detail-header-actions { display: flex; gap: 8px; flex-shrink: 0; }
+  .btn-edit-white {
+    display: inline-flex; align-items: center; gap: 7px;
+    background: rgba(255,255,255,0.15); color: #fff !important;
+    padding: 9px 18px; border-radius: 10px;
+    font-weight: 700; font-size: 13.5px; text-decoration: none !important;
+    border: 1.5px solid rgba(255,255,255,0.3);
+    transition: all .22s; backdrop-filter: blur(4px);
+  }
+  .btn-edit-white:hover { background: rgba(255,255,255,0.25); border-color: rgba(255,255,255,0.5); }
+  .btn-history-white {
+    display: inline-flex; align-items: center; gap: 7px;
+    background: transparent; color: rgba(255,255,255,0.8) !important;
+    padding: 9px 18px; border-radius: 10px;
+    font-weight: 700; font-size: 13.5px; text-decoration: none !important;
+    border: 1.5px solid rgba(255,255,255,0.25);
+    transition: all .22s;
+  }
+  .btn-history-white:hover { background: rgba(255,255,255,0.1); color: #fff !important; }
+
+  /* Two-column layout */
+  .detail-layout { display: flex; gap: 24px; align-items: flex-start; }
+  .detail-main { flex: 1; min-width: 0; }
+  .detail-sidebar { width: 280px; flex-shrink: 0; }
+  @media (max-width: 900px) { .detail-layout { flex-direction: column; } .detail-sidebar { width: 100%; } }
+
+  /* Section card */
+  .section-card {
+    background: #fff; border-radius: 16px;
+    border: 1px solid #e8edf4;
+    box-shadow: 0 2px 12px rgba(0,0,0,0.04);
+    overflow: hidden; margin-bottom: 20px;
+  }
+  .section-card-header {
+    padding: 14px 20px;
+    border-bottom: 1px solid #f1f5f9;
+    display: flex; align-items: center; gap: 10px;
+  }
+  .section-card-header .icon {
+    width: 32px; height: 32px; border-radius: 8px;
+    background: #fef2f2; display: flex; align-items: center; justify-content: center;
+  }
+  .section-card-header .icon i { color: #B00000; font-size: 14px; }
+  .section-card-header h3 { margin: 0; font-size: 15px; font-weight: 800; color: #0f172a; }
+  .section-card-body { padding: 20px; }
+
+  .definisi-text { font-size: 15px; color: #334155; line-height: 1.75; margin: 0; }
+
+  .info-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+  .info-item label { display: block; font-size: 11px; color: #94a3b8; font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 4px; }
+  .info-item .val { font-size: 14.5px; font-weight: 600; color: #0f172a; }
+  .info-item .val.empty { color: #cbd5e1; font-style: italic; font-weight: 400; }
+
+  /* Document download card */
+  .doc-download-btn {
+    display: flex; align-items: center; gap: 14px;
+    padding: 14px 18px;
+    background: #f8fafc; border-radius: 12px;
+    border: 1.5px solid #e8edf4;
+    text-decoration: none !important;
+    transition: all .22s;
+  }
+  .doc-download-btn:hover { border-color: #B00000; background: #fef2f2; }
+  .doc-icon {
+    width: 44px; height: 44px; border-radius: 10px;
+    background: #fef2f2; display: flex; align-items: center; justify-content: center;
+    flex-shrink: 0;
+  }
+  .doc-icon i { color: #B00000; font-size: 20px; }
+  .doc-info-title { font-weight: 700; color: #0f172a; font-size: 13.5px; margin-bottom: 2px; }
+  .doc-info-sub { font-size: 12px; color: #94a3b8; }
+  .doc-dl-icon { margin-left: auto; color: #B00000; font-size: 16px; flex-shrink: 0; }
+
+  /* Sidebar summary card */
+  .summary-card {
+    background: #fff; border-radius: 16px;
+    border: 1px solid #e8edf4;
+    box-shadow: 0 2px 12px rgba(0,0,0,0.04);
+    overflow: hidden; margin-bottom: 16px;
+  }
+  .summary-card-header {
+    background: linear-gradient(90deg, #7f0000, #B00000);
+    padding: 14px 18px;
+    display: flex; align-items: center; gap: 8px;
+  }
+  .summary-card-header i { color: rgba(255,255,255,0.8); font-size: 15px; }
+  .summary-card-header h4 { margin: 0; font-size: 14px; font-weight: 700; color: #fff; }
+  .summary-table { width: 100%; border-collapse: collapse; }
+  .summary-table tr { border-bottom: 1px solid #f1f5f9; }
+  .summary-table tr:last-child { border-bottom: none; }
+  .summary-table td { padding: 12px 18px; font-size: 13.5px; vertical-align: middle; }
+  .summary-table td:first-child { color: #64748b; font-weight: 600; width: 45%; }
+  .summary-table td:last-child { color: #0f172a; font-weight: 700; }
+
+  .kode-mono {
+    font-family: monospace; font-size: 13px;
+    background: #fef2f2; color: #B00000;
+    padding: 2px 8px; border-radius: 5px;
+  }
+  .versi-chip {
+    background: #eff6ff; color: #1d4ed8;
+    border: 1px solid #bfdbfe;
+    padding: 2px 9px; border-radius: 5px;
+    font-size: 12px; font-weight: 700;
+  }
+  .status-aktif { background: #d1fae5; color: #065f46; padding: 2px 9px; border-radius: 5px; font-size: 12px; font-weight: 700; }
+  .status-nonaktif { background: #f3f4f6; color: #6b7280; padding: 2px 9px; border-radius: 5px; font-size: 12px; font-weight: 700; }
+
+  /* Admin action card */
+  .admin-card {
+    background: #fff; border-radius: 16px;
+    border: 1px solid #e8edf4;
+    padding: 16px;
+    box-shadow: 0 2px 12px rgba(0,0,0,0.04);
+  }
+  .admin-card-label { font-size: 11px; color: #94a3b8; font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 12px; }
+  .btn-admin-block {
+    display: flex; align-items: center; gap: 10px;
+    padding: 11px 14px; border-radius: 10px;
+    text-decoration: none !important; font-weight: 700; font-size: 14px;
+    transition: all .2s; margin-bottom: 8px; width: 100%;
+  }
+  .btn-admin-block:last-child { margin-bottom: 0; }
+  .btn-admin-edit { background: #B00000; color: #fff !important; box-shadow: 0 3px 10px rgba(176,0,0,0.2); }
+  .btn-admin-edit:hover { background: #8b0000; transform: translateY(-1px); box-shadow: 0 5px 16px rgba(176,0,0,0.3); }
+  .btn-admin-history { background: #f8fafc; color: #475569 !important; border: 1.5px solid #e8edf4; }
+  .btn-admin-history:hover { border-color: #94a3b8; color: #0f172a !important; background: #f1f5f9; }
+
+  /* History timeline */
+  .history-timeline { list-style: none; margin: 0; padding: 0; position: relative; }
+  .history-timeline::before {
+    content: ''; position: absolute; left: 16px; top: 0; bottom: 0;
+    width: 2px; background: #f1f5f9;
+  }
+  .history-item { position: relative; padding: 0 0 20px 44px; }
+  .history-item:last-child { padding-bottom: 0; }
+  .history-dot {
+    position: absolute; left: 8px; top: 4px;
+    width: 18px; height: 18px; border-radius: 50%;
+    background: #B00000; border: 3px solid #fff;
+    box-shadow: 0 0 0 2px rgba(176,0,0,0.2);
+  }
+  .history-item-versi { font-size: 11px; font-weight: 700; color: #1d4ed8; background: #eff6ff; border: 1px solid #bfdbfe; padding: 2px 8px; border-radius: 5px; display: inline-block; margin-bottom: 4px; }
+  .history-item-change { font-size: 14px; font-weight: 600; color: #0f172a; margin-bottom: 4px; }
+  .history-item-meta { font-size: 12px; color: #94a3b8; display: flex; align-items: center; gap: 10px; flex-wrap: wrap; }
+  .history-item-meta i { font-size: 11px; }
+
+  /* Back button */
+  .btn-back {
+    display: inline-flex; align-items: center; gap: 7px;
+    background: #fff; color: #475569 !important;
+    padding: 10px 20px; border-radius: 10px;
+    font-weight: 700; font-size: 14px;
+    text-decoration: none !important;
+    border: 1.5px solid #e8edf4;
+    transition: all .22s; margin-top: 28px;
+  }
+  .btn-back:hover { border-color: #B00000; color: #B00000 !important; background: #fef2f2; }
+</style>
+{% endblock %}
+
+{% block toolbar %}{% endblock %}
+{% block page_header %}{% endblock %}
+{% block secondary %}{% endblock %}
+
+{% block primary %}
+<div class="sd-page">
+
+  {# Breadcrumb #}
+  <div class="sd-breadcrumb">
+    <a href="{{ h.url_for('home.index') }}"><i class="fa fa-home"></i> Home</a>
+    <span class="sep"><i class="fa fa-chevron-right"></i></span>
+    <a href="/standar-data"><i class="fa fa-table"></i> Standar Data</a>
+    <span class="sep"><i class="fa fa-chevron-right"></i></span>
+    <span class="current">{{ data.kode }}</span>
+  </div>
+
+  {# Detail Header #}
+  <div class="detail-header">
+    <div class="detail-header-inner">
+      <div>
+        <div class="detail-kode-wrap">
+          <span class="detail-kode-tag">{{ data.kode }}</span>
+          {% if data.status == 'aktif' %}
+            <span class="status-badge-aktif"><i class="fa fa-check-circle"></i> Aktif</span>
+          {% else %}
+            <span class="status-badge-nonaktif"><i class="fa fa-minus-circle"></i> Nonaktif</span>
+          {% endif %}
+        </div>
+        <h1 class="detail-konsep">{{ data.konsep }}</h1>
+      </div>
+      {% if c.userobj and c.userobj.sysadmin %}
+        <div class="detail-header-actions">
+          <a href="/admin/standar-data/edit/{{ data.id }}" class="btn-edit-white">
+            <i class="fa fa-edit"></i> Edit
+          </a>
+          <a href="/admin/standar-data/history/{{ data.id }}" class="btn-history-white">
+            <i class="fa fa-history"></i> History
+          </a>
+        </div>
+      {% endif %}
+    </div>
+  </div>
+
+  {# Two-column layout #}
+  <div class="detail-layout">
+
+    {# Main content #}
+    <div class="detail-main">
+
+      {# Definisi #}
+      <div class="section-card">
+        <div class="section-card-header">
+          <div class="icon"><i class="fa fa-book"></i></div>
+          <h3>Definisi</h3>
+        </div>
+        <div class="section-card-body">
+          <p class="definisi-text">{{ data.definisi }}</p>
+        </div>
+      </div>
+
+      {# Technical specs #}
+      <div class="section-card">
+        <div class="section-card-header">
+          <div class="icon"><i class="fa fa-cogs"></i></div>
+          <h3>Spesifikasi Teknis</h3>
+        </div>
+        <div class="section-card-body">
+          <div class="info-grid">
+            <div class="info-item">
+              <label>Klasifikasi</label>
+              <div class="val {% if not data.klasifikasi %}empty{% endif %}">
+                {{ data.klasifikasi or 'Tidak ditentukan' }}
+              </div>
+            </div>
+            <div class="info-item">
+              <label>Ukuran</label>
+              <div class="val {% if not data.ukuran %}empty{% endif %}">
+                {{ data.ukuran or 'Tidak ditentukan' }}
+              </div>
+            </div>
+            <div class="info-item">
+              <label>Satuan</label>
+              <div class="val {% if not data.satuan %}empty{% endif %}">
+                {{ data.satuan or 'Tidak ditentukan' }}
+              </div>
+            </div>
+            <div class="info-item">
+              <label>Organisasi / OPD</label>
+              <div class="val {% if not data.organisasi_nama %}empty{% endif %}">
+                {{ data.organisasi_nama or 'Tidak ditentukan' }}
+                {% if data.organisasi_kode %}
+                  <br><small style="color:#94a3b8; font-weight:400;">Kode: {{ data.organisasi_kode }}</small>
+                {% endif %}
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      {# Document #}
+      {% if data.file_dokumen %}
+        <div class="section-card">
+          <div class="section-card-header">
+            <div class="icon"><i class="fa fa-paperclip"></i></div>
+            <h3>Dokumen Pendukung</h3>
+          </div>
+          <div class="section-card-body">
+            <a href="/uploads/standar-data/{{ data.file_dokumen }}" class="doc-download-btn" download>
+              <div class="doc-icon"><i class="fa fa-file-pdf-o"></i></div>
+              <div>
+                <div class="doc-info-title">{{ data.file_dokumen }}</div>
+                <div class="doc-info-sub">Klik untuk mengunduh dokumen pendukung</div>
+              </div>
+              <i class="fa fa-download doc-dl-icon"></i>
+            </a>
+          </div>
+        </div>
+      {% endif %}
+
+      {# History timeline in main section #}
+      {% if history_list %}
+        <div class="section-card">
+          <div class="section-card-header">
+            <div class="icon"><i class="fa fa-history"></i></div>
+            <h3>Riwayat Perubahan</h3>
+          </div>
+          <div class="section-card-body">
+            <ul class="history-timeline">
+              {% for h in history_list %}
+                <li class="history-item">
+                  <div class="history-dot"></div>
+                  <div class="history-item-versi">v{{ h.versi }}</div>
+                  <div class="history-item-change">{{ h.perubahan }}</div>
+                  <div class="history-item-meta">
+                    <span><i class="fa fa-user"></i> {{ h.user_changed }}</span>
+                    <span><i class="fa fa-clock-o"></i> {{ h.changed_at.strftime('%d %b %Y, %H:%M') if h.changed_at else '-' }}</span>
+                  </div>
+                </li>
+              {% endfor %}
+            </ul>
+          </div>
+        </div>
+      {% endif %}
+
+    </div>
+
+    {# Sidebar #}
+    <div class="detail-sidebar">
+
+      {# Summary card #}
+      <div class="summary-card">
+        <div class="summary-card-header">
+          <i class="fa fa-info-circle"></i>
+          <h4>Ringkasan</h4>
+        </div>
+        <table class="summary-table">
+          <tr>
+            <td>Kode</td>
+            <td><span class="kode-mono">{{ data.kode }}</span></td>
+          </tr>
+          <tr>
+            <td>Konsep</td>
+            <td>{{ data.konsep }}</td>
+          </tr>
+          <tr>
+            <td>Versi</td>
+            <td><span class="versi-chip">{{ data.versi }}</span></td>
+          </tr>
+          <tr>
+            <td>Status</td>
+            <td>
+              {% if data.status == 'aktif' %}
+                <span class="status-aktif">Aktif</span>
+              {% else %}
+                <span class="status-nonaktif">{{ data.status|capitalize }}</span>
+              {% endif %}
+            </td>
+          </tr>
+          <tr>
+            <td>Dibuat</td>
+            <td style="font-size:13px;">{{ data.created_at.strftime('%d %b %Y') if data.created_at else '-' }}</td>
+          </tr>
+          {% if data.updated_at and data.updated_at != data.created_at %}
+          <tr>
+            <td>Diperbarui</td>
+            <td style="font-size:13px;">{{ data.updated_at.strftime('%d %b %Y') if data.updated_at else '-' }}</td>
+          </tr>
+          {% endif %}
+        </table>
+      </div>
+
+      {# Admin actions in sidebar #}
+      {% if c.userobj and c.userobj.sysadmin %}
+        <div class="admin-card">
+          <div class="admin-card-label">Admin Actions</div>
+          <a href="/admin/standar-data/edit/{{ data.id }}" class="btn-admin-block btn-admin-edit">
+            <i class="fa fa-edit"></i> Edit Standar Data
+          </a>
+          <a href="/admin/standar-data/history/{{ data.id }}" class="btn-admin-block btn-admin-history">
+            <i class="fa fa-history"></i> Lihat History
+          </a>
+        </div>
+      {% endif %}
+
+    </div>
+  </div>
+
+  <a href="/standar-data" class="btn-back">
+    <i class="fa fa-arrow-left"></i> Kembali ke Daftar
+  </a>
+
+</div>
+{% endblock %}

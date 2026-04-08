@@ -1,0 +1,313 @@
+{% extends "page.html" %}
+
+{% block subtitle %}Admin – {% if mode == 'tambah' %}Tambah{% else %}Edit{% endif %} Standar Data{% endblock %}
+
+{% block custom_styles %}
+{{ super() }}
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap');
+  *, *::before, *::after { box-sizing: border-box; }
+  body { background: #f4f6f9 !important; font-family: 'Plus Jakarta Sans', sans-serif !important; }
+  #content, .wrapper, .main, .container,
+  .primary, .secondary, .module, .module-content {
+    background: transparent !important; border: none !important; box-shadow: none !important;
+  }
+  .sd-page { max-width: 820px; margin: 0 auto; padding: 24px 16px 56px; }
+
+  /* Breadcrumb */
+  .sd-breadcrumb { display: flex; align-items: center; gap: 8px; font-size: 13px; font-weight: 600; color: #64748b; margin-bottom: 24px; }
+  .sd-breadcrumb a { color: #64748b; text-decoration: none; transition: color .2s; }
+  .sd-breadcrumb a:hover { color: #B00000; }
+  .sd-breadcrumb .sep { color: #cbd5e1; font-size: 10px; }
+  .sd-breadcrumb .current { color: #B00000; font-weight: 700; }
+
+  /* Page title card */
+  .form-title-card {
+    background: linear-gradient(135deg, #7f0000, #B00000);
+    border-radius: 18px; padding: 28px 32px; margin-bottom: 28px;
+    position: relative; overflow: hidden;
+  }
+  .form-title-card::after {
+    content: ''; position: absolute; top: -40px; right: -40px;
+    width: 180px; height: 180px; border-radius: 50%;
+    background: rgba(255,255,255,0.06); pointer-events: none;
+  }
+  .form-title-card h1 { color: #fff; font-size: 1.6rem; font-weight: 800; margin: 0 0 6px; position: relative; z-index: 1; }
+  .form-title-card p { color: rgba(255,255,255,0.75); font-size: 14px; margin: 0; position: relative; z-index: 1; }
+
+  /* Form card */
+  .form-card {
+    background: #fff; border-radius: 18px;
+    border: 1px solid #e8edf4;
+    box-shadow: 0 2px 20px rgba(0,0,0,0.05);
+    overflow: hidden;
+  }
+  .form-section {
+    padding: 24px 28px;
+    border-bottom: 1px solid #f1f5f9;
+  }
+  .form-section:last-child { border-bottom: none; }
+  .form-section-title {
+    font-size: 12px; font-weight: 800; color: #94a3b8;
+    text-transform: uppercase; letter-spacing: 0.5px;
+    margin: 0 0 18px; display: flex; align-items: center; gap: 8px;
+  }
+  .form-section-title i { color: #B00000; font-size: 13px; }
+
+  /* Form fields */
+  .form-row { display: flex; gap: 16px; flex-wrap: wrap; }
+  .form-group { flex: 1; min-width: 200px; margin-bottom: 0; }
+  .form-group.full { flex: 100%; min-width: 100%; }
+
+  label.sd-label {
+    display: block; font-size: 13px; font-weight: 700;
+    color: #334155; margin-bottom: 6px;
+  }
+  label.sd-label .req { color: #B00000; margin-left: 2px; }
+  label.sd-label .opt { color: #94a3b8; font-size: 11px; font-weight: 600; margin-left: 4px; }
+
+  .sd-input, .sd-textarea, .sd-select-field {
+    width: 100%;
+    padding: 11px 14px;
+    border: 1.5px solid #e8edf4;
+    border-radius: 10px;
+    font-family: 'Plus Jakarta Sans', sans-serif;
+    font-size: 14px;
+    color: #0f172a;
+    background: #fafbfc;
+    outline: none;
+    transition: border-color .2s, box-shadow .2s;
+  }
+  .sd-input:focus, .sd-textarea:focus, .sd-select-field:focus {
+    border-color: #B00000;
+    background: #fff;
+    box-shadow: 0 0 0 3px rgba(176,0,0,0.08);
+  }
+  .sd-input::placeholder, .sd-textarea::placeholder { color: #94a3b8; }
+  .sd-textarea { resize: vertical; line-height: 1.6; }
+  .sd-select-field {
+    appearance: none;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='14' height='14' viewBox='0 0 24 24' fill='none' stroke='%2364748b' stroke-width='2.5'%3E%3Cpolyline points='6 9 12 15 18 9'%3E%3C/polyline%3E%3C/svg%3E");
+    background-repeat: no-repeat; background-position: right 12px center; cursor: pointer;
+    padding-right: 36px;
+  }
+
+  .help-text { font-size: 12px; color: #94a3b8; margin-top: 5px; }
+
+  /* File upload */
+  .file-input-wrap {
+    border: 2px dashed #e8edf4; border-radius: 12px;
+    padding: 20px; text-align: center;
+    cursor: pointer; transition: all .22s;
+    background: #fafbfc; position: relative;
+  }
+  .file-input-wrap:hover { border-color: #B00000; background: #fef2f2; }
+  .file-input-wrap input[type="file"] {
+    position: absolute; inset: 0; opacity: 0; cursor: pointer; font-size: 0;
+  }
+  .file-upload-icon { font-size: 28px; color: #cbd5e1; margin-bottom: 8px; }
+  .file-upload-title { font-size: 14px; font-weight: 700; color: #475569; margin-bottom: 4px; }
+  .file-upload-sub { font-size: 12px; color: #94a3b8; }
+  .file-current {
+    display: flex; align-items: center; gap: 10px;
+    background: #f0fdf4; border: 1px solid #bbf7d0;
+    border-radius: 10px; padding: 10px 14px; margin-bottom: 10px;
+    font-size: 13px; font-weight: 600; color: #065f46;
+  }
+  .file-current i { color: #16a34a; }
+
+  /* Form actions */
+  .form-actions-bar {
+    padding: 20px 28px;
+    background: #f8fafc;
+    border-top: 1px solid #f1f5f9;
+    display: flex; align-items: center; gap: 12px; flex-wrap: wrap;
+  }
+  .btn-submit {
+    padding: 12px 28px; background: #B00000; color: #fff;
+    border: none; border-radius: 10px; font-weight: 800; font-size: 15px;
+    cursor: pointer; display: flex; align-items: center; gap: 8px;
+    transition: all .22s;
+    box-shadow: 0 4px 16px rgba(176,0,0,0.25);
+  }
+  .btn-submit:hover { background: #8b0000; transform: translateY(-1px); box-shadow: 0 6px 20px rgba(176,0,0,0.35); }
+  .btn-cancel {
+    padding: 12px 22px; background: #fff; color: #475569 !important;
+    border: 1.5px solid #e8edf4; border-radius: 10px; font-weight: 700; font-size: 14px;
+    text-decoration: none !important; transition: all .2s;
+    display: inline-flex; align-items: center; gap: 7px;
+  }
+  .btn-cancel:hover { border-color: #94a3b8; color: #0f172a !important; }
+</style>
+{% endblock %}
+
+{% block toolbar %}{% endblock %}
+{% block page_header %}{% endblock %}
+{% block secondary %}{% endblock %}
+
+{% block primary %}
+<div class="sd-page">
+
+  {# Breadcrumb #}
+  <div class="sd-breadcrumb">
+    <a href="{{ h.url_for('home.index') }}"><i class="fa fa-home"></i> Home</a>
+    <span class="sep"><i class="fa fa-chevron-right"></i></span>
+    <a href="/standar-data"><i class="fa fa-table"></i> Standar Data</a>
+    <span class="sep"><i class="fa fa-chevron-right"></i></span>
+    <span class="current">{% if mode == 'tambah' %}Tambah{% else %}Edit{% endif %} Data</span>
+  </div>
+
+  {# Page Title #}
+  <div class="form-title-card">
+    <h1>
+      <i class="fa fa-{% if mode == 'tambah' %}plus-circle{% else %}edit{% endif %}"></i>
+      {% if mode == 'tambah' %}Tambah{% else %}Edit{% endif %} Standar Data
+    </h1>
+    <p>Isi formulir di bawah ini untuk {% if mode == 'tambah' %}menambahkan{% else %}memperbarui{% endif %} standar data Satu Data Indonesia.</p>
+  </div>
+
+  {# Form #}
+  <div class="form-card">
+    <form method="POST" enctype="multipart/form-data">
+      {{ h.csrf_input() }}
+
+      {# Basic Info #}
+      <div class="form-section">
+        <div class="form-section-title"><i class="fa fa-tag"></i> Informasi Dasar</div>
+        <div class="form-row">
+          <div class="form-group" style="flex: 0 0 180px; min-width: 180px;">
+            <label class="sd-label" for="kode">Kode <span class="req">*</span></label>
+            <input type="text" id="kode" name="kode" required
+                   class="sd-input"
+                   value="{{ data.kode if data else '' }}"
+                   placeholder="K00001"
+                   style="font-family: monospace; letter-spacing: 0.5px; text-transform: uppercase;">
+            <div class="help-text">Kode unik standar data</div>
+          </div>
+          <div class="form-group">
+            <label class="sd-label" for="konsep">Konsep <span class="req">*</span></label>
+            <input type="text" id="konsep" name="konsep" required
+                   class="sd-input"
+                   value="{{ data.konsep if data else '' }}"
+                   placeholder="Nama konsep standar data">
+          </div>
+        </div>
+      </div>
+
+      {# Definisi #}
+      <div class="form-section">
+        <div class="form-section-title"><i class="fa fa-book"></i> Definisi</div>
+        <div class="form-group full">
+          <label class="sd-label" for="definisi">Definisi <span class="req">*</span></label>
+          <textarea id="definisi" name="definisi" required rows="5"
+                    class="sd-textarea"
+                    placeholder="Jelaskan secara lengkap definisi konsep ini...">{{ data.definisi if data else '' }}</textarea>
+        </div>
+      </div>
+
+      {# Technical specs #}
+      <div class="form-section">
+        <div class="form-section-title"><i class="fa fa-cogs"></i> Spesifikasi Teknis</div>
+        <div class="form-row">
+          <div class="form-group full">
+            <label class="sd-label" for="klasifikasi">Klasifikasi <span class="opt">(opsional)</span></label>
+            <input type="text" id="klasifikasi" name="klasifikasi"
+                   class="sd-input"
+                   value="{{ data.klasifikasi if data else '' }}"
+                   placeholder="Contoh: Data Primer">
+          </div>
+          <div class="form-group">
+            <label class="sd-label" for="ukuran">Ukuran <span class="opt">(opsional)</span></label>
+            <input type="text" id="ukuran" name="ukuran"
+                   class="sd-input"
+                   value="{{ data.ukuran if data else '' }}"
+                   placeholder="Contoh: Jumlah">
+          </div>
+          <div class="form-group">
+            <label class="sd-label" for="satuan">Satuan <span class="opt">(opsional)</span></label>
+            <input type="text" id="satuan" name="satuan"
+                   class="sd-input"
+                   value="{{ data.satuan if data else '' }}"
+                   placeholder="Contoh: Jiwa">
+          </div>
+        </div>
+      </div>
+
+      {# Organisasi & Versi #}
+      <div class="form-section">
+        <div class="form-section-title"><i class="fa fa-sitemap"></i> Organisasi & Versi</div>
+        <div class="form-row">
+          <div class="form-group">
+            <label class="sd-label" for="organisasi_id">Organisasi / OPD <span class="opt">(opsional)</span></label>
+            <select id="organisasi_id" name="organisasi_id" class="sd-select-field">
+              <option value="">— Pilih Organisasi —</option>
+              {% for org in organisasi_list %}
+                <option value="{{ org.id }}"
+                  {% if data and data.organisasi_id == org.id %}selected{% endif %}>
+                  {{ org.nama }}{% if org.kode %} ({{ org.kode }}){% endif %}
+                </option>
+              {% endfor %}
+            </select>
+          </div>
+          <div class="form-group" style="flex: 0 0 160px; min-width: 160px;">
+            <label class="sd-label" for="versi">Versi</label>
+            <input type="text" id="versi" name="versi"
+                   class="sd-input"
+                   value="{{ data.versi if data else '1.0' }}"
+                   placeholder="1.0">
+          </div>
+        </div>
+      </div>
+
+      {# File Dokumen #}
+      <div class="form-section">
+        <div class="form-section-title"><i class="fa fa-paperclip"></i> Dokumen Pendukung</div>
+        <label class="sd-label">File Dokumen <span class="opt">(opsional)</span></label>
+        {% if data and data.file_dokumen %}
+          <div class="file-current">
+            <i class="fa fa-file"></i>
+            <span>File saat ini: <strong>{{ data.file_dokumen }}</strong></span>
+          </div>
+        {% endif %}
+        <div class="file-input-wrap" id="file-drop-zone">
+          <input type="file" id="file_dokumen" name="file_dokumen"
+                 accept=".pdf,.doc,.docx,.xls,.xlsx"
+                 onchange="updateFileName(this)">
+          <div class="file-upload-icon"><i class="fa fa-cloud-upload"></i></div>
+          <div class="file-upload-title" id="file-label">
+            {% if data and data.file_dokumen %}Ganti file{% else %}Klik atau seret file ke sini{% endif %}
+          </div>
+          <div class="file-upload-sub">PDF, DOC, DOCX, XLS, XLSX · Maks. 10 MB</div>
+        </div>
+      </div>
+
+      {# Form actions #}
+      <div class="form-actions-bar">
+        <button type="submit" class="btn-submit">
+          <i class="fa fa-save"></i>
+          {% if mode == 'tambah' %}Tambah Standar Data{% else %}Simpan Perubahan{% endif %}
+        </button>
+        <a href="/standar-data" class="btn-cancel">
+          <i class="fa fa-times"></i> Batal
+        </a>
+      </div>
+
+    </form>
+  </div>
+
+</div>
+
+<script>
+  function updateFileName(input) {
+    const label = document.getElementById('file-label');
+    if (input.files && input.files.length > 0) {
+      label.textContent = input.files[0].name;
+    }
+  }
+
+  // Drag & drop styling
+  const dz = document.getElementById('file-drop-zone');
+  ['dragover','dragenter'].forEach(e => dz.addEventListener(e, () => dz.style.borderColor = '#B00000'));
+  ['dragleave','drop'].forEach(e => dz.addEventListener(e, () => dz.style.borderColor = ''));
+</script>
+{% endblock %}

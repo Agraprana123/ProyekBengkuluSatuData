@@ -1,0 +1,94 @@
+# ===== PYTHON =====
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+build/
+develop-eggs/
+dist/
+downloads/
+eggs/
+.eggs/
+lib/
+lib64/
+parts/
+sdist/
+var/
+wheels/
+*.egg-info/
+.installed.cfg
+*.egg
+
+# ===== ENVIRONMENT & SECRETS (SENSITIVE!) =====
+.env
+.env.local
+.env.*.local
+*.env
+secrets/
+*.key
+*.pem
+id_rsa
+id_rsa.pub
+
+# ===== CKAN CONFIG (SENSITIVE!) =====
+*.ini
+!README.ini
+
+# ===== DATABASE (JANGAN UPLOAD!) =====
+*.db
+*.sqlite
+*.sqlite3
+pg_data/
+postgres_data/
+postgresql/data/
+*.sql.dump
+
+# ===== UPLOADS FOLDERS (User Files - JANGAN UPLOAD!) =====
+ckan/uploads/
+ckan-docker/ckan/uploads/
+ckan-docker/srv/app/uploads/
+srv/app/uploads/
+
+# ===== LOGS & CACHE =====
+*.log
+logs/
+*.pid
+*.seed
+*.seed.lock
+*.cache
+
+# ===== DOCKER =====
+.docker/
+docker-compose.override.yml
+
+# ===== IDE & EDITOR =====
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+*.sublime-project
+*.sublime-workspace
+
+# ===== OS =====
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db
+Desktop.ini
+
+# ===== TEMP & BACKUPS =====
+tmp/
+temp/
+*.tmp
+*.bak
+*.backup
+
+# ===== NODE (Jika Ada) =====
+node_modules/
+npm-debug.log
+yarn-error.log

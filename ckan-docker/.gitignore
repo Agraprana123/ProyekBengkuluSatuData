@@ -1,0 +1,71 @@
+# generic
+.DS_Store
+.vagrant
+
+# code & config
+_service-provider/*
+_solr/schema.xml
+_src/*
+local/*
+.env
+
+# CKAN Config (PENTING! Berisi password database)
+*.ini
+ckan.ini
+production.ini
+test.ini
+
+# Uploads (File user yang diupload)
+ckan/uploads/
+srv/app/uploads/
+*.pdf
+*.jpg
+*.jpeg
+*.png
+*.gif
+*.xlsx
+*.csv
+
+# Python Cache
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+*.egg-info/
+.eggs/
+
+# Database
+*.db
+*.sqlite
+*.sqlite3
+pg_data/
+
+# Logs
+*.log
+logs/
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# Docker
+*.pid
+*.seed
+*.seed.lock
+
+# Secrets & Keys
+passwords.txt
+secrets/
+*.key
+*.pem
+id_rsa
+id_rsa.pub
+
+# Environment
+.env.local
+.env.*.local
+*.env

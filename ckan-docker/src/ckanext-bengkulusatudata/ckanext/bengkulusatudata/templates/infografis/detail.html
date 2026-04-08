@@ -1,0 +1,74 @@
+{% extends "page.html" %}
+
+{% block subtitle %}{{ data.judul }} - Infografis{% endblock %}
+
+{% block breadcrumb_content %}
+  <li><a href="/infografis">Infografis</a></li>
+  <li class="active">Detail</li>
+{% endblock %}
+
+{% block primary %}
+<div class="module">
+  <div class="module-content">
+    <div style="max-width: 900px; margin: 0 auto;">
+      <!-- Gambar Infografis -->
+      <div style="margin-bottom: 30px;">
+        <img src="/uploads/infografis/{{ data.gambar_file }}" 
+             alt="{{ data.judul }}" 
+             style="width: 100%; border-radius: 8px; box-shadow: 0 4px 12px rgba(0,0,0,0.15);">
+      </div>
+      
+      <!-- Info -->
+      <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; flex-wrap: wrap; gap: 15px;">
+        <div>
+          <span style="background: #b71c1c; color: white; padding: 5px 15px; border-radius: 20px; font-size: 0.85em; text-transform: uppercase;">
+            {{ data.kategori }}
+          </span>
+        </div>
+        <div style="color: #666;">
+          <i class="fa fa-eye"></i> {{ data.views }} views | 
+          <i class="fa fa-calendar"></i> {{ data.created_at.strftime('%d %B %Y') if data.created_at else '-' }}
+        </div>
+      </div>
+      
+      <h1 style="margin-bottom: 20px; color: #333;">{{ data.judul }}</h1>
+      
+      {% if data.deskripsi %}
+      <div style="background: #f9f9f9; padding: 20px; border-radius: 5px; margin-bottom: 30px;">
+        <h4 style="margin-top: 0;">Deskripsi</h4>
+        <p style="line-height: 1.8; margin: 0;">{{ data.deskripsi }}</p>
+      </div>
+      {% endif %}
+      
+      <!-- Actions -->
+      <div class="actions" style="display: flex; gap: 15px; flex-wrap: wrap;">
+        {% if data.file_pdf %}
+        <a href="/infografis/download/{{ data.id }}" class="btn btn-primary" style="background: #b71c1c; border: none; padding: 12px 30px;">
+          <i class="fa fa-download"></i> Download PDF
+        </a>
+        {% endif %}
+        
+        <a href="/infografis" class="btn btn-default" style="padding: 12px 30px;">
+          <i class="fa fa-arrow-left"></i> Kembali
+        </a>
+        
+        {% if c.userobj and c.userobj.sysadmin %}
+        <div style="margin-left: auto; display: flex; gap: 10px;">
+          <a href="/admin/infografis/edit/{{ data.id }}" class="btn btn-warning">
+            <i class="fa fa-edit"></i> Edit
+          </a>
+          <form method="POST" action="/admin/infografis/hapus/{{ data.id }}" style="display: inline;" onsubmit="return confirm('Yakin ingin menghapus infografis ini?');">
+            {{ h.csrf_input() }}
+            <button type="submit" class="btn btn-danger">
+              <i class="fa fa-trash"></i> Hapus
+            </button>
+          </form>
+        </div>
+        {% endif %}
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}
+
+{% block secondary %}{% endblock %}

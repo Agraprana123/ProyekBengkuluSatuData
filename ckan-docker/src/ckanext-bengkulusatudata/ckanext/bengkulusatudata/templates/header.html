@@ -1,0 +1,274 @@
+{% ckan_extends %}
+
+{# Hilangkan baris admin hitam di atas #}
+{% block header_account %}{% endblock %}
+
+{% block header_wrapper %}
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap');
+  
+  .custom-header {
+    background: linear-gradient(135deg, #B00000 0%, #8B0000 100%);
+    font-family: 'Poppins', sans-serif;
+    padding: 15px 0;
+    box-shadow: 0 4px 20px rgba(0,0,0,0.15);
+    position: relative;
+    z-index: 1000;
+  }
+  
+  /* GARIS BAWAH (AFTER) TELAH DIHAPUS AGAR LEBIH RAPI & BERSIH */
+  
+  .custom-header .navbar {
+    padding: 0;
+  }
+  
+  .custom-header .navbar-brand {
+    display: flex;
+    align-items: center;
+    color: white !important;
+    font-size: 26px;
+    font-weight: 700;
+    text-decoration: none;
+    letter-spacing: 0.5px;
+    margin-right: 25px;
+    transition: transform 0.3s ease;
+    flex-shrink: 0; 
+  }
+  
+  .custom-header .navbar-brand:hover {
+    transform: translateY(-2px);
+  }
+  
+  .custom-header .nav-link {
+    color: rgba(255,255,255,0.95) !important;
+    font-weight: 500;
+    font-size: 15px;
+    padding: 10px 12px !important; 
+    margin: 0 2px;
+    border-radius: 8px;
+    transition: all 0.3s ease;
+    white-space: nowrap;
+    position: relative;
+    overflow: hidden;
+  }
+  
+  .custom-header .nav-link::before {
+    content: '';
+    position: absolute;
+    bottom: 0;
+    left: 50%;
+    width: 0;
+    height: 2px;
+    background: white;
+    transition: all 0.3s ease;
+    transform: translateX(-50%);
+  }
+  
+  .custom-header .nav-link:hover {
+    color: white !important;
+    background: rgba(255,255,255,0.1);
+    transform: translateY(-2px);
+  }
+  
+  .custom-header .nav-link:hover::before {
+    width: 60%;
+  }
+  
+  /* --- DESAIN TOMBOL BELUM LOGIN --- */
+  .custom-header .btn-login {
+    background: white;
+    color: #B00000 !important;
+    border-radius: 50px;
+    font-weight: 600;
+    padding: 10px 28px;
+    text-decoration: none;
+    box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+    transition: all 0.3s ease;
+    white-space: nowrap;
+    display: inline-flex;
+    align-items: center;
+    gap: 10px;
+    margin-left: 15px;
+    flex-shrink: 0;
+  }
+  
+  .custom-header .btn-login:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 6px 20px rgba(0,0,0,0.3);
+    background: #f8f9fa;
+  }
+  
+  /* --- DESAIN PROFIL SUDAH LOGIN --- */
+  .user-section {
+    background: white;
+    border-radius: 50px;
+    display: inline-flex;
+    align-items: center;
+    padding: 6px 6px 6px 20px;
+    box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+    margin-left: 15px;
+    transition: all 0.3s ease;
+    flex-shrink: 0; 
+  }
+
+  .user-section:hover {
+    box-shadow: 0 6px 20px rgba(0,0,0,0.3);
+  }
+
+  .user-name {
+    color: #B00000;
+    font-weight: 600;
+    font-size: 14px;
+    margin-right: 12px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    white-space: nowrap;
+    text-decoration: none; 
+    transition: all 0.2s ease;
+  }
+
+  .user-name:hover {
+    color: #FF0000;
+    text-decoration: none;
+  }
+
+  .user-name i {
+    font-size: 16px;
+  }
+  
+  .custom-header .btn-logout {
+    background: #B00000;
+    color: white !important;
+    border: none;
+    border-radius: 50%;
+    width: 36px;
+    height: 36px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    font-size: 16px;
+  }
+  
+  .custom-header .btn-logout:hover {
+    background: #8B0000;
+    transform: rotate(90deg);
+  }
+  
+  /* --- PENGATURAN TOGGLER MOBILE --- */
+  .navbar-toggler {
+    border: 2px solid rgba(255,255,255,0.5) !important;
+    padding: 8px 12px;
+    border-radius: 8px;
+    transition: all 0.3s ease;
+  }
+  
+  .navbar-toggler:hover {
+    background: rgba(255,255,255,0.1);
+    border-color: white !important;
+  }
+  
+  .navbar-toggler:focus {
+    box-shadow: 0 0 0 3px rgba(255,255,255,0.3);
+  }
+  
+  /* --- RESPONSIVE BREAKPOINTS --- */
+  @media (max-width: 1200px) {
+    .custom-header .nav-link {
+      font-size: 14px;
+      padding: 10px 8px !important;
+    }
+    .custom-header .navbar-brand {
+      font-size: 22px;
+      margin-right: 15px;
+    }
+  }
+  
+  @media (max-width: 991px) {
+    .custom-header {
+      padding: 12px 0;
+    }
+    
+    .navbar-collapse {
+      background: rgba(139, 0, 0, 0.98);
+      padding: 20px;
+      border-radius: 12px;
+      margin-top: 15px;
+      box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+    }
+    
+    .custom-header .nav-link {
+      padding: 12px 20px !important;
+      text-align: center;
+      border-radius: 8px;
+    }
+    
+    .user-section, .custom-header .btn-login {
+      margin: 15px auto 0;
+      justify-content: center;
+    }
+  }
+</style>
+
+<header class="masthead custom-header">
+  <div class="container-fluid" style="padding: 0 3%;">
+    <nav class="navbar navbar-expand-lg navbar-dark">
+      
+      {# --- KIRI: LOGO & JUDUL (DIBIARKAN SAMA PERSIS) --- #}
+      <a class="navbar-brand" href="{{ h.url_for('home.index') }}">
+        <img src="{{ h.url_for_static('/base/images/logo-bengkulu.png') }}" 
+             alt="Logo Bengkulu" 
+             style="height: 75px !important; width: auto !important; flex-shrink: 0 !important; object-fit: contain !important; display: block !important; transform: scale(2.8) !important; transform-origin: left center !important; filter: brightness(0) invert(1) !important; margin-right: 45px !important;" />
+        <span style="white-space: nowrap;">Bengkulu Satu Data</span>
+      </a>
+
+      {# --- TOMBOL TOGGLE UNTUK VERSI HP --- #}
+      <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#main-navigation-toggle"
+        aria-controls="main-navigation-toggle" aria-expanded="false" aria-label="Toggle navigation">
+        <span class="fa fa-bars"></span>
+      </button>
+
+      {# --- MENU NAVIGASI --- #}
+      <div class="collapse navbar-collapse" id="main-navigation-toggle">
+        
+        <ul class="navbar-nav me-auto mb-2 mb-lg-0">
+          <li class="nav-item"><a class="nav-link" href="{{ h.url_for('home.index') }}">Home</a></li>
+          <li class="nav-item"><a class="nav-link" href="{{ h.url_for('dataset.search') }}">Dataset</a></li>
+          <li class="nav-item"><a class="nav-link" href="{{ h.url_for('organization.index') }}">Organisasi</a></li>
+          <li class="nav-item"><a class="nav-link" href="{{ h.url_for('infografis_bp.index') }}">Infografis</a></li>
+          <li class="nav-item"><a class="nav-link" href="{{ h.url_for('standar_data_bp.index') }}">Standar Data</a></li>
+          {# MENU PUBLIKASI DITAMBAHKAN DI SINI #}
+          <li class="nav-item"><a class="nav-link" href="/publikasi">Publikasi</a></li>
+          <li class="nav-item"><a class="nav-link" href="#">Geoportal</a></li>
+          <li class="nav-item"><a class="nav-link" href="#">Lainnya</a></li>
+        </ul>
+
+        {# --- BAGIAN KANAN: LOGIN / PROFIL --- #}
+        <div class="navbar-nav align-items-center">
+          {% if c.userobj %}
+            <div class="user-section">
+              <a href="{{ h.url_for('dashboard.datasets') }}" class="user-name" title="Ke Dashboard">
+                <i class="fa fa-user-circle"></i>
+                <span>{{ c.userobj.display_name }}</span>
+              </a>
+              <form action="{{ h.url_for('user.logout') }}" method="post" style="margin: 0; display: flex; align-items: center;">
+                {{ h.csrf_input() }} 
+                <button type="submit" class="btn-logout" title="Keluar">
+                  <i class="fa fa-sign-out"></i>
+                </button>
+              </form>
+            </div>
+          {% else %}
+            <a href="{{ h.url_for('user.login') }}" class="btn-login">
+              <i class="fa fa-sign-in"></i> Masuk
+            </a>
+          {% endif %}
+        </div>
+
+      </div>
+    </nav>
+  </div>
+</header>
+{% endblock %}

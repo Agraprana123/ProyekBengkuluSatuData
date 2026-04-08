@@ -1,0 +1,354 @@
+{% extends "page.html" %}
+
+{% block subtitle %}Bantuan & Panduan{% endblock %}
+
+{% block breadcrumb_content %}
+  <li class="active">{% link_for _('About'), named_route='home.about' %}</li>
+{% endblock %}
+
+{% block primary %}
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700;800&display=swap');
+
+  :root {
+    --primary-red: #B00000;
+    --primary-dark: #8B0000;
+    --text-dark: #1e293b;
+    --text-gray: #64748b;
+    --bg-light: #ffffff;
+    --white: #ffffff;
+    --shadow-md: 0 8px 24px rgba(0,0,0,0.06);
+    --shadow-hover: 0 12px 32px rgba(176,0,0,0.12);
+    --radius-lg: 20px;
+    --transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  }
+
+  /* =========================================
+     MENGHILANGKAN GAP (CELAH) BAWAAN CKAN
+     ========================================= */
+  #content, .wrapper, .main {
+    padding-bottom: 0 !important;
+  }
+
+  /* Mengesampingkan border bawaan CKAN agar halaman bersih */
+  .module {
+    margin-bottom: 0 !important; /* Memaksa elemen menempel ke bawah */
+    border: none !important;
+    background: transparent !important;
+    box-shadow: none !important;
+  }
+
+  .bantuan-wrapper {
+    font-family: 'Poppins', sans-serif;
+    background: var(--bg-light);
+    
+    /* PERBAIKAN: Sudut bawah dibuat siku (0 0) agar menyatu mulus dengan footer */
+    border-radius: var(--radius-lg) var(--radius-lg) 0 0; 
+    
+    /* Padding atas ditambah jadi 80px agar balon tidak terpotong */
+    padding: 80px 5% 40px; 
+    position: relative;
+  }
+
+  /* =========================================
+     BAGIAN MASKOT & BUBBLE (HERO BANTUAN)
+     ========================================= */
+  .bantuan-hero {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    margin-bottom: 60px;
+    position: relative;
+    z-index: 2;
+  }
+
+  .bantuan-mascot {
+    height: 280px;
+    width: auto;
+    animation: float 6s ease-in-out infinite;
+    filter: drop-shadow(0 15px 25px rgba(0,0,0,0.1));
+    z-index: 2;
+  }
+
+  @keyframes float {
+    0%, 100% { transform: translateY(0); }
+    50% { transform: translateY(-15px); }
+  }
+
+  .bantuan-bubbles {
+    position: relative;
+    width: 100%;
+    max-width: 600px;
+    display: flex;
+    justify-content: center;
+    margin-bottom: -40px;
+    z-index: 1;
+  }
+
+  .b-bubble {
+    background: var(--white);
+    border: 2px solid var(--primary-red);
+    padding: 15px 25px;
+    border-radius: 50px;
+    font-weight: 600;
+    color: var(--text-dark);
+    font-size: 14px;
+    box-shadow: var(--shadow-md);
+    position: absolute;
+    text-align: center;
+  }
+
+  .b-bubble-top {
+    /* PERBAIKAN: Jarak atas disesuaikan */
+    top: -60px;
+    font-size: 18px;
+    border-radius: 30px;
+    padding: 20px 40px;
+  }
+
+  .b-bubble-left {
+    left: -20px;
+    top: 20px;
+  }
+
+  .b-bubble-right {
+    right: -20px;
+    top: 40px;
+  }
+
+  /* Segitiga Bubble */
+  .b-bubble-top::after { content: ''; position: absolute; bottom: -12px; left: 50%; transform: translateX(-50%); border: 12px solid transparent; border-top-color: var(--primary-red); border-bottom: 0; }
+  .b-bubble-left::after { content: ''; position: absolute; bottom: -10px; right: 40px; border: 10px solid transparent; border-top-color: var(--primary-red); border-bottom: 0; transform: rotate(-20deg); }
+  .b-bubble-right::after { content: ''; position: absolute; bottom: -10px; left: 40px; border: 10px solid transparent; border-top-color: var(--primary-red); border-bottom: 0; transform: rotate(20deg); }
+
+  /* =========================================
+     ACCORDION (FAQ INTERAKTIF)
+     ========================================= */
+  .faq-container {
+    max-width: 800px;
+    margin: 0 auto;
+    position: relative;
+    z-index: 2;
+  }
+
+  .faq-category-title {
+    font-size: 22px;
+    font-weight: 800;
+    color: var(--primary-red);
+    margin: 40px 0 20px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    border-bottom: 2px solid #f1f5f9;
+    padding-bottom: 15px;
+  }
+
+  .faq-item {
+    background: var(--white);
+    border-radius: 12px;
+    margin-bottom: 16px;
+    box-shadow: var(--shadow-md);
+    border: 1px solid rgba(0,0,0,0.04);
+    overflow: hidden;
+    transition: var(--transition);
+  }
+
+  .faq-item:hover {
+    box-shadow: var(--shadow-hover);
+    border-color: rgba(176,0,0,0.2);
+  }
+
+  .faq-header {
+    padding: 20px 25px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    cursor: pointer;
+    font-weight: 600;
+    font-size: 16px;
+    color: var(--text-dark);
+    transition: var(--transition);
+    user-select: none;
+  }
+
+  .faq-item.active .faq-header {
+    color: var(--primary-red);
+    background: #fffcfc;
+  }
+
+  .faq-icon {
+    font-size: 16px;
+    color: var(--primary-red);
+    transition: transform 0.4s ease;
+  }
+
+  .faq-item.active .faq-icon {
+    transform: rotate(180deg);
+  }
+
+  .faq-body {
+    max-height: 0;
+    overflow: hidden;
+    transition: max-height 0.4s cubic-bezier(0, 1, 0, 1);
+    background: #fffcfc;
+  }
+
+  .faq-content {
+    padding: 0 25px 25px;
+    color: var(--text-gray);
+    font-size: 14.5px;
+    line-height: 1.7;
+    border-top: 1px dashed rgba(176,0,0,0.1);
+    margin-top: -10px;
+    padding-top: 15px;
+  }
+
+  .faq-content ul {
+    padding-left: 20px;
+    margin-top: 10px;
+  }
+
+  .faq-content li {
+    margin-bottom: 8px;
+  }
+
+  /* Responsive */
+  @media (max-width: 768px) {
+    .b-bubble-top { position: relative; top: 0; margin-bottom: 20px; font-size: 15px; padding: 15px 25px;}
+    .b-bubble-left, .b-bubble-right { display: none; } 
+    .bantuan-mascot { height: 220px; }
+    .faq-header { font-size: 14px; padding: 16px 20px; }
+    .faq-content { font-size: 13.5px; padding: 0 20px 20px; }
+  }
+</style>
+
+<article class="module" role="main">
+  <div class="bantuan-wrapper">
+    
+    <div class="bantuan-hero">
+      <div class="bantuan-bubbles">
+        <div class="b-bubble b-bubble-top">Yuk kenal lebih jauh<br>mengenai Bengkulu Satu Data!</div>
+        <div class="b-bubble b-bubble-left">Ada pertanyaan perihal<br>data dan statistik?</div>
+        <div class="b-bubble b-bubble-right">Yuk, Tanya Arnold<br>di pojok kanan!</div>
+      </div>
+      <img src="{{ h.url_for_static('/base/images/poster-bsd.png') }}" alt="Maskot Bantuan" class="bantuan-mascot">
+    </div>
+
+    <div class="faq-container">
+      
+      <h2 class="faq-category-title"><i class="fa fa-question-circle"></i> FAQ (Pertanyaan Umum)</h2>
+      
+      <div class="faq-item">
+        <div class="faq-header">
+          <span>Apa itu Portal Bengkulu Satu Data?</span>
+          <i class="fa fa-chevron-down faq-icon"></i>
+        </div>
+        <div class="faq-body">
+          <div class="faq-content">
+            Bengkulu Satu Data merupakan Portal Satu Data Provinsi Bengkulu yang dikelola oleh Dinas Komunikasi Informatika dan Statistik Provinsi Bengkulu sebagai sarana/wadah untuk penyebarluasan data statistik sektoral Provinsi Bengkulu. Statistik Sektoral adalah statistik yang pemanfaatannya untuk penyelenggaraan tugas-tugas pemerintahan dan pembangunan yang merupakan tugas pokok instansi yang bersangkutan.
+            Menurut Peraturan Presiden No. 39 Tahun 2019 tentang Satu Data Indonesia, Dinas Komunikasi Informatika dan Statistik berperan sebagai walidata yang bertugas mengumpulkan, mengelola, dan menyebarluaskan data sesuai prinsip Satu Data Indonesia.
+          </div>
+        </div>
+      </div>
+
+      <div class="faq-item">
+        <div class="faq-header">
+          <span>Bagaimana cara mencari dan mengunduh Dataset?</span>
+          <i class="fa fa-chevron-down faq-icon"></i>
+        </div>
+        <div class="faq-body">
+          <div class="faq-content">
+            Anda dapat mencari data dengan 2 cara mudah:
+            <ul>
+              <li>Gunakan <strong>Kotak Pencarian (Search)</strong> di halaman utama untuk mengetikkan kata kunci.</li>
+              <li>Gunakan fitur Chatbot <strong>Tanya Arnold</strong> di pojok kanan bawah, ketikkan data yang Anda butuhkan, dan Arnold akan memberikan tautan langsung untuk Anda.</li>
+            </ul>
+            Setelah halaman dataset terbuka, klik tombol "Unduh" untuk menyimpan data ke perangkat Anda.
+          </div>
+        </div>
+      </div>
+
+      <div class="faq-item">
+        <div class="faq-header">
+          <span>Siapa saja yang boleh mengakses data di portal ini?</span>
+          <i class="fa fa-chevron-down faq-icon"></i>
+        </div>
+        <div class="faq-body">
+          <div class="faq-content">
+            Seluruh data yang berstatus <strong>Publik</strong> dapat diakses dan diunduh oleh siapa saja secara gratis tanpa perlu melakukan pendaftaran (Login). Data ini diperuntukkan bagi masyarakat umum, mahasiswa, peneliti, hingga instansi pemerintah lainnya.
+          </div>
+        </div>
+      </div>
+
+      <h2 class="faq-category-title" style="margin-top: 60px;"><i class="fa fa-shield"></i> Prinsip Satu Data</h2>
+      
+      <div class="faq-item">
+        <div class="faq-header">
+          <span>1. Memenuhi Standar Data</span>
+          <i class="fa fa-chevron-down faq-icon"></i>
+        </div>
+        <div class="faq-body">
+          <div class="faq-content">
+            Data yang dihasilkan oleh Produsen Data harus memenuhi Standar Data yang telah ditetapkan. Hal ini mencakup konsep, definisi, klasifikasi, ukuran, dan satuan yang seragam.
+          </div>
+        </div>
+      </div>
+
+      <div class="faq-item">
+        <div class="faq-header">
+          <span>2. Memiliki Metadata</span>
+          <i class="fa fa-chevron-down faq-icon"></i>
+        </div>
+        <div class="faq-body">
+          <div class="faq-content">
+            Setiap data wajib dilengkapi dengan Metadata (informasi terstruktur yang mendeskripsikan suatu data) agar data tersebut mudah dipahami dan ditelusuri riwayat serta metodologinya.
+          </div>
+        </div>
+      </div>
+
+      <div class="faq-item">
+        <div class="faq-header">
+          <span>3. Interoperabilitas Data</span>
+          <i class="fa fa-chevron-down faq-icon"></i>
+        </div>
+        <div class="faq-body">
+          <div class="faq-content">
+            Data harus memenuhi kaidah Interoperabilitas, yang artinya data dapat dibagipakaikan (di-share) dan saling terhubung antar berbagai sistem elektronik secara otomatis melalui API (Application Programming Interface).
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+  <script>
+    document.addEventListener("DOMContentLoaded", function() {
+      const faqHeaders = document.querySelectorAll(".faq-header");
+
+      faqHeaders.forEach(header => {
+        header.addEventListener("click", function() {
+          const item = this.parentElement;
+          const body = item.querySelector(".faq-body");
+          const isActive = item.classList.contains("active");
+
+          // Tutup semua item lain agar rapi
+          document.querySelectorAll(".faq-item").forEach(otherItem => {
+            otherItem.classList.remove("active");
+            otherItem.querySelector(".faq-body").style.maxHeight = null;
+          });
+
+          // Buka item yang diklik
+          if (!isActive) {
+            item.classList.add("active");
+            // Set tinggi dinamis berdasarkan isi teks agar animasi transisi bekerja mulus
+            body.style.maxHeight = body.scrollHeight + "px";
+          }
+        });
+      });
+    });
+  </script>
+</article>
+{% endblock %}
+
+{# Mengosongkan sidebar samping bawaan CKAN agar halaman penuh #}
+{% block secondary %}{% endblock %}

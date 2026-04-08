@@ -1,0 +1,178 @@
+version: "3.8"
+
+volumes:
+  ckan_storage:
+  pg_data:
+  solr_data:
+  pip_cache:
+
+services:
+
+  nginx:
+    build:
+      context: nginx/
+      dockerfile: Dockerfile
+    networks:
+      - webnet
+      - ckannet
+    depends_on:
+      ckan:
+        condition: service_healthy
+    ports:
+      - "0.0.0.0:${NGINX_SSLPORT_HOST}:${NGINX_SSLPORT}"
+    restart: unless-stopped
+
+  ckan:
+    build:
+      context: .
+      dockerfile: ckan/Dockerfile
+      args:
+        - TZ=${TZ}
+    networks:
+      - ckannet
+      - dbnet
+      - solrnet
+      - redisnet
+    env_file:
+      - .env
+    depends_on:
+      db:
+        condition: service_healthy
+      solr:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    volumes:
+      - ckan_storage:/var/lib/ckan
+      - pip_cache:/root/.cache/pip
+      - ./ckan/uploads:/srv/app/uploads 
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "wget", "-qO", "/dev/null", "http://localhost:5000/api/action/status_show"]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+
+  # Worker stabilizer version (production safe)
+  ckan-worker:
+    build:
+      context: .
+      dockerfile: ckan/Dockerfile
+      args:
+        - TZ=${TZ}
+    image: ckan-docker-ckan-worker
+    command: sh -c "
+      echo 'Waiting infra services...' &&
+      sleep 45 &&
+      until nc -z redis 6379; do sleep 5; done &&
+      until nc -z db 5432; do sleep 5; done &&
+      until nc -z solr 8983; do sleep 5; done &&
+      echo 'All infra ready, starting worker' &&
+      ckan -c /srv/app/ckan.ini jobs worker default harvest
+      " 
+    networks:
+      - ckannet
+      - dbnet
+      - redisnet
+      - solrnet
+    env_file:
+      - .env
+    depends_on:
+      redis:
+        condition: service_healthy
+      db:
+        condition: service_healthy
+      solr:
+        condition: service_healthy
+    volumes:
+      - ckan_storage:/var/lib/ckan
+    restart: unless-stopped
+    deploy:
+      resources:
+        limits:
+          memory: 1536M
+          cpus: "1.5"
+
+  datapusher:
+    image: ckan/ckan-base-datapusher:${DATAPUSHER_VERSION}
+    networks:
+      - ckannet
+      - dbnet
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "wget", "-qO", "/dev/null", "http://localhost:8800"]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+
+  db:
+    build:
+      context: postgresql/
+    networks:
+      - dbnet
+    environment:
+      - POSTGRES_USER
+      - POSTGRES_PASSWORD
+      - POSTGRES_DB
+      - CKAN_DB_USER
+      - CKAN_DB_PASSWORD
+      - CKAN_DB
+      - DATASTORE_READONLY_USER
+      - DATASTORE_READONLY_PASSWORD
+      - DATASTORE_DB
+    volumes:
+      - pg_data:/var/lib/postgresql/data
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "pg_isready", "-U", "${POSTGRES_USER}", "-d", "${POSTGRES_DB}"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  solr:
+    image: ckan/ckan-solr:${SOLR_IMAGE_VERSION}
+    networks:
+      - solrnet
+    volumes:
+      - solr_data:/var/solr
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "wget", "-qO", "/dev/null", "http://localhost:8983/solr/"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  redis:
+    image: redis:${REDIS_VERSION}
+    networks:
+      - redisnet
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+  
+  chatbot:
+    build:
+      context: ./chatbot-ai
+      dockerfile: Dockerfile
+    container_name: bengkulu-chatbot
+    networks:
+      - ckannet
+    ports:
+      - "8001:8000"
+    restart: unless-stopped
+    depends_on:
+      ckan:
+        condition: service_healthy
+
+networks:
+  webnet:
+  ckannet:
+  solrnet:
+    internal: true
+  dbnet:
+    internal: true
+  redisnet:
+    internal: true

@@ -1,0 +1,164 @@
+{% extends "page.html" %}
+
+{% block subtitle %}Riwayat Perubahan — Standar Data{% endblock %}
+
+{% block custom_styles %}
+{{ super() }}
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap');
+  *, *::before, *::after { box-sizing: border-box; }
+  body { background: #f4f6f9 !important; font-family: 'Plus Jakarta Sans', sans-serif !important; }
+  #content,.wrapper,.main,.container,.primary,.secondary,.module,.module-content {
+    background: transparent !important; border: none !important; box-shadow: none !important;
+  }
+  .sd-page { max-width: 720px; margin: 0 auto; padding: 24px 16px 56px; }
+
+  .sd-breadcrumb { display: flex; align-items: center; gap: 8px; font-size: 13px; font-weight: 600; color: #64748b; margin-bottom: 24px; }
+  .sd-breadcrumb a { color: #64748b; text-decoration: none; transition: color .2s; }
+  .sd-breadcrumb a:hover { color: #B00000; }
+  .sd-breadcrumb .sep { color: #cbd5e1; font-size: 10px; }
+  .sd-breadcrumb .current { color: #B00000; font-weight: 700; }
+
+  /* Header card */
+  .history-title-card {
+    background: linear-gradient(135deg, #7f0000, #B00000);
+    border-radius: 18px; padding: 26px 30px; margin-bottom: 28px;
+    position: relative; overflow: hidden;
+  }
+  .history-title-card::after {
+    content: ''; position: absolute; top: -40px; right: -40px;
+    width: 160px; height: 160px; border-radius: 50%;
+    background: rgba(255,255,255,0.06);
+  }
+  .history-title-card h1 { color: #fff; font-size: 1.45rem; font-weight: 800; margin: 0 0 4px; position: relative; z-index: 1; }
+  .history-title-card p { color: rgba(255,255,255,0.7); font-size: 13.5px; margin: 0; position: relative; z-index: 1; }
+
+  /* Timeline */
+  .timeline-card {
+    background: #fff; border-radius: 18px;
+    border: 1px solid #e8edf4;
+    box-shadow: 0 2px 16px rgba(0,0,0,0.05);
+    padding: 28px;
+  }
+
+  .timeline { list-style: none; margin: 0; padding: 0; position: relative; }
+  .timeline::before {
+    content: ''; position: absolute; left: 17px; top: 4px; bottom: 4px;
+    width: 2px; background: linear-gradient(180deg, #B00000 0%, #e8edf4 100%);
+  }
+  .timeline-item { position: relative; padding: 0 0 28px 52px; }
+  .timeline-item:last-child { padding-bottom: 0; }
+
+  .timeline-dot {
+    position: absolute; left: 8px; top: 2px;
+    width: 22px; height: 22px; border-radius: 50%;
+    background: #B00000; border: 3px solid #fff;
+    box-shadow: 0 0 0 3px rgba(176,0,0,0.15);
+    display: flex; align-items: center; justify-content: center;
+    z-index: 1;
+  }
+  .timeline-dot i { color: #fff; font-size: 9px; }
+
+  .timeline-content {
+    background: #f8fafc; border-radius: 14px;
+    border: 1px solid #e8edf4; padding: 16px 20px;
+    transition: border-color .2s;
+  }
+  .timeline-content:hover { border-color: rgba(176,0,0,0.2); background: #fef9f9; }
+
+  .timeline-header { display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 8px; margin-bottom: 8px; }
+  .timeline-versi {
+    display: inline-flex; align-items: center; gap: 5px;
+    background: #eff6ff; color: #1d4ed8;
+    border: 1px solid #bfdbfe; padding: 3px 10px; border-radius: 7px;
+    font-size: 12px; font-weight: 800;
+  }
+  .timeline-date { font-size: 12px; color: #94a3b8; font-weight: 600; display: flex; align-items: center; gap: 5px; }
+  .timeline-change { font-size: 14px; font-weight: 600; color: #0f172a; margin-bottom: 6px; }
+  .timeline-user { display: flex; align-items: center; gap: 6px; font-size: 12.5px; color: #64748b; }
+  .timeline-user .user-avatar {
+    width: 22px; height: 22px; border-radius: 50%;
+    background: linear-gradient(135deg, #B00000, #ef4444);
+    display: flex; align-items: center; justify-content: center;
+    font-size: 10px; color: #fff; font-weight: 800;
+    flex-shrink: 0;
+  }
+
+  /* Empty */
+  .history-empty { text-align: center; padding: 48px 20px; }
+  .history-empty i { font-size: 40px; color: #cbd5e1; display: block; margin-bottom: 14px; }
+  .history-empty p { color: #64748b; font-size: 15px; margin: 0; }
+
+  /* Back btn */
+  .btn-back {
+    display: inline-flex; align-items: center; gap: 7px;
+    background: #fff; color: #475569 !important;
+    padding: 10px 20px; border-radius: 10px;
+    font-weight: 700; font-size: 14px;
+    text-decoration: none !important;
+    border: 1.5px solid #e8edf4;
+    transition: all .22s; margin-top: 24px;
+  }
+  .btn-back:hover { border-color: #B00000; color: #B00000 !important; background: #fef2f2; }
+</style>
+{% endblock %}
+
+{% block toolbar %}{% endblock %}
+{% block page_header %}{% endblock %}
+{% block secondary %}{% endblock %}
+
+{% block primary %}
+<div class="sd-page">
+
+  <div class="sd-breadcrumb">
+    <a href="{{ h.url_for('home.index') }}"><i class="fa fa-home"></i> Home</a>
+    <span class="sep"><i class="fa fa-chevron-right"></i></span>
+    <a href="/standar-data"><i class="fa fa-table"></i> Standar Data</a>
+    <span class="sep"><i class="fa fa-chevron-right"></i></span>
+    <a href="/standar-data/detail/{{ standar_data_id }}">Detail</a>
+    <span class="sep"><i class="fa fa-chevron-right"></i></span>
+    <span class="current">Riwayat</span>
+  </div>
+
+  <div class="history-title-card">
+    <h1><i class="fa fa-history"></i> Riwayat Perubahan</h1>
+    <p>Catatan seluruh perubahan yang telah dilakukan pada standar data ini.</p>
+  </div>
+
+  <div class="timeline-card">
+    {% if history_list %}
+      <ul class="timeline">
+        {% for h in history_list %}
+          <li class="timeline-item">
+            <div class="timeline-dot"><i class="fa fa-check"></i></div>
+            <div class="timeline-content">
+              <div class="timeline-header">
+                <span class="timeline-versi"><i class="fa fa-code-fork"></i> v{{ h.versi }}</span>
+                <span class="timeline-date">
+                  <i class="fa fa-clock-o"></i>
+                  {{ h.changed_at.strftime('%d %b %Y, %H:%M') if h.changed_at else '-' }}
+                </span>
+              </div>
+              <div class="timeline-change">{{ h.perubahan }}</div>
+              <div class="timeline-user">
+                <div class="user-avatar">{{ h.user_changed[0]|upper if h.user_changed else '?' }}</div>
+                {{ h.user_changed or 'Unknown' }}
+              </div>
+            </div>
+          </li>
+        {% endfor %}
+      </ul>
+    {% else %}
+      <div class="history-empty">
+        <i class="fa fa-history"></i>
+        <p>Belum ada riwayat perubahan untuk standar data ini.</p>
+      </div>
+    {% endif %}
+  </div>
+
+  <a href="/standar-data/detail/{{ standar_data_id }}" class="btn-back">
+    <i class="fa fa-arrow-left"></i> Kembali ke Detail
+  </a>
+
+</div>
+{% endblock %}

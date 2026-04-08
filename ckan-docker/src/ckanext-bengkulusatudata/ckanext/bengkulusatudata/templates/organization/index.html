@@ -1,0 +1,1198 @@
+{% extends "page.html" %}
+
+{% block subtitle %}Organisasi{% endblock %}
+
+{% block custom_styles %}
+  {{ super() }}
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:ital,wght@0,400;0,500;0,600;0,700;0,800;1,400&display=swap');
+
+    /* ===================================================
+       GLOBAL RESET & BASE
+    =================================================== */
+    *, *::before, *::after { box-sizing: border-box; }
+
+    body {
+      background: #f4f6f9 !important;
+      font-family: 'Plus Jakarta Sans', sans-serif !important;
+    }
+    #content, .wrapper, .main, .container,
+    .primary, .secondary, .module, .module-content {
+      background: transparent !important;
+      border: none !important;
+      box-shadow: none !important;
+    }
+
+    /* ===================================================
+       BREADCRUMB & TOP ROW
+    =================================================== */
+    .org-top-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 20px;
+      flex-wrap: wrap;
+      gap: 12px;
+    }
+
+    .org-breadcrumb {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      font-size: 13.5px;
+      font-weight: 600;
+      color: #64748b;
+    }
+    .org-breadcrumb a {
+      color: #64748b;
+      text-decoration: none !important;
+      display: flex;
+      align-items: center;
+      gap: 5px;
+      transition: color 0.2s;
+    }
+    .org-breadcrumb a:hover { color: #B00000; }
+    .org-breadcrumb .sep { color: #cbd5e1; font-size: 11px; }
+    .org-breadcrumb .current { color: #B00000; font-weight: 700; }
+
+    .btn-add-org {
+      background: #B00000;
+      color: #fff !important;
+      padding: 10px 20px;
+      border-radius: 10px;
+      font-weight: 700;
+      font-size: 13.5px;
+      text-decoration: none !important;
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      transition: all 0.25s;
+      border: none;
+      white-space: nowrap;
+      box-shadow: 0 4px 14px rgba(176,0,0,0.25);
+    }
+    .btn-add-org:hover {
+      background: #8b0000;
+      transform: translateY(-1px);
+      box-shadow: 0 6px 20px rgba(176,0,0,0.35);
+      color: #fff !important;
+    }
+
+    /* ===================================================
+       SEARCH BAR
+    =================================================== */
+    .org-search-wrap {
+      margin-bottom: 24px;
+    }
+    .org-search-form {
+      background: #fff;
+      border-radius: 14px;
+      padding: 6px 6px 6px 20px;
+      box-shadow: 0 2px 16px rgba(0,0,0,0.06);
+      border: 1px solid #e8edf4;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+    .org-search-form i.fa-search { color: #94a3b8; font-size: 17px; flex-shrink: 0; }
+    .org-search-form input {
+      flex: 1;
+      border: none;
+      outline: none;
+      font-family: 'Plus Jakarta Sans', sans-serif;
+      font-size: 15px;
+      color: #0f172a;
+      background: transparent;
+      padding: 10px 0;
+      min-width: 0;
+    }
+    .org-search-form input::placeholder { color: #94a3b8; }
+    .org-search-btn {
+      background: #B00000;
+      color: #fff;
+      border: none;
+      padding: 12px 30px;
+      border-radius: 10px;
+      font-weight: 700;
+      font-size: 14px;
+      cursor: pointer;
+      transition: background 0.2s;
+      white-space: nowrap;
+      flex-shrink: 0;
+    }
+    .org-search-btn:hover { background: #8b0000; }
+
+    /* ===================================================
+       LAYOUT: SIDEBAR + MAIN
+    =================================================== */
+    .org-layout {
+      display: flex;
+      gap: 24px;
+      align-items: flex-start;
+    }
+
+    /* ===================================================
+       FILTER SIDEBAR
+    =================================================== */
+    .org-sidebar {
+      width: 240px;
+      flex-shrink: 0;
+    }
+    .filter-card {
+      background: #fff;
+      border-radius: 16px;
+      padding: 22px;
+      border: 1px solid #e8edf4;
+      box-shadow: 0 2px 12px rgba(0,0,0,0.04);
+      position: sticky;
+      top: 20px;
+    }
+    .filter-card-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 20px;
+      padding-bottom: 14px;
+      border-bottom: 1px solid #f1f5f9;
+    }
+    .filter-card-header h3 {
+      margin: 0;
+      font-size: 15px;
+      font-weight: 800;
+      color: #0f172a;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    .filter-card-header h3 i { color: #B00000; }
+    .filter-reset {
+      color: #94a3b8;
+      font-size: 12px;
+      font-weight: 700;
+      text-decoration: none !important;
+      display: flex;
+      align-items: center;
+      gap: 4px;
+      transition: color 0.18s;
+    }
+    .filter-reset:hover { color: #B00000; }
+
+    .filter-section-label {
+      font-size: 11px;
+      text-transform: uppercase;
+      letter-spacing: 0.6px;
+      color: #94a3b8;
+      font-weight: 800;
+      margin: 0 0 10px;
+    }
+
+    .filter-item {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 9px 12px;
+      border-radius: 9px;
+      text-decoration: none !important;
+      color: #475569;
+      font-weight: 500;
+      font-size: 14px;
+      margin-bottom: 3px;
+      transition: all 0.18s;
+    }
+    .filter-item:hover { background: #f8fafc; color: #0f172a; }
+    .filter-item.active {
+      background: #fef2f2;
+      color: #B00000;
+      font-weight: 700;
+    }
+    .filter-item .badge {
+      font-size: 11px;
+      font-weight: 700;
+      padding: 2px 8px;
+      border-radius: 10px;
+      background: #f1f5f9;
+      color: #64748b;
+    }
+    .filter-item.active .badge {
+      background: rgba(176,0,0,0.1);
+      color: #B00000;
+    }
+
+    /* ===================================================
+       MAIN CONTENT
+    =================================================== */
+    .org-main { flex: 1; min-width: 0; }
+
+    .org-meta-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 20px;
+      flex-wrap: wrap;
+      gap: 12px;
+    }
+    .org-count-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 10px;
+      font-size: 17px;
+      font-weight: 800;
+      color: #0f172a;
+    }
+    .org-count-badge .num {
+      background: linear-gradient(135deg, #B00000, #dc2626);
+      color: #fff;
+      padding: 4px 14px;
+      border-radius: 8px;
+      font-size: 15px;
+      font-weight: 800;
+      box-shadow: 0 3px 10px rgba(176,0,0,0.25);
+    }
+
+    .sort-wrapper {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+    .sort-wrapper label {
+      font-size: 13.5px;
+      font-weight: 600;
+      color: #64748b;
+      margin: 0;
+      white-space: nowrap;
+    }
+    .sort-select {
+      background: #fff;
+      border: 1.5px solid #e8edf4;
+      border-radius: 9px;
+      padding: 8px 34px 8px 14px;
+      outline: none;
+      font-family: 'Plus Jakarta Sans', sans-serif;
+      font-size: 13.5px;
+      font-weight: 600;
+      color: #0f172a;
+      cursor: pointer;
+      appearance: none;
+      background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='14' height='14' viewBox='0 0 24 24' fill='none' stroke='%2364748b' stroke-width='2.5'%3E%3Cpolyline points='6 9 12 15 18 9'%3E%3C/polyline%3E%3C/svg%3E");
+      background-repeat: no-repeat;
+      background-position: right 10px center;
+      transition: border-color 0.2s;
+    }
+    .sort-select:focus { border-color: #B00000; }
+
+    /* ===================================================
+       ORG CARD GRID
+    =================================================== */
+    .org-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 20px;
+    }
+    @media (max-width: 1100px) { .org-grid { grid-template-columns: repeat(2, 1fr); } }
+    @media (max-width: 640px)  { .org-grid { grid-template-columns: 1fr; } }
+
+    /* ===================================================
+       ORG CARD
+    =================================================== */
+    .org-card {
+      background: #fff;
+      border-radius: 18px;
+      overflow: hidden;
+      border: 1.5px solid #e8edf4;
+      position: relative;
+      display: flex;
+      flex-direction: column;
+      text-decoration: none !important;
+      transition: transform 0.28s cubic-bezier(.22,.68,0,1.2),
+                  box-shadow 0.28s ease,
+                  border-color 0.2s;
+      cursor: pointer;
+    }
+    .org-card:hover {
+      transform: translateY(-7px);
+      box-shadow: 0 16px 40px rgba(0,0,0,0.11);
+      border-color: #B00000;
+    }
+
+    /* Top accent stripe */
+    .org-card-stripe {
+      height: 5px;
+      background: linear-gradient(90deg, #B00000 0%, #ef4444 100%);
+      transition: height 0.25s;
+    }
+    .org-card:hover .org-card-stripe { height: 6px; }
+
+    /* Logo area */
+    .org-card-logo-area {
+      position: relative;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 28px 24px 16px;
+      background: linear-gradient(180deg, #fafbfc 0%, #fff 100%);
+    }
+
+    .org-logo-circle {
+      width: 90px;
+      height: 90px;
+      border-radius: 18px;
+      overflow: hidden;
+      background: #f1f5f9;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      border: 2px solid #e8edf4;
+      flex-shrink: 0;
+      transition: transform 0.3s ease, box-shadow 0.3s ease;
+    }
+    .org-card:hover .org-logo-circle {
+      transform: scale(1.06);
+      box-shadow: 0 6px 20px rgba(176,0,0,0.12);
+      border-color: rgba(176,0,0,0.3);
+    }
+    .org-logo-circle img {
+      width: 100%;
+      height: 100%;
+      object-fit: contain;
+      padding: 4px;
+    }
+    .org-logo-circle .logo-placeholder {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 4px;
+    }
+    .org-logo-circle .logo-placeholder i {
+      font-size: 32px;
+      color: #cbd5e1;
+    }
+
+    /* Admin upload button overlay */
+    .logo-upload-overlay {
+      position: absolute;
+      top: 0; left: 0; right: 0; bottom: 0;
+      background: rgba(176,0,0,0.75);
+      border-radius: 18px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 4px;
+      opacity: 0;
+      transition: opacity 0.22s ease;
+      cursor: pointer;
+    }
+    .org-logo-circle:hover .logo-upload-overlay { opacity: 1; }
+    .logo-upload-overlay i { color: #fff; font-size: 20px; }
+    .logo-upload-overlay span { color: #fff; font-size: 10px; font-weight: 700; letter-spacing: 0.3px; }
+
+    /* Card body */
+    .org-card-body {
+      padding: 0 20px 20px;
+      display: flex;
+      flex-direction: column;
+      flex: 1;
+    }
+
+    .org-card-name {
+      font-size: 14.5px;
+      font-weight: 800;
+      color: #0f172a;
+      text-align: center;
+      line-height: 1.45;
+      margin-bottom: 14px;
+      display: -webkit-box;
+      -webkit-line-clamp: 2;
+      line-clamp: 2;
+      -webkit-box-orient: vertical;
+      overflow: hidden;
+    }
+
+    .org-card-stats {
+      display: flex;
+      justify-content: center;
+      gap: 10px;
+      flex-wrap: wrap;
+    }
+
+    .stat-pill {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      padding: 5px 14px;
+      border-radius: 20px;
+      background: #f8fafc;
+      border: 1px solid #e8edf4;
+      font-size: 13px;
+      font-weight: 700;
+      color: #475569;
+      transition: all 0.2s;
+    }
+    .stat-pill i { font-size: 11px; color: #94a3b8; }
+    .org-card:hover .stat-pill {
+      background: #fef2f2;
+      border-color: rgba(176,0,0,0.2);
+      color: #B00000;
+    }
+    .org-card:hover .stat-pill i { color: #B00000; }
+
+    /* ===================================================
+       EMPTY STATE
+    =================================================== */
+    .org-empty {
+      text-align: center;
+      padding: 72px 24px;
+      background: #fff;
+      border-radius: 18px;
+      border: 2px dashed #e8edf4;
+      grid-column: 1 / -1;
+    }
+    .org-empty-icon {
+      width: 80px; height: 80px;
+      background: #f8fafc;
+      border-radius: 50%;
+      display: flex; align-items: center; justify-content: center;
+      margin: 0 auto 20px;
+    }
+    .org-empty-icon i { font-size: 34px; color: #cbd5e1; }
+    .org-empty h3 { color: #0f172a; font-weight: 800; font-size: 20px; margin: 0 0 8px; }
+    .org-empty p { color: #64748b; font-size: 15px; margin: 0; }
+
+    /* ===================================================
+       PAGINATION
+    =================================================== */
+    .org-pagination {
+      display: flex;
+      justify-content: center;
+      gap: 6px;
+      margin-top: 36px;
+      flex-wrap: wrap;
+    }
+    .org-pagination a, .org-pagination span {
+      display: inline-flex; align-items: center; justify-content: center;
+      min-width: 42px; height: 42px; padding: 0 14px;
+      border-radius: 10px;
+      background: #fff;
+      border: 1.5px solid #e8edf4;
+      color: #475569;
+      font-weight: 700;
+      font-size: 14px;
+      text-decoration: none !important;
+      transition: all 0.2s;
+    }
+    .org-pagination a:hover {
+      border-color: #B00000;
+      color: #B00000;
+      background: #fef2f2;
+    }
+    .org-pagination .active,
+    .org-pagination .current {
+      background: #B00000;
+      color: #fff;
+      border-color: #B00000;
+      box-shadow: 0 4px 12px rgba(176,0,0,0.28);
+    }
+
+    /* ===================================================
+       LOGO UPLOAD MODAL
+    =================================================== */
+    .logo-modal-backdrop {
+      display: none;
+      position: fixed;
+      inset: 0;
+      background: rgba(15,23,42,0.5);
+      z-index: 9999;
+      align-items: center;
+      justify-content: center;
+      backdrop-filter: blur(4px);
+    }
+    .logo-modal-backdrop.is-open { display: flex; }
+
+    .logo-modal {
+      background: #fff;
+      border-radius: 20px;
+      width: 420px;
+      max-width: 92vw;
+      box-shadow: 0 24px 60px rgba(0,0,0,0.18);
+      overflow: hidden;
+      animation: modalIn 0.28s cubic-bezier(.22,.68,0,1.2);
+    }
+    @keyframes modalIn {
+      from { opacity: 0; transform: scale(0.92) translateY(12px); }
+      to { opacity: 1; transform: scale(1) translateY(0); }
+    }
+
+    .logo-modal-header {
+      padding: 22px 24px 18px;
+      border-bottom: 1px solid #f1f5f9;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+    .logo-modal-header h3 {
+      margin: 0;
+      font-size: 17px;
+      font-weight: 800;
+      color: #0f172a;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+    .logo-modal-header h3 i {
+      width: 34px; height: 34px;
+      background: #fef2f2;
+      border-radius: 8px;
+      display: inline-flex; align-items: center; justify-content: center;
+      color: #B00000;
+      font-size: 16px;
+    }
+    .modal-close-btn {
+      width: 32px; height: 32px;
+      border-radius: 8px;
+      background: #f8fafc;
+      border: none;
+      cursor: pointer;
+      color: #64748b;
+      font-size: 16px;
+      display: flex; align-items: center; justify-content: center;
+      transition: all 0.2s;
+    }
+    .modal-close-btn:hover { background: #fee2e2; color: #B00000; }
+
+    .logo-modal-body { padding: 24px; }
+
+    .org-name-chip {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      background: #f8fafc;
+      border: 1px solid #e8edf4;
+      border-radius: 8px;
+      padding: 6px 12px;
+      font-size: 13px;
+      font-weight: 700;
+      color: #475569;
+      margin-bottom: 20px;
+    }
+    .org-name-chip i { color: #B00000; font-size: 12px; }
+
+    /* Drop zone */
+    .upload-dropzone {
+      border: 2px dashed #e8edf4;
+      border-radius: 14px;
+      padding: 32px 20px;
+      text-align: center;
+      cursor: pointer;
+      transition: all 0.22s;
+      background: #fafbfc;
+      position: relative;
+    }
+    .upload-dropzone:hover, .upload-dropzone.drag-over {
+      border-color: #B00000;
+      background: #fef2f2;
+    }
+    .upload-dropzone input[type="file"] {
+      position: absolute;
+      inset: 0;
+      opacity: 0;
+      cursor: pointer;
+      font-size: 0;
+    }
+    .dropzone-icon {
+      width: 56px; height: 56px;
+      background: #f1f5f9;
+      border-radius: 14px;
+      display: flex; align-items: center; justify-content: center;
+      margin: 0 auto 14px;
+      transition: background 0.2s;
+    }
+    .upload-dropzone:hover .dropzone-icon,
+    .upload-dropzone.drag-over .dropzone-icon { background: rgba(176,0,0,0.08); }
+    .dropzone-icon i { font-size: 24px; color: #94a3b8; }
+    .upload-dropzone:hover .dropzone-icon i,
+    .upload-dropzone.drag-over .dropzone-icon i { color: #B00000; }
+
+    .dropzone-title {
+      font-size: 15px; font-weight: 700; color: #0f172a; margin: 0 0 4px;
+    }
+    .dropzone-sub {
+      font-size: 12.5px; color: #94a3b8; margin: 0;
+    }
+
+    /* Preview area */
+    .logo-preview-area {
+      display: none;
+      margin-top: 16px;
+      align-items: center;
+      gap: 12px;
+      padding: 12px 16px;
+      background: #f8fafc;
+      border-radius: 10px;
+      border: 1px solid #e8edf4;
+    }
+    .logo-preview-area.visible { display: flex; }
+    .logo-preview-img {
+      width: 56px; height: 56px;
+      border-radius: 10px;
+      object-fit: contain;
+      border: 1px solid #e8edf4;
+      background: #fff;
+      padding: 4px;
+    }
+    .preview-info { flex: 1; min-width: 0; }
+    .preview-filename { font-size: 13px; font-weight: 700; color: #0f172a; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    .preview-filesize { font-size: 12px; color: #94a3b8; margin-top: 2px; }
+    .preview-remove {
+      width: 28px; height: 28px;
+      background: #fee2e2;
+      border: none;
+      border-radius: 7px;
+      color: #B00000;
+      cursor: pointer;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 13px;
+      transition: background 0.18s;
+      flex-shrink: 0;
+    }
+    .preview-remove:hover { background: #fca5a5; }
+
+    /* Progress */
+    .upload-progress-wrap {
+      display: none;
+      margin-top: 14px;
+    }
+    .upload-progress-wrap.visible { display: block; }
+    .progress-bar-track {
+      height: 6px;
+      background: #e8edf4;
+      border-radius: 10px;
+      overflow: hidden;
+      margin-bottom: 6px;
+    }
+    .progress-bar-fill {
+      height: 100%;
+      width: 0%;
+      background: linear-gradient(90deg, #B00000, #ef4444);
+      border-radius: 10px;
+      transition: width 0.3s ease;
+    }
+    .progress-label { font-size: 12px; color: #94a3b8; font-weight: 600; text-align: center; }
+
+    /* Status messages */
+    .upload-status-msg {
+      display: none;
+      margin-top: 12px;
+      padding: 10px 14px;
+      border-radius: 10px;
+      font-size: 13px;
+      font-weight: 600;
+      align-items: center;
+      gap: 8px;
+    }
+    .upload-status-msg.visible { display: flex; }
+    .upload-status-msg.success { background: #f0fdf4; color: #16a34a; border: 1px solid #bbf7d0; }
+    .upload-status-msg.error   { background: #fef2f2; color: #B00000; border: 1px solid #fecaca; }
+
+    /* Modal footer */
+    .logo-modal-footer {
+      padding: 16px 24px 20px;
+      display: flex;
+      justify-content: flex-end;
+      gap: 10px;
+      border-top: 1px solid #f1f5f9;
+    }
+    .btn-modal-cancel {
+      padding: 10px 20px;
+      border-radius: 10px;
+      background: #f1f5f9;
+      border: none;
+      color: #475569;
+      font-weight: 700;
+      font-size: 14px;
+      cursor: pointer;
+      transition: background 0.18s;
+    }
+    .btn-modal-cancel:hover { background: #e2e8f0; }
+    .btn-modal-submit {
+      padding: 10px 24px;
+      border-radius: 10px;
+      background: #B00000;
+      border: none;
+      color: #fff;
+      font-weight: 700;
+      font-size: 14px;
+      cursor: pointer;
+      display: flex; align-items: center; gap: 8px;
+      transition: all 0.2s;
+      box-shadow: 0 4px 14px rgba(176,0,0,0.25);
+    }
+    .btn-modal-submit:hover { background: #8b0000; box-shadow: 0 6px 20px rgba(176,0,0,0.35); }
+    .btn-modal-submit:disabled { opacity: 0.55; cursor: not-allowed; }
+    .btn-modal-submit .spinner {
+      display: none;
+      width: 15px; height: 15px;
+      border: 2px solid rgba(255,255,255,0.4);
+      border-top-color: #fff;
+      border-radius: 50%;
+      animation: spin 0.7s linear infinite;
+    }
+    .btn-modal-submit.loading .spinner { display: block; }
+    .btn-modal-submit.loading .btn-text { opacity: 0.7; }
+    @keyframes spin { to { transform: rotate(360deg); } }
+
+    /* ===================================================
+       RESPONSIVE
+    =================================================== */
+    @media (max-width: 900px) {
+      .org-layout { flex-direction: column; }
+      .org-sidebar { width: 100%; position: static; }
+      .filter-card { position: static; }
+    }
+    @media (max-width: 640px) {
+      .org-meta-row { flex-direction: column; align-items: flex-start; }
+    }
+  </style>
+{% endblock %}
+
+{# ===== TOOLBAR: Breadcrumb + Search ===== #}
+{% block toolbar %}
+  <div style="margin-bottom: 4px; margin-top: 20px;">
+
+    {# Top row: Breadcrumb & Add Button #}
+    <div class="org-top-row">
+      <div class="org-breadcrumb">
+        <a href="{{ h.url_for('home.index') }}"><i class="fa fa-home"></i> Home</a>
+        <span class="sep"><i class="fa fa-chevron-right"></i></span>
+        <span class="current"><i class="fa fa-sitemap"></i> Organisasi</span>
+      </div>
+      {% if h.check_access('organization_create') %}
+        <a href="{{ h.url_for('organization.new') }}" class="btn-add-org">
+          <i class="fa fa-plus"></i> Tambah Organisasi
+        </a>
+      {% endif %}
+    </div>
+
+    {# Search bar #}
+    <div class="org-search-wrap">
+      <form class="org-search-form" method="get" action="{{ h.url_for('organization.index') }}" role="search">
+        <i class="fa fa-search"></i>
+        <input type="text" name="q" value="{{ q or '' }}"
+               placeholder="Cari organisasi atau OPD..."
+               autocomplete="off" aria-label="Cari organisasi">
+        {% if sort_by_selected %}
+          <input type="hidden" name="sort" value="{{ sort_by_selected }}">
+        {% endif %}
+        <button type="submit" class="org-search-btn">
+          <i class="fa fa-search"></i> Cari
+        </button>
+      </form>
+    </div>
+
+  </div>
+{% endblock %}
+
+{% block page_header %}{% endblock %}
+
+{# ===== SIDEBAR: Filter Panel ===== #}
+{% block secondary_content %}
+  <div class="filter-card">
+    <div class="filter-card-header">
+      <h3><i class="fa fa-sliders"></i> Filter</h3>
+      <a href="{{ h.url_for('organization.index') }}" class="filter-reset">
+        <i class="fa fa-refresh"></i> Reset
+      </a>
+    </div>
+
+    <p class="filter-section-label">Tipe OPD</p>
+
+    {% set types = [('Semua', ''), ('Dinas', 'Dinas'), ('Badan', 'Badan'), ('Kantor', 'Kantor'), ('Sekretariat', 'Sekretariat')] %}
+    {% for label, val in types %}
+      <a href="{{ h.url_for('organization.index') }}{% if val %}?q={{ val }}{% endif %}"
+         class="filter-item {% if (not q and not val) or q == val %}active{% endif %}">
+        <span>{{ label }}</span>
+        <span class="badge">
+          {% if not q and not val %}{{ page.item_count }}{% else %}-{% endif %}
+        </span>
+      </a>
+    {% endfor %}
+  </div>
+{% endblock %}
+
+{# ===== MAIN CONTENT ===== #}
+{% block primary_content_inner %}
+
+  {# Meta controls row #}
+  <div class="org-meta-row">
+    <div class="org-count-badge">
+      <span class="num">{{ page.item_count }}</span> Organisasi
+    </div>
+    <form method="get" action="{{ h.url_for('organization.index') }}" class="sort-wrapper">
+      {% if q %}<input type="hidden" name="q" value="{{ q }}">{% endif %}
+      <label for="org-sort">Urutkan:</label>
+      <select id="org-sort" name="sort" class="sort-select" onchange="this.form.submit()">
+        <option value="title asc"         {% if sort_by_selected == 'title asc' %}selected{% endif %}>Nama (A – Z)</option>
+        <option value="title desc"        {% if sort_by_selected == 'title desc' %}selected{% endif %}>Nama (Z – A)</option>
+        <option value="package_count desc"{% if sort_by_selected == 'package_count desc' %}selected{% endif %}>Dataset Terbanyak</option>
+      </select>
+    </form>
+  </div>
+
+  {# ===== CARD GRID ===== #}
+  <div class="org-grid" id="org-grid">
+    {% for org in page.items %}
+      {% set org_url = h.url_for('organization.read', id=org.name) %}
+      {% set can_edit = h.check_access('organization_update', {'id': org.id}) %}
+
+      <a href="{{ org_url }}" class="org-card" id="org-card-{{ org.name }}" data-org-name="{{ org.name }}">
+
+        <div class="org-card-stripe"></div>
+
+        {# Logo area #}
+        <div class="org-card-logo-area">
+          <div class="org-logo-circle" id="logo-circle-{{ org.name }}">
+            {% if org.image_display_url %}
+              <img src="{{ org.image_display_url }}"
+                   alt="Logo {{ org.title or org.name }}"
+                   loading="lazy"
+                   id="logo-img-{{ org.name }}">
+            {% else %}
+              <div class="logo-placeholder">
+                <i class="fa fa-landmark"></i>
+              </div>
+            {% endif %}
+
+            {# Admin: upload overlay (only shown to authorized users) #}
+            {% if can_edit %}
+              <div class="logo-upload-overlay"
+                   data-org-id="{{ org.id }}"
+                   data-org-name="{{ org.name }}"
+                   data-org-title="{{ org.title or org.name }}"
+                   onclick="handleLogoOverlayClick(event, this)">
+                <i class="fa fa-camera"></i>
+                <span>GANTI LOGO</span>
+              </div>
+            {% endif %}
+          </div>
+        </div>
+
+        {# Card body #}
+        <div class="org-card-body">
+          <div class="org-card-name">{{ org.title or org.name }}</div>
+          <div class="org-card-stats">
+            <span class="stat-pill">
+              <i class="fa fa-database"></i>
+              {{ org.package_count or 0 }} Dataset
+            </span>
+          </div>
+        </div>
+
+      </a>
+    {% else %}
+      <div class="org-empty">
+        <div class="org-empty-icon"><i class="fa fa-folder-open"></i></div>
+        <h3>Tidak ada organisasi</h3>
+        <p>Coba gunakan kata kunci lain atau hapus filter yang aktif.</p>
+      </div>
+    {% endfor %}
+  </div>
+
+  {# Pagination #}
+  {% if page.item_count > 0 %}
+    <div class="org-pagination">
+      {{ page.pager(q=q or '', sort=sort_by_selected or '') }}
+    </div>
+  {% endif %}
+
+{% endblock %}
+
+
+{# ===================================================
+   LOGO UPLOAD MODAL
+=================================================== #}
+{% block body_extras %}
+  {{ super() if super is defined else '' }}
+
+  <div class="logo-modal-backdrop" id="logo-modal-backdrop">
+    <div class="logo-modal" id="logo-modal" role="dialog" aria-modal="true" aria-labelledby="modal-title">
+
+      <div class="logo-modal-header">
+        <h3 id="modal-title"><i class="fa fa-image"></i> Upload Logo OPD</h3>
+        <button class="modal-close-btn" onclick="closeLogoModal()" aria-label="Tutup">
+          <i class="fa fa-times"></i>
+        </button>
+      </div>
+
+      <div class="logo-modal-body">
+        {# Org name chip #}
+        <div class="org-name-chip" id="modal-org-chip">
+          <i class="fa fa-sitemap"></i>
+          <span id="modal-org-title">-</span>
+        </div>
+
+        {# Drop zone #}
+        <div class="upload-dropzone" id="upload-dropzone">
+          <input type="file" id="logo-file-input" accept="image/png,image/jpeg,image/gif,image/svg+xml"
+                 onchange="handleFileSelect(this.files[0])">
+          <div class="dropzone-icon"><i class="fa fa-cloud-upload"></i></div>
+          <p class="dropzone-title">Klik atau seret file logo ke sini</p>
+          <p class="dropzone-sub">PNG, JPG, GIF, SVG · Maks. 2 MB · Rekomendasi: 200×200 px</p>
+        </div>
+
+        {# Preview #}
+        <div class="logo-preview-area" id="logo-preview-area">
+          <img src="" alt="Preview" class="logo-preview-img" id="logo-preview-img">
+          <div class="preview-info">
+            <div class="preview-filename" id="preview-filename">-</div>
+            <div class="preview-filesize" id="preview-filesize">-</div>
+          </div>
+          <button class="preview-remove" onclick="clearFile()" title="Hapus file">
+            <i class="fa fa-trash"></i>
+          </button>
+        </div>
+
+        {# Progress #}
+        <div class="upload-progress-wrap" id="upload-progress-wrap">
+          <div class="progress-bar-track"><div class="progress-bar-fill" id="progress-bar-fill"></div></div>
+          <div class="progress-label" id="progress-label">Mengunggah...</div>
+        </div>
+
+        {# Status message #}
+        <div class="upload-status-msg" id="upload-status-msg">
+          <i class="fa" id="status-icon"></i>
+          <span id="status-text"></span>
+        </div>
+      </div>
+
+      <div class="logo-modal-footer">
+        <button class="btn-modal-cancel" onclick="closeLogoModal()">Batal</button>
+        <button class="btn-modal-submit" id="btn-upload-submit" onclick="submitLogoUpload()" disabled>
+          <div class="spinner"></div>
+          <span class="btn-text"><i class="fa fa-upload"></i> Upload Logo</span>
+        </button>
+      </div>
+
+    </div>
+  </div>
+
+  <script>
+    // ==================================================
+    // LOGO UPLOAD MODAL — JavaScript
+    // ==================================================
+
+    let _currentOrgId   = null;
+    let _currentOrgName = null;
+    let _selectedFile   = null;
+
+    // ---- Overlay click handler (reads data- attributes) ----
+    function handleLogoOverlayClick(event, el) {
+      const orgId    = el.dataset.orgId;
+      const orgName  = el.dataset.orgName;
+      const orgTitle = el.dataset.orgTitle;
+      openLogoModal(event, orgId, orgName, orgTitle);
+    }
+
+    // ---- Open / Close ----
+    function openLogoModal(event, orgId, orgName, orgTitle) {
+      event.preventDefault();
+      event.stopPropagation();
+      _currentOrgId   = orgId;
+      _currentOrgName = orgName;
+      document.getElementById('modal-org-title').textContent = orgTitle;
+      resetModal();
+      document.getElementById('logo-modal-backdrop').classList.add('is-open');
+      document.body.style.overflow = 'hidden';
+    }
+
+    function closeLogoModal() {
+      document.getElementById('logo-modal-backdrop').classList.remove('is-open');
+      document.body.style.overflow = '';
+      resetModal();
+    }
+
+    function resetModal() {
+      clearFile();
+      hideProgress();
+      hideStatus();
+      document.getElementById('btn-upload-submit').disabled = true;
+      document.getElementById('btn-upload-submit').classList.remove('loading');
+    }
+
+    // Close on backdrop click
+    document.getElementById('logo-modal-backdrop').addEventListener('click', function(e) {
+      if (e.target === this) closeLogoModal();
+    });
+
+    // Close on Escape
+    document.addEventListener('keydown', function(e) {
+      if (e.key === 'Escape') closeLogoModal();
+    });
+
+    // ---- Drag & Drop ----
+    const dropzone = document.getElementById('upload-dropzone');
+    dropzone.addEventListener('dragover',  function(e) { e.preventDefault(); this.classList.add('drag-over'); });
+    dropzone.addEventListener('dragleave', function()   { this.classList.remove('drag-over'); });
+    dropzone.addEventListener('drop', function(e) {
+      e.preventDefault(); this.classList.remove('drag-over');
+      const file = e.dataTransfer.files[0];
+      if (file) handleFileSelect(file);
+    });
+
+    // ---- File select ----
+    function handleFileSelect(file) {
+      if (!file) return;
+      const allowed = ['image/png', 'image/jpeg', 'image/gif', 'image/svg+xml'];
+      if (!allowed.includes(file.type)) {
+        showStatus('error', 'Format tidak didukung. Gunakan PNG, JPG, GIF, atau SVG.');
+        return;
+      }
+      if (file.size > 2 * 1024 * 1024) {
+        showStatus('error', 'Ukuran file melebihi 2 MB.');
+        return;
+      }
+      hideStatus();
+      _selectedFile = file;
+
+      // Show preview
+      const reader = new FileReader();
+      reader.onload = function(e) {
+        document.getElementById('logo-preview-img').src = e.target.result;
+      };
+      reader.readAsDataURL(file);
+
+      document.getElementById('preview-filename').textContent = file.name;
+      document.getElementById('preview-filesize').textContent = formatSize(file.size);
+      document.getElementById('logo-preview-area').classList.add('visible');
+      document.getElementById('btn-upload-submit').disabled = false;
+    }
+
+    function clearFile() {
+      _selectedFile = null;
+      document.getElementById('logo-file-input').value = '';
+      document.getElementById('logo-preview-area').classList.remove('visible');
+      document.getElementById('logo-preview-img').src = '';
+      document.getElementById('btn-upload-submit').disabled = true;
+    }
+
+    // ---- Submit Upload ----
+    function submitLogoUpload() {
+      if (!_selectedFile || !_currentOrgId) return;
+
+      const btn = document.getElementById('btn-upload-submit');
+      btn.disabled = true;
+      btn.classList.add('loading');
+      hideStatus();
+      showProgress();
+
+      // Build multipart form data with CKAN API call
+      const formData = new FormData();
+      formData.append('id', _currentOrgId);
+      formData.append('image_upload', _selectedFile);
+
+      // Get CSRF token from meta tags
+      const csrfMeta = document.querySelector('meta[name="{{ g.csrf_field_name }}"]');
+      const csrfFieldName = document.querySelector('meta[name="csrf_field_name"]')?.content || '_csrf_token';
+      const csrfToken = csrfMeta ? csrfMeta.getAttribute('content') : '';
+
+      // Use CKAN action API with XHR for progress tracking
+      const xhr = new XMLHttpRequest();
+      xhr.open('POST', '/api/action/organization_patch', true);
+      if (csrfToken && csrfFieldName) {
+        xhr.setRequestHeader('X-CSRFToken', csrfToken);
+      }
+
+      xhr.upload.addEventListener('progress', function(e) {
+        if (e.lengthComputable) {
+          const pct = Math.round((e.loaded / e.total) * 100);
+          setProgress(pct, `Mengunggah... ${pct}%`);
+        }
+      });
+
+      xhr.addEventListener('load', function() {
+        btn.classList.remove('loading');
+        hideProgress();
+        try {
+          const resp = JSON.parse(xhr.responseText);
+          if (resp.success) {
+            setProgress(100, 'Selesai!');
+            showStatus('success', 'Logo berhasil diupload! Halaman akan diperbarui...');
+            // Update card logo in-place
+            const newLogoUrl = resp.result && resp.result.image_display_url
+              ? resp.result.image_display_url
+              : URL.createObjectURL(_selectedFile);
+            updateCardLogo(_currentOrgName, newLogoUrl);
+            setTimeout(() => closeLogoModal(), 1800);
+          } else {
+            const errMsg = resp.error && resp.error.message
+              ? resp.error.message
+              : JSON.stringify(resp.error || 'Unknown error');
+            showStatus('error', 'Gagal upload: ' + errMsg);
+            btn.disabled = false;
+          }
+        } catch(e) {
+          showStatus('error', 'Respons tidak valid dari server.');
+          btn.disabled = false;
+        }
+      });
+
+      xhr.addEventListener('error', function() {
+        btn.classList.remove('loading');
+        hideProgress();
+        showStatus('error', 'Koneksi gagal. Periksa jaringan Anda.');
+        btn.disabled = false;
+      });
+
+      xhr.send(formData);
+    }
+
+    // ---- Update card logo after successful upload ----
+    function updateCardLogo(orgName, newUrl) {
+      const circle = document.getElementById('logo-circle-' + orgName);
+      if (!circle) return;
+      let img = document.getElementById('logo-img-' + orgName);
+      if (!img) {
+        // Replace placeholder with img
+        const placeholder = circle.querySelector('.logo-placeholder');
+        if (placeholder) placeholder.remove();
+        img = document.createElement('img');
+        img.id = 'logo-img-' + orgName;
+        img.alt = 'Logo ' + orgName;
+        // Insert before overlay
+        const overlay = circle.querySelector('.logo-upload-overlay');
+        circle.insertBefore(img, overlay);
+      }
+      img.src = newUrl + '?t=' + Date.now(); // cache bust
+    }
+
+    // ---- Progress helpers ----
+    function showProgress() {
+      document.getElementById('upload-progress-wrap').classList.add('visible');
+      setProgress(0, 'Mengunggah...');
+    }
+    function hideProgress() {
+      document.getElementById('upload-progress-wrap').classList.remove('visible');
+    }
+    function setProgress(pct, label) {
+      document.getElementById('progress-bar-fill').style.width = pct + '%';
+      document.getElementById('progress-label').textContent = label;
+    }
+
+    // ---- Status helpers ----
+    function showStatus(type, msg) {
+      const el = document.getElementById('upload-status-msg');
+      const icon = document.getElementById('status-icon');
+      el.className = 'upload-status-msg visible ' + type;
+      icon.className = 'fa ' + (type === 'success' ? 'fa-check-circle' : 'fa-exclamation-circle');
+      document.getElementById('status-text').textContent = msg;
+    }
+    function hideStatus() {
+      document.getElementById('upload-status-msg').className = 'upload-status-msg';
+    }
+
+    // ---- Utils ----
+    function formatSize(bytes) {
+      if (bytes < 1024) return bytes + ' B';
+      if (bytes < 1024 * 1024) return (bytes / 1024).toFixed(1) + ' KB';
+      return (bytes / 1024 / 1024).toFixed(2) + ' MB';
+    }
+  </script>
+{% endblock %}

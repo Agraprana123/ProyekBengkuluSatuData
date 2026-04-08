@@ -1,0 +1,407 @@
+{# Allows the DOCTYPE to be set on a page by page basis #}
+{%- block doctype %}<!DOCTYPE html>{% endblock -%}
+
+{# Allows custom attributes to be added to the <html> tag #}
+{%- block htmltag -%}
+{% set lang = h.lang() %}
+<html lang="{{ lang }}" {% if h.is_rtl_language() %} dir="rtl" {% endif %} > {%- endblock -%}
+
+  {# Allows custom attributes to be added to the <head> tag #}
+  <head{% block headtag %}{% endblock %}>
+    {%- block meta -%}
+      <meta charset="utf-8" />
+      <meta name="csrf_field_name" content="{{ g.csrf_field_name }}" />
+      <meta name="{{ g.csrf_field_name }}" content="{{ csrf_token() }}" />
+      {% block meta_generator %}<meta name="generator" content="ckan {{ h.ckan_version() }}" />{% endblock %}
+      {% block meta_viewport %}<meta name="viewport" content="width=device-width, initial-scale=1.0">{% endblock %}
+    {%- endblock -%}
+
+    <title>
+      {%- block title -%}
+        {%- block subtitle %}{% endblock -%}
+        {%- if self.subtitle()|trim %} | {% endif -%}
+        Bengkulu Portal Data
+      {%- endblock -%}
+    </title>
+
+    {% block links -%}
+      <link rel="shortcut icon" href="/base/images/favicon-bengkulu.png" type="image/png" />
+    {% endblock -%}
+
+    {# KUNCI: Block Styles ini tidak boleh dihapus agar halaman lain tidak hancur #}
+    {%- block styles %}
+      {% set theme = h.get_rtl_theme() if h.is_rtl_language() else g.theme %}
+      {% asset theme %}
+    {% endblock %}
+
+    {{ h.render_assets('style') }}
+    
+    {%- block custom_styles %}
+      {%- if g.site_custom_css -%}
+      <style>
+        {{ g.site_custom_css | safe }}
+      </style>
+      {%- endif %}
+      
+      <style>
+        /* =========================================================
+           PERBAIKAN UI GLOBAL & OVERRIDE TEMA BENGKULU SATU DATA 
+           ========================================================= */
+
+        /* 1. Paksa Font Poppins & BG Light ke Seluruh Halaman CKAN */
+        body {
+            font-family: 'Poppins', sans-serif !important;
+            background-color: #f4f7f9;
+        }
+
+        /* 2. Perbaikan Tombol Panah Merah (Dikunci ke Footer) */
+        a.scroll-to-top, .scroll-to-top {
+            position: static !important;
+            display: block !important;
+            float: right;
+            margin-top: -10px;
+            box-shadow: none !important;
+        }
+        footer {
+            position: relative;
+            z-index: 1;
+            padding-bottom: 20px;
+        }
+
+        /* 3. Ubah Warna Tombol Default CKAN menjadi Merah Bengkulu */
+        .btn-primary, .btn-success {
+            background-color: #B00000 !important;
+            border-color: #8B0000 !important;
+            border-radius: 50px !important;
+            transition: all 0.3s ease;
+        }
+        .btn-primary:hover, .btn-success:hover {
+            background-color: #8B0000 !important;
+        }
+
+        /* 4. Rapikan Sidebar & Modul Kotak-Kotak */
+        .module {
+            border-radius: 12px;
+            border: none;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.05);
+            overflow: hidden;
+        }
+        .module-heading {
+            background-color: #B00000 !important;
+            color: white !important;
+            font-weight: 600;
+        }
+        .module-content {
+            background-color: white;
+        }
+
+        /* 5. Percantik Tab Navigasi */
+        .nav-tabs { border-bottom: 2px solid #ddd; }
+        .nav-tabs > li.active > a, .nav-tabs > li.active > a:hover, .nav-tabs > li.active > a:focus {
+            color: #B00000 !important; border: none; border-bottom: 3px solid #B00000 !important; background-color: transparent !important; font-weight: 700;
+        }
+        .nav-tabs > li > a { color: #666; font-weight: 500; border: none !important; }
+        .nav-tabs > li > a:hover { color: #B00000; background-color: rgba(176, 0, 0, 0.05) !important; }
+
+        /* 6. Kotak Pencarian Input */
+        .search-form input.form-control { border-radius: 50px 0 0 50px; border: 2px solid #ddd; }
+        .search-form input.form-control:focus { border-color: #B00000; box-shadow: none; }
+        .search-form button.btn { border-radius: 0 50px 50px 0 !important; }
+        
+        /* =========================================================
+           GAYA CSS KHUSUS CHATBOT MODAL ARNOLD (PERSIS JKT SATU DATA)
+           ========================================================= */
+        
+        .arnold-float-group {
+            position: fixed;
+            bottom: 30px;
+            right: 30px;
+            z-index: 9998;
+            display: flex;
+            align-items: center;
+            gap: 12px; 
+            transition: all 0.3s ease;
+        }
+        
+        .arnold-trigger-btn {
+            background: #B00000; 
+            border-radius: 12px;
+            padding: 5px 25px 5px 5px; 
+            display: flex;
+            align-items: center;
+            cursor: pointer;
+            box-shadow: 0 8px 20px rgba(176,0,0,0.25);
+            transition: transform 0.2s ease;
+        }
+        .arnold-trigger-btn:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 12px 25px rgba(176,0,0,0.35);
+        }
+        
+        .arnold-avatar-circle {
+            width: 52px;
+            height: 52px;
+            background: #ffffff;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-right: 15px;
+            overflow: hidden;
+            border: 2px solid #ffffff;
+        }
+        .arnold-avatar-circle img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+        
+        .arnold-trigger-text {
+            display: flex;
+            flex-direction: column;
+            color: #ffffff;
+            text-align: left;
+        }
+        .arnold-trigger-text .title {
+            font-family: 'Poppins', sans-serif;
+            font-weight: 800;
+            font-size: 16px;
+            line-height: 1.2;
+        }
+        .arnold-trigger-text .subtitle {
+            font-family: 'Poppins', sans-serif;
+            font-size: 13px;
+            font-weight: 400;
+        }
+
+        .arnold-close-x {
+            background: transparent;
+            color: #1e293b;
+            border: none;
+            font-size: 22px;
+            font-weight: bold;
+            cursor: pointer;
+            padding: 5px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: 0.2s;
+        }
+        .arnold-close-x:hover {
+            color: #B00000;
+            transform: scale(1.15);
+        }
+        
+        .arnold-widget {
+            position: fixed;
+            bottom: 105px; 
+            right: 30px;
+            width: 390px;
+            height: 620px;
+            max-height: 85vh;
+            background: #ffffff;
+            border-radius: 20px;
+            box-shadow: 0 20px 50px rgba(0,0,0,0.2);
+            z-index: 9999;
+            display: flex;
+            flex-direction: column;
+            font-family: 'Poppins', sans-serif;
+            border: 1px solid #e2e8f0;
+            overflow: hidden;
+            opacity: 0;
+            transform: translateY(30px) scale(0.95);
+            pointer-events: none;
+            transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+        }
+        
+        .arnold-widget.open {
+            opacity: 1;
+            transform: translateY(0) scale(1);
+            pointer-events: auto;
+        }
+        
+        .arnold-header {
+            background: linear-gradient(135deg, #B00000, #dc2626);
+            color: white;
+            padding: 18px 25px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 1px solid rgba(255,255,255,0.1);
+        }
+        .arnold-title { font-weight: 700; font-size: 17px; display: flex; align-items: center; gap: 12px; }
+        .arnold-close-btn { background: transparent; border: none; color: white; font-size: 30px; cursor: pointer; line-height: 1; opacity: 0.8; transition: 0.2s; }
+        .arnold-close-btn:hover { opacity: 1; transform: scale(1.1); }
+        
+        .arnold-chat-body { flex: 1; padding: 25px; overflow-y: auto; background: #f8fafc; display: flex; flex-direction: column; gap: 18px; }
+        
+        .chat-message { max-width: 85%; padding: 14px 18px; border-radius: 16px; font-size: 14px; line-height: 1.6; word-wrap: break-word; box-shadow: 0 3px 10px rgba(0,0,0,0.04); }
+        .chat-message.bot { background: white; color: #1e293b; align-self: flex-start; border-bottom-left-radius: 4px; border: 1px solid #e2e8f0; }
+        .chat-message.user { background: linear-gradient(135deg, #B00000, #dc2626); color: white; align-self: flex-end; border-bottom-right-radius: 4px; }
+        
+        .chat-message a { color: #2563eb; text-decoration: none; font-weight: 600; }
+        .chat-message a:hover { text-decoration: underline; }
+        .chat-message.user a { color: #ffd1d1; }
+        .typing-indicator { font-style: italic; color: #94a3b8; font-size: 12.5px; margin-left: 10px;}
+
+        .arnold-input-area { padding: 18px 25px; background: white; border-top: 1px solid #e2e8f0; display: flex; gap: 12px; align-items: center; }
+        .arnold-input-area input { flex: 1; padding: 14px 20px; border: 1px solid #e2e8f0; border-radius: 50px; outline: none; font-family: inherit; background: #f1f5f9; font-size: 14px; transition: 0.2s; }
+        .arnold-input-area input:focus { border-color: #B00000; background: white; box-shadow: 0 0 0 3px rgba(176, 0, 0, 0.1); }
+        .arnold-input-area button { background: #B00000; color: white; border: none; width: 48px; height: 48px; border-radius: 50%; cursor: pointer; transition: 0.3s; display: flex; align-items: center; justify-content: center; font-size: 18px; box-shadow: 0 4px 12px rgba(176, 0, 0, 0.2); }
+        .arnold-input-area button:hover { background: #dc2626; transform: scale(1.08) rotate(-10deg); box-shadow: 0 6px 15px rgba(176, 0, 0, 0.3); }
+        
+        @media (max-width: 500px) {
+            .arnold-widget { width: calc(100% - 30px); right: 15px; bottom: 90px; height: 550px;}
+            .arnold-float-group { right: 15px; bottom: 15px; }
+            .arnold-trigger-btn { padding: 5px 15px 5px 5px; }
+            .arnold-avatar-circle { width: 45px; height: 45px; margin-right: 10px;}
+            .arnold-trigger-text .title { font-size: 14px;}
+        }
+      </style>
+    {% endblock %}
+
+    {%- block head_extras %}
+    {% endblock %}
+
+  </head>
+
+  <body{% block bodytag %} data-site-root="{{ h.url_for('home.index', locale='default', qualified=true) }}" data-locale-root="{{ h.url_for('home.index', qualified=true) }}" {% endblock %}>
+
+    {%- block page %}{% endblock -%}
+    
+    {# KUNCI: Block Scripts ini tidak boleh dihapus! #}
+    {%- block scripts %}
+    {% endblock -%}
+
+    {% block body_extras -%}
+    {%- endblock %}
+
+    {{ h.render_assets('style') }}
+    {{ h.render_assets('script') }}
+    
+    <div id="arnold-float-group" class="arnold-float-group">
+        <div id="arnold-trigger" class="arnold-trigger-btn">
+            <div class="arnold-avatar-circle">
+                <img src="/base/images/poster-bsd.png" alt="Arnold">
+            </div>
+            <div class="arnold-trigger-text">
+                <span class="title">Klik di sini</span>
+                <span class="subtitle">untuk tanya arnold</span>
+            </div>
+        </div>
+        <button id="arnold-banner-close" class="arnold-close-x" title="Tutup Banner">
+            <i class="fa fa-times"></i>
+        </button>
+    </div>
+    
+    <div id="arnold-widget" class="arnold-widget">
+      <div class="arnold-header">
+        <div class="arnold-title">
+            <i class="fa fa-robot"></i> Arnold AI
+        </div>
+        <button id="arnold-close" class="arnold-close-btn">&times;</button>
+      </div>
+      <div class="arnold-chat-body" id="arnold-chat-box">
+        <div class="chat-message bot">
+            Halo! Saya Arnold, asisten AI resmi Bengkulu Satu Data. Ada yang bisa saya bantu terkait data hari ini?
+        </div>
+      </div>
+      <div class="arnold-input-area">
+        <input type="text" id="arnold-input" placeholder="Ketik pertanyaan di sini..." autocomplete="off">
+        <button id="arnold-send"><i class="fa fa-paper-plane"></i></button>
+      </div>
+    </div>
+    
+    <script>
+      document.addEventListener("DOMContentLoaded", function() {
+          const floatGroup = document.getElementById("arnold-float-group");
+          const triggerBtn = document.getElementById("arnold-trigger");
+          const bannerCloseBtn = document.getElementById("arnold-banner-close");
+          const closeBtn = document.getElementById("arnold-close");
+          const widget = document.getElementById("arnold-widget");
+          const chatBox = document.getElementById("arnold-chat-box");
+          const inputField = document.getElementById("arnold-input");
+          const sendBtn = document.getElementById("arnold-send");
+          
+          const FASTAPI_URL = "http://localhost:8001/chat"; 
+      
+          triggerBtn.addEventListener("click", () => {
+              widget.classList.add("open");
+              inputField.focus();
+          });
+      
+          closeBtn.addEventListener("click", () => {
+              widget.classList.remove("open");
+          });
+
+          bannerCloseBtn.addEventListener("click", (e) => {
+              e.stopPropagation(); 
+              floatGroup.style.display = 'none'; 
+          });
+      
+          function formatMessageWithShortLinks(text) {
+              let formattedText = text.replace(/\n/g, "<br>");
+              const urlRegex = /(https?:\/\/[^\s]+)/g;
+              return formattedText.replace(urlRegex, function(url) {
+                  let displayUrl = url;
+                  const maxLength = 35; 
+                  if (url.length > maxLength) {
+                      displayUrl = url.substring(0, maxLength) + '...';
+                  }
+                  return `<a href="${url}" target="_blank" title="${url}">${displayUrl}</a>`;
+              });
+          }
+        
+          function appendMessage(sender, text, isHtml = false) {
+              const msgDiv = document.createElement("div");
+              msgDiv.className = `chat-message ${sender}`;
+              if(isHtml) {
+                  msgDiv.innerHTML = text;
+              } else {
+                  msgDiv.innerText = text;
+              }
+              chatBox.appendChild(msgDiv);
+              chatBox.scrollTop = chatBox.scrollHeight;
+              return msgDiv; 
+          }
+        
+          async function sendMessage() {
+              const userText = inputField.value.trim();
+              if(!userText) return;
+              
+              appendMessage("user", userText);
+              inputField.value = "";
+              
+              const typingIndicator = appendMessage("bot", "<span class='typing-indicator'>Arnold sedang memproses...</span>", true);
+              
+              try {
+                  const response = await fetch(FASTAPI_URL, {
+                      method: "POST",
+                      headers: {
+                          "Content-Type": "application/json"
+                      },
+                      body: JSON.stringify({ message: userText })
+                  });
+                  
+                  const data = await response.json();
+                  chatBox.removeChild(typingIndicator);
+                  
+                  const finalHtml = formatMessageWithShortLinks(data.reply);
+                  appendMessage("bot", finalHtml, true);
+                  
+              } catch (error) {
+                  console.error("Error calling FastAPI:", error);
+                  chatBox.removeChild(typingIndicator);
+                  appendMessage("bot", "Mohon maaf, saya sedang mengalami gangguan koneksi ke server. Pastikan buka lewat HTTP.", false);
+              }
+          }
+        
+          sendBtn.addEventListener("click", sendMessage);
+        
+          inputField.addEventListener("keypress", function(e) {
+              if (e.key === "Enter") sendMessage();
+          });
+      });
+    </script>
+  </body>
+</html>

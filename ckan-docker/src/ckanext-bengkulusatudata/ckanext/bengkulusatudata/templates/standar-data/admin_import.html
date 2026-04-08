@@ -1,0 +1,170 @@
+{% extends "page.html" %}
+
+{% block subtitle %}Import CSV — Standar Data{% endblock %}
+
+{% block custom_styles %}
+{{ super() }}
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap');
+  *, *::before, *::after { box-sizing: border-box; }
+  body { background: #f4f6f9 !important; font-family: 'Plus Jakarta Sans', sans-serif !important; }
+  #content,.wrapper,.main,.container,.primary,.secondary,.module,.module-content {
+    background: transparent !important; border: none !important; box-shadow: none !important;
+  }
+  .sd-page { max-width: 640px; margin: 0 auto; padding: 24px 16px 56px; }
+
+  .sd-breadcrumb { display: flex; align-items: center; gap: 8px; font-size: 13px; font-weight: 600; color: #64748b; margin-bottom: 24px; }
+  .sd-breadcrumb a { color: #64748b; text-decoration: none; transition: color .2s; }
+  .sd-breadcrumb a:hover { color: #B00000; }
+  .sd-breadcrumb .sep { color: #cbd5e1; font-size: 10px; }
+  .sd-breadcrumb .current { color: #B00000; font-weight: 700; }
+
+  .import-title-card {
+    background: linear-gradient(135deg, #7f0000, #B00000);
+    border-radius: 18px; padding: 28px 32px; margin-bottom: 24px;
+    position: relative; overflow: hidden;
+  }
+  .import-title-card::after {
+    content: ''; position: absolute; top: -40px; right: -40px;
+    width: 160px; height: 160px; border-radius: 50%;
+    background: rgba(255,255,255,0.06);
+  }
+  .import-title-card h1 { color: #fff; font-size: 1.5rem; font-weight: 800; margin: 0 0 6px; position: relative; z-index: 1; }
+  .import-title-card p { color: rgba(255,255,255,0.75); font-size: 14px; margin: 0; position: relative; z-index: 1; }
+
+  /* Info box */
+  .format-info-box {
+    background: #eff6ff; border: 1.5px solid #bfdbfe; border-radius: 14px;
+    padding: 16px 18px; margin-bottom: 20px;
+    display: flex; gap: 12px; align-items: flex-start;
+  }
+  .format-info-box i { color: #1d4ed8; font-size: 18px; flex-shrink: 0; margin-top: 1px; }
+  .format-info-box h4 { margin: 0 0 6px; font-size: 14px; font-weight: 800; color: #1e3a8a; }
+  .format-info-box code {
+    display: block; background: rgba(30,58,138,0.08); color: #1e3a8a;
+    padding: 6px 10px; border-radius: 6px; font-size: 12px;
+    margin-top: 6px; font-family: monospace; letter-spacing: 0.2px;
+  }
+
+  /* Upload card */
+  .upload-card {
+    background: #fff; border-radius: 18px;
+    border: 1px solid #e8edf4;
+    box-shadow: 0 2px 16px rgba(0,0,0,0.05);
+    overflow: hidden;
+  }
+  .upload-card-body { padding: 28px; }
+  .sd-label { display: block; font-size: 13px; font-weight: 700; color: #334155; margin-bottom: 8px; }
+  .sd-label .req { color: #B00000; }
+
+  .csv-dropzone {
+    border: 2px dashed #e8edf4; border-radius: 14px;
+    padding: 40px 20px; text-align: center;
+    cursor: pointer; transition: all .22s; background: #fafbfc;
+    position: relative;
+  }
+  .csv-dropzone:hover, .csv-dropzone.drag-over { border-color: #B00000; background: #fef2f2; }
+  .csv-dropzone input[type="file"] { position: absolute; inset: 0; opacity: 0; cursor: pointer; font-size: 0; }
+  .csv-icon { font-size: 40px; color: #cbd5e1; margin-bottom: 14px; display: block; }
+  .csv-dropzone:hover .csv-icon { color: #B00000; }
+  .dz-title { font-size: 16px; font-weight: 700; color: #334155; margin-bottom: 6px; }
+  .dz-sub { font-size: 13px; color: #94a3b8; }
+  .dz-file-selected { margin-top: 14px; display: flex; align-items: center; justify-content: center; gap: 8px; font-size: 14px; font-weight: 700; color: #065f46; background: #d1fae5; padding: 8px 16px; border-radius: 8px; display: none; }
+
+  .upload-card-footer {
+    padding: 18px 28px; background: #f8fafc;
+    border-top: 1px solid #f1f5f9;
+    display: flex; align-items: center; gap: 12px;
+  }
+  .btn-import {
+    padding: 11px 26px; background: #B00000; color: #fff;
+    border: none; border-radius: 10px; font-weight: 800; font-size: 15px;
+    cursor: pointer; display: flex; align-items: center; gap: 8px;
+    transition: all .22s; box-shadow: 0 4px 14px rgba(176,0,0,0.25);
+  }
+  .btn-import:hover { background: #8b0000; transform: translateY(-1px); }
+  .btn-cancel-link {
+    color: #475569 !important; text-decoration: none !important;
+    font-weight: 700; font-size: 14px; padding: 11px 16px;
+    border-radius: 10px; border: 1.5px solid #e8edf4;
+    background: #fff; transition: all .2s;
+    display: inline-flex; align-items: center; gap: 7px;
+  }
+  .btn-cancel-link:hover { border-color: #94a3b8; }
+</style>
+{% endblock %}
+
+{% block toolbar %}{% endblock %}
+{% block page_header %}{% endblock %}
+{% block secondary %}{% endblock %}
+
+{% block primary %}
+<div class="sd-page">
+
+  <div class="sd-breadcrumb">
+    <a href="{{ h.url_for('home.index') }}"><i class="fa fa-home"></i> Home</a>
+    <span class="sep"><i class="fa fa-chevron-right"></i></span>
+    <a href="/standar-data"><i class="fa fa-table"></i> Standar Data</a>
+    <span class="sep"><i class="fa fa-chevron-right"></i></span>
+    <span class="current">Import CSV</span>
+  </div>
+
+  <div class="import-title-card">
+    <h1><i class="fa fa-upload"></i> Import Standar Data</h1>
+    <p>Unggah file CSV untuk memperbarui atau menambah data standar secara massal.</p>
+  </div>
+
+  <div class="format-info-box">
+    <i class="fa fa-info-circle"></i>
+    <div>
+      <h4>Format CSV yang diperlukan</h4>
+      <p style="margin:0; font-size:13px; color:#1e40af;">Pastikan file CSV memiliki header kolom berikut (urutan boleh berbeda):</p>
+      <code>Kode, Konsep, Definisi, Klasifikasi, Ukuran, Satuan, Versi</code>
+    </div>
+  </div>
+
+  <div class="upload-card">
+    <form method="POST" enctype="multipart/form-data">
+      {{ h.csrf_input() }}
+      <div class="upload-card-body">
+        <label class="sd-label">File CSV <span class="req">*</span></label>
+        <div class="csv-dropzone" id="csv-dz">
+          <input type="file" id="csv_file" name="csv_file" required accept=".csv"
+                 onchange="handleCsvFile(this)">
+          <i class="fa fa-file-text-o csv-icon" id="csv-icon"></i>
+          <div class="dz-title" id="dz-title">Klik atau seret file CSV ke sini</div>
+          <div class="dz-sub">Format: .csv · Encoding: UTF-8</div>
+          <div class="dz-file-selected" id="dz-file-selected">
+            <i class="fa fa-check-circle"></i>
+            <span id="dz-filename"></span>
+          </div>
+        </div>
+      </div>
+      <div class="upload-card-footer">
+        <button type="submit" class="btn-import">
+          <i class="fa fa-upload"></i> Mulai Import
+        </button>
+        <a href="/standar-data" class="btn-cancel-link">
+          <i class="fa fa-times"></i> Batal
+        </a>
+      </div>
+    </form>
+  </div>
+
+</div>
+
+<script>
+  function handleCsvFile(input) {
+    if (input.files && input.files.length > 0) {
+      const f = input.files[0];
+      document.getElementById('dz-filename').textContent = f.name;
+      const sel = document.getElementById('dz-file-selected');
+      sel.style.display = 'flex';
+      document.getElementById('dz-title').style.display = 'none';
+    }
+  }
+  const dz = document.getElementById('csv-dz');
+  ['dragover','dragenter'].forEach(e => dz.addEventListener(e, () => dz.classList.add('drag-over')));
+  ['dragleave','drop'].forEach(e => dz.addEventListener(e, () => dz.classList.remove('drag-over')));
+</script>
+{% endblock %}

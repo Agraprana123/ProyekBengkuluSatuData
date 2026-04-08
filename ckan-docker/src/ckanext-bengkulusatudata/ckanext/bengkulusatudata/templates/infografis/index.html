@@ -1,0 +1,945 @@
+{% extends "page.html" %}
+
+{% block subtitle %}Infografis — Bengkulu Satu Data{% endblock %}
+
+{% block custom_styles %}
+{{ super() }}
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800;900&display=swap">
+<style>
+
+  *, *::before, *::after { box-sizing: border-box; }
+  body { background: #f4f6f9 !important; font-family: 'Plus Jakarta Sans', sans-serif !important; }
+  a { text-decoration: none !important; }
+
+  /* Strip CKAN default chrome */
+  .primary, .secondary, .module, .module-content {
+    background: transparent !important; border: none !important;
+    box-shadow: none !important; padding: 0 !important;
+  }
+  .primary { padding-top: 8px !important; }
+  @media (min-width: 992px) { .primary { padding-left: 36px !important; } }
+  .secondary { padding-top: 10px !important; background: transparent !important; border: none !important; }
+
+  /* =========================================
+     PAGE WRAPPER
+  ========================================= */
+  .info-page { padding-bottom: 60px; }
+
+  /* Breadcrumb */
+  .info-breadcrumb {
+    display: flex; align-items: center; gap: 8px;
+    font-size: 13px; font-weight: 600; color: #64748b;
+    margin-bottom: 20px;
+  }
+  .info-breadcrumb a { color: #64748b; transition: color .2s; display: flex; align-items: center; gap: 5px; }
+  .info-breadcrumb a:hover { color: #B00000; }
+  .info-breadcrumb .sep { color: #cbd5e1; font-size: 10px; }
+  .info-breadcrumb .cur { color: #B00000; font-weight: 700; }
+
+  /* =========================================
+     HERO BANNER
+  ========================================= */
+  .info-hero {
+    background: linear-gradient(135deg, #7f0000 0%, #B00000 55%, #c62828 100%);
+    border-radius: 22px; padding: 36px 44px 32px;
+    margin-bottom: 28px; position: relative; overflow: hidden;
+  }
+  .info-hero::before {
+    content: ''; position: absolute; top: -60px; right: -50px;
+    width: 260px; height: 260px; border-radius: 50%;
+    background: rgba(255,255,255,0.07); pointer-events: none;
+  }
+  .info-hero::after {
+    content: ''; position: absolute; bottom: -80px; left: 30%;
+    width: 200px; height: 200px; border-radius: 50%;
+    background: rgba(255,255,255,0.04); pointer-events: none;
+  }
+  .info-hero-inner { position: relative; z-index: 2; }
+  .info-hero-label {
+    display: inline-flex; align-items: center; gap: 6px;
+    background: rgba(255,255,255,0.15); color: rgba(255,255,255,0.9);
+    font-size: 12px; font-weight: 700; letter-spacing: 0.5px;
+    padding: 5px 14px; border-radius: 999px; margin-bottom: 14px;
+    text-transform: uppercase;
+  }
+  .info-hero h1 { font-size: 2rem; font-weight: 900; color: #fff; margin: 0 0 8px; }
+  .info-hero p  { color: rgba(255,255,255,0.75); font-size: 14.5px; margin: 0; }
+  .info-hero-stats {
+    display: flex; gap: 24px; flex-wrap: wrap;
+    padding-top: 22px; border-top: 1px solid rgba(255,255,255,0.15); margin-top: 20px;
+  }
+  .hs { display: flex; align-items: center; gap: 10px; }
+  .hs-icon {
+    width: 40px; height: 40px; border-radius: 10px;
+    background: rgba(255,255,255,0.15); display: flex; align-items: center; justify-content: center;
+  }
+  .hs-icon i { color: #fff; font-size: 16px; }
+  .hs-num { font-size: 1.3rem; font-weight: 800; color: #fff; line-height: 1; }
+  .hs-lbl { font-size: 11.5px; color: rgba(255,255,255,0.7); margin-top: 2px; }
+
+  /* =========================================
+     SEARCH & ACTION BAR
+  ========================================= */
+  .info-action-bar {
+    display: flex; align-items: center; gap: 12px; flex-wrap: wrap;
+    background: #fff; border-radius: 14px; padding: 12px 18px;
+    border: 1px solid #e8edf4; box-shadow: 0 2px 12px rgba(0,0,0,0.04);
+    margin-bottom: 28px;
+  }
+  .info-search-form {
+    flex: 1; display: flex; align-items: center; gap: 10px; min-width: 200px;
+  }
+  .info-search-form i { color: #94a3b8; font-size: 17px; flex-shrink: 0; }
+  .info-search-form input {
+    flex: 1; border: none; outline: none;
+    font-family: 'Plus Jakarta Sans', sans-serif;
+    font-size: 14.5px; color: #0f172a; background: transparent;
+    padding: 8px 0;
+  }
+  .info-search-form input::placeholder { color: #94a3b8; }
+  .info-search-form button {
+    background: #B00000; color: white; border: none;
+    padding: 10px 24px; border-radius: 10px;
+    font-weight: 700; font-size: 13.5px; cursor: pointer;
+    transition: background .2s; font-family: 'Plus Jakarta Sans', sans-serif;
+    flex-shrink: 0;
+  }
+  .info-search-form button:hover { background: #8b0000; }
+  .btn-add-infografis {
+    background: #B00000; color: #fff !important;
+    padding: 10px 20px; border-radius: 10px; font-weight: 700; font-size: 13.5px;
+    display: inline-flex; align-items: center; gap: 7px; transition: all .2s;
+    box-shadow: 0 4px 14px rgba(176,0,0,0.25); white-space: nowrap; flex-shrink: 0;
+  }
+  .btn-add-infografis:hover { background: #8b0000; transform: translateY(-1px); }
+
+  /* =========================================
+     SIDEBAR FILTER
+  ========================================= */
+  .filter-panel {
+    background: #fff; border-radius: 18px; padding: 22px;
+    border: 1px solid #e8edf4; box-shadow: 0 2px 12px rgba(0,0,0,0.04);
+    margin-bottom: 20px;
+  }
+  .filter-panel-title {
+    font-size: 14px; font-weight: 800; color: #0f172a;
+    display: flex; align-items: center; gap: 8px;
+    margin-bottom: 18px; padding-bottom: 14px; border-bottom: 1px solid #f1f5f9;
+  }
+  .filter-panel-title i { color: #B00000; }
+  .filt-sect { margin-bottom: 20px; }
+  .filt-sect-label {
+    font-size: 11px; font-weight: 800; color: #94a3b8;
+    text-transform: uppercase; letter-spacing: 0.6px; margin-bottom: 12px;
+  }
+  .filt-list { list-style: none; padding: 0; margin: 0; }
+  .filt-list li { margin-bottom: 8px; }
+  .cb-lbl {
+    display: flex; align-items: center; gap: 9px; cursor: pointer;
+    font-size: 13.5px; font-weight: 600; color: #475569; transition: color .2s;
+    padding: 6px 10px; border-radius: 8px; transition: all .18s;
+  }
+  .cb-lbl:hover { color: #B00000; background: #fef2f2; }
+  .cb-lbl input[type="radio"] { display: none; }
+  .cb-dot {
+    width: 16px; height: 16px; border-radius: 50%;
+    border: 2px solid #e2e8f0; flex-shrink: 0;
+    transition: all .2s; position: relative;
+  }
+  .cb-lbl input:checked ~ .cb-dot {
+    border-color: #B00000; background: #B00000;
+    box-shadow: 0 0 0 3px rgba(176,0,0,0.12);
+  }
+  .cb-dot::after {
+    content: ''; position: absolute; inset: 3px;
+    border-radius: 50%; background: white;
+    opacity: 0; transition: opacity .2s;
+  }
+  .cb-lbl input:checked ~ .cb-dot::after { opacity: 1; }
+  .cb-count {
+    margin-left: auto; background: #f1f5f9; color: #64748b;
+    font-size: 11px; font-weight: 700; padding: 2px 8px; border-radius: 999px;
+  }
+  .btn-reset {
+    width: 100%; background: #fff; color: #B00000;
+    border: 1.5px solid #fca5a5; padding: 10px;
+    border-radius: 10px; font-weight: 700; font-size: 13px;
+    cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 7px;
+    transition: all .2s; font-family: 'Plus Jakarta Sans', sans-serif; margin-top: 6px;
+  }
+  .btn-reset:hover { background: #B00000; color: white; border-color: #B00000; }
+
+  /* =========================================
+     META BAR
+  ========================================= */
+  .meta-bar {
+    display: flex; align-items: center; justify-content: space-between;
+    flex-wrap: wrap; gap: 12px; margin-bottom: 22px;
+  }
+  .meta-count { font-size: 18px; font-weight: 800; color: #0f172a; display: flex; align-items: center; gap: 10px; }
+  .meta-count .cnt-badge {
+    background: linear-gradient(135deg, #B00000, #ef4444);
+    color: white; padding: 3px 12px; border-radius: 8px;
+    font-size: 15px; font-weight: 800;
+    box-shadow: 0 3px 10px rgba(176,0,0,0.22);
+  }
+  .meta-sort { display: flex; align-items: center; gap: 10px; font-size: 13.5px; font-weight: 600; color: #64748b; }
+  .meta-sort select {
+    border: 1.5px solid #e8edf4; border-radius: 9px; padding: 8px 32px 8px 14px;
+    font-size: 13.5px; font-weight: 600; color: #0f172a; outline: none; cursor: pointer;
+    font-family: 'Plus Jakarta Sans', sans-serif; background: #fff;
+    appearance: none;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='14' height='14' viewBox='0 0 24 24' fill='none' stroke='%2364748b' stroke-width='2.5'%3E%3Cpolyline points='6 9 12 15 18 9'%3E%3C/polyline%3E%3C/svg%3E");
+    background-repeat: no-repeat; background-position: right 10px center;
+    transition: border-color .2s;
+  }
+  .meta-sort select:focus { border-color: #B00000; }
+
+  /* =========================================
+     CARD GRID — VERTICAL
+  ========================================= */
+  .info-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+    gap: 22px;
+  }
+
+  .info-card {
+    background: #fff;
+    border-radius: 18px;
+    overflow: hidden;
+    border: 1.5px solid #f1f5f9;
+    box-shadow: 0 4px 18px rgba(0,0,0,0.05);
+    transition: all .32s cubic-bezier(.22,.68,0,1.2);
+    cursor: pointer;
+    display: flex; flex-direction: column;
+    position: relative;
+  }
+  .info-card:hover {
+    transform: translateY(-8px);
+    box-shadow: 0 16px 40px rgba(176,0,0,0.13);
+    border-color: rgba(176,0,0,0.22);
+  }
+
+  /* Image portion — 60% of card */
+  .info-card-img {
+    position: relative;
+    aspect-ratio: 4/3;
+    overflow: hidden;
+    background: #f1f5f9;
+    flex-shrink: 0;
+  }
+  .info-card-img img {
+    width: 100%; height: 100%; object-fit: cover;
+    transition: transform .45s ease;
+  }
+  .info-card:hover .info-card-img img { transform: scale(1.07); }
+  .info-card-img .cat-pill {
+    position: absolute; top: 12px; left: 12px;
+    background: rgba(176,0,0,0.88); color: #fff;
+    font-size: 10.5px; font-weight: 800; letter-spacing: 0.4px;
+    padding: 4px 10px; border-radius: 999px; text-transform: uppercase;
+    backdrop-filter: blur(4px);
+  }
+  .info-card-img .view-pill {
+    position: absolute; top: 12px; right: 12px;
+    background: rgba(0,0,0,0.45); color: #fff;
+    font-size: 11px; font-weight: 700;
+    padding: 4px 10px; border-radius: 999px;
+    backdrop-filter: blur(4px);
+    display: flex; align-items: center; gap: 5px;
+  }
+
+  /* Hover overlay: "Klik untuk Detail" */
+  .info-card-img .hover-overlay {
+    position: absolute; inset: 0;
+    background: rgba(176,0,0,0.7);
+    display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 8px;
+    opacity: 0; transition: opacity .3s;
+  }
+  .info-card:hover .hover-overlay { opacity: 1; }
+  .hover-overlay i { font-size: 32px; color: white; }
+  .hover-overlay span { font-size: 13.5px; font-weight: 800; color: white; }
+
+  /* Card body */
+  .info-card-body { padding: 18px 18px 16px; flex: 1; display: flex; flex-direction: column; }
+  .info-card-title {
+    font-size: 15px; font-weight: 800; color: #0f172a; margin: 0 0 8px;
+    line-height: 1.4;
+    display: -webkit-box; -webkit-line-clamp: 2; line-clamp: 2;
+    -webkit-box-orient: vertical; overflow: hidden;
+  }
+  .info-card-desc {
+    font-size: 13px; color: #64748b; line-height: 1.6; margin-bottom: 14px;
+    display: -webkit-box; -webkit-line-clamp: 3; line-clamp: 3;
+    -webkit-box-orient: vertical; overflow: hidden;
+    flex: 1;
+  }
+  .info-card-footer {
+    display: flex; align-items: center; justify-content: space-between;
+    padding-top: 12px; border-top: 1px solid #f1f5f9;
+    font-size: 12px; color: #94a3b8; font-weight: 600;
+  }
+  .info-card-footer .date { display: flex; align-items: center; gap: 5px; }
+  .btn-detail {
+    background: #B00000; color: white !important;
+    padding: 6px 14px; border-radius: 8px;
+    font-size: 12.5px; font-weight: 700;
+    display: inline-flex; align-items: center; gap: 5px;
+    transition: all .2s;
+  }
+  .btn-detail:hover { background: #8b0000; }
+
+  /* Admin action icons on card */
+  .card-admin-actions {
+    position: absolute; bottom: 56px; right: 12px;
+    display: flex; gap: 6px; z-index: 4;
+  }
+  .card-admin-btn {
+    width: 30px; height: 30px; border-radius: 8px;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 12px; transition: all .2s; border: none; cursor: pointer;
+  }
+  .card-admin-btn.edit { background: rgba(30,64,175,0.9); color: white; }
+  .card-admin-btn.del  { background: rgba(176,0,0,0.9); color: white; }
+  .card-admin-btn:hover { transform: scale(1.12); }
+
+  /* Empty & loading state */
+  .info-empty {
+    grid-column: 1 / -1; text-align: center;
+    padding: 72px 40px; background: #fff;
+    border-radius: 18px; border: 2px dashed #e8edf4;
+  }
+  .info-empty i { font-size: 52px; color: #cbd5e1; display: block; margin-bottom: 18px; }
+  .info-empty h3 { font-size: 20px; font-weight: 800; color: #0f172a; margin: 0 0 8px; }
+  .info-empty p  { font-size: 14px; color: #64748b; margin: 0; }
+
+  /* =========================================
+     DETAIL MODAL — No blur (performance)
+  ========================================= */
+  .modal-backdrop {
+    position: fixed; inset: 0;
+    background: rgba(10,10,20,0.72);
+    z-index: 9000;
+    display: flex; align-items: center; justify-content: center;
+    padding: 16px;
+    opacity: 0; pointer-events: none;
+    transition: opacity .25s;
+    /* NO backdrop-filter — sangat berat di GPU */
+  }
+  .modal-backdrop.open { opacity: 1; pointer-events: all; }
+
+  .modal-box {
+    background: #fff; border-radius: 22px;
+    width: 100%; max-width: 1000px;
+    max-height: 92vh; overflow: hidden;
+    display: flex; flex-direction: column;
+    transform: scale(0.92) translateY(20px);
+    transition: transform .35s cubic-bezier(.22,.68,0,1.2);
+    box-shadow: 0 32px 80px rgba(0,0,0,0.3);
+  }
+  .modal-backdrop.open .modal-box { transform: scale(1) translateY(0); }
+
+  .modal-header {
+    padding: 20px 24px 16px;
+    border-bottom: 1px solid #f1f5f9;
+    display: flex; align-items: flex-start; gap: 14px; flex-shrink: 0;
+  }
+  .modal-cat-badge {
+    background: #fef2f2; color: #B00000;
+    font-size: 11px; font-weight: 800; letter-spacing: 0.5px;
+    padding: 4px 12px; border-radius: 999px; text-transform: uppercase; white-space: nowrap;
+  }
+  .modal-title {
+    font-size: 1.2rem; font-weight: 800; color: #0f172a; margin: 0;
+    flex: 1; line-height: 1.35;
+  }
+  .modal-close {
+    width: 36px; height: 36px; border-radius: 10px;
+    background: #f1f5f9; border: none; cursor: pointer;
+    display: flex; align-items: center; justify-content: center;
+    color: #64748b; font-size: 16px; transition: all .2s; flex-shrink: 0;
+  }
+  .modal-close:hover { background: #fee2e2; color: #B00000; }
+
+  /* Two-column body */
+  .modal-body {
+    flex: 1; overflow-y: auto;
+    display: grid; grid-template-columns: 1fr 1fr;
+    gap: 0;
+  }
+  .modal-img-panel {
+    padding: 20px; background: #0f172a;
+    display: flex; align-items: center; justify-content: center;
+    min-height: 300px; position: relative;
+  }
+  .modal-img-panel img {
+    max-width: 100%; max-height: 480px;
+    object-fit: contain; border-radius: 12px;
+    box-shadow: 0 8px 30px rgba(0,0,0,0.4);
+  }
+  .modal-analysis-panel { padding: 24px; overflow-y: auto; }
+
+  .analysis-title {
+    font-size: 14px; font-weight: 800; color: #0f172a;
+    display: flex; align-items: center; gap: 8px; margin-bottom: 16px;
+  }
+  .analysis-title i { color: #B00000; }
+
+  .info-desc {
+    font-size: 13.5px; color: #475569; line-height: 1.7;
+    margin-bottom: 20px; padding-bottom: 16px; border-bottom: 1px solid #f1f5f9;
+  }
+
+  /* Key metrics */
+  .key-metrics { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 20px; }
+  .km-card {
+    background: #f8fafc; border-radius: 12px; padding: 14px;
+    border: 1px solid #e8edf4; text-align: center;
+  }
+  .km-icon { font-size: 20px; color: #B00000; margin-bottom: 6px; }
+  .km-num  { font-size: 1.3rem; font-weight: 900; color: #0f172a; line-height: 1; }
+  .km-lbl  { font-size: 11.5px; color: #94a3b8; font-weight: 600; margin-top: 4px; }
+
+  /* Chart containers */
+  .chart-section { margin-bottom: 20px; }
+  .chart-sub {
+    font-size: 12.5px; font-weight: 700; color: #94a3b8;
+    text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 12px;
+  }
+  .chart-wrap { position: relative; height: 180px; }
+
+  /* Download button in modal */
+  .modal-footer {
+    padding: 16px 24px;
+    border-top: 1px solid #f1f5f9;
+    display: flex; gap: 10px; flex-wrap: wrap; flex-shrink: 0;
+  }
+  .btn-dl-modal {
+    background: #B00000; color: #fff !important;
+    padding: 10px 22px; border-radius: 10px; font-weight: 700; font-size: 14px;
+    display: inline-flex; align-items: center; gap: 7px; transition: all .2s;
+    box-shadow: 0 4px 14px rgba(176,0,0,0.25);
+  }
+  .btn-dl-modal:hover { background: #8b0000; transform: translateY(-1px); }
+  .btn-fullpage {
+    background: #fff; color: #0f172a !important;
+    padding: 10px 22px; border-radius: 10px; font-weight: 700; font-size: 14px;
+    display: inline-flex; align-items: center; gap: 7px; transition: all .2s;
+    border: 1.5px solid #e8edf4;
+  }
+  .btn-fullpage:hover { border-color: #94a3b8; }
+
+  /* Delete confirm modal */
+  .del-backdrop {
+    position: fixed; inset: 0; background: rgba(10,10,20,0.65);
+    z-index: 9100; display: flex; align-items: center; justify-content: center;
+    padding: 16px; opacity: 0; pointer-events: none; transition: opacity .2s;
+    /* NO backdrop-filter */
+  }
+  .del-backdrop.open { opacity: 1; pointer-events: all; }
+  .del-box {
+    background: #fff; border-radius: 18px; padding: 32px 28px;
+    max-width: 420px; width: 100%; text-align: center;
+    box-shadow: 0 20px 60px rgba(0,0,0,0.25);
+    transform: scale(0.9); transition: transform .3s;
+  }
+  .del-backdrop.open .del-box { transform: scale(1); }
+  .del-icon { font-size: 44px; color: #fca5a5; margin-bottom: 16px; }
+  .del-box h3 { font-size: 1.2rem; font-weight: 800; color: #0f172a; margin: 0 0 8px; }
+  .del-box p  { font-size: 14px; color: #64748b; margin: 0 0 24px; }
+  .del-actions { display: flex; gap: 10px; justify-content: center; }
+  .btn-del-cancel {
+    padding: 10px 22px; background: #fff; border: 1.5px solid #e8edf4;
+    border-radius: 10px; font-weight: 700; font-size: 14px; cursor: pointer;
+    font-family: 'Plus Jakarta Sans', sans-serif; transition: all .2s;
+  }
+  .btn-del-cancel:hover { border-color: #94a3b8; }
+  .btn-del-confirm {
+    padding: 10px 22px; background: #B00000; color: white; border: none;
+    border-radius: 10px; font-weight: 700; font-size: 14px; cursor: pointer;
+    font-family: 'Plus Jakarta Sans', sans-serif; transition: all .2s;
+    box-shadow: 0 4px 14px rgba(176,0,0,0.25);
+  }
+  .btn-del-confirm:hover { background: #8b0000; }
+
+  /* Responsive */
+  @media (max-width: 768px) {
+    .info-grid { grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); }
+    .modal-body { grid-template-columns: 1fr; }
+    .modal-img-panel { min-height: 220px; }
+    .modal-img-panel img { max-height: 240px; }
+    .key-metrics { grid-template-columns: 1fr 1fr; }
+    .info-hero { padding: 28px 24px 24px; }
+    .info-hero h1 { font-size: 1.5rem; }
+  }
+  @media (max-width: 480px) {
+    .info-grid { grid-template-columns: 1fr; }
+    .info-hero-stats { display: none; }
+  }
+</style>
+{% endblock %}
+
+{% block toolbar %}
+<div class="info-page" style="padding: 20px 0 0;">
+
+  {# Breadcrumb #}
+  <div class="info-breadcrumb">
+    <a href="{{ h.url_for('home.index') }}"><i class="fa fa-home"></i> Home</a>
+    <span class="sep"><i class="fa fa-chevron-right"></i></span>
+    <span class="cur"><i class="fa fa-signal"></i> Infografis</span>
+  </div>
+
+  {# Hero #}
+  <div class="info-hero">
+    <div class="info-hero-inner">
+      <div class="info-hero-label"><i class="fa fa-signal"></i> Portal Data Bengkulu</div>
+      <h1>Infografis Data Bengkulu</h1>
+      <p>Visualisasi data statistik dalam bentuk infografis yang informatif dan mudah dipahami,<br>
+         dilengkapi analisis interaktif untuk setiap infografis.</p>
+      <div class="info-hero-stats">
+        <div class="hs">
+          <div class="hs-icon"><i class="fa fa-image"></i></div>
+          <div>
+            <div class="hs-num">{{ infografis_list|length }}</div>
+            <div class="hs-lbl">Total Infografis</div>
+          </div>
+        </div>
+        <div class="hs">
+          <div class="hs-icon"><i class="fa fa-tags"></i></div>
+          <div>
+            <div class="hs-num">{{ infografis_list|map(attribute='kategori')|list|unique|list|length if infografis_list else 0 }}</div>
+            <div class="hs-lbl">Kategori</div>
+          </div>
+        </div>
+        <div class="hs">
+          <div class="hs-icon"><i class="fa fa-eye"></i></div>
+          <div>
+            <div class="hs-num">
+              {% if infografis_list %}
+                {% set total_views = namespace(v=0) %}
+                {% for item in infografis_list %}{% set total_views.v = total_views.v + item.views %}{% endfor %}
+                {{ total_views.v }}
+              {% else %}0{% endif %}
+            </div>
+            <div class="hs-lbl">Total Dilihat</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  {# Search & Action Bar #}
+  <div class="info-action-bar">
+    <form class="info-search-form" method="GET" action="/infografis">
+      <i class="fa fa-search"></i>
+      <input type="text" name="q" placeholder="Cari judul infografis..." value="{{ search_query }}">
+      <button type="submit">Cari</button>
+    </form>
+    {% if c.userobj and c.userobj.sysadmin %}
+      <a href="/admin/infografis/tambah" class="btn-add-infografis">
+        <i class="fa fa-plus-circle"></i> Tambah Infografis
+      </a>
+    {% endif %}
+  </div>
+
+</div>
+{% endblock %}
+
+{% block page_header %}{% endblock %}
+
+{% block secondary_content %}
+<div class="filter-panel">
+  <div class="filter-panel-title"><i class="fa fa-filter"></i> Filter Data</div>
+  <form method="GET" action="/infografis" id="filterForm">
+    <input type="hidden" name="q" value="{{ search_query }}">
+    <div class="filt-sect">
+      <div class="filt-sect-label">Kategori</div>
+      <ul class="filt-list">
+        <li>
+          <label class="cb-lbl">
+            <input type="radio" name="kategori" value="" {% if not selected_kategori %}checked{% endif %} class="cat-rb">
+            <span class="cb-dot"></span> Semua Kategori
+            <span class="cb-count">{{ infografis_list|length }}</span>
+          </label>
+        </li>
+        {% for kat in ['Penduduk', 'Perikanan & Kelautan', 'Ekonomi', 'Pendidikan', 'Kesehatan', 'Lainnya'] %}
+        <li>
+          <label class="cb-lbl">
+            <input type="radio" name="kategori" value="{{ kat }}" {% if selected_kategori == kat %}checked{% endif %} class="cat-rb">
+            <span class="cb-dot"></span> {{ kat }}
+            <span class="cb-count">{{ infografis_list|selectattr('kategori','equalto',kat)|list|length }}</span>
+          </label>
+        </li>
+        {% endfor %}
+      </ul>
+    </div>
+    <button type="submit" class="btn-reset"><i class="fa fa-check"></i> Terapkan Filter</button>
+    <a href="/infografis" style="display:block; text-align:center; margin-top:8px; font-size:13px; color:#94a3b8; font-weight:600;">
+      <i class="fa fa-undo"></i> Reset
+    </a>
+  </form>
+</div>
+{% endblock %}
+
+{% block primary_content_inner %}
+{# Meta bar #}
+<div class="meta-bar">
+  <div class="meta-count">
+    <span class="cnt-badge" id="result-count">{{ infografis_list|length }}</span>
+    Infografis Ditemukan
+  </div>
+  <div class="meta-sort">
+    <span><i class="fa fa-sort"></i> Urutkan:</span>
+    <select id="sortSelect">
+      <option value="terbaru">Terbaru</option>
+      <option value="az">A — Z</option>
+      <option value="za">Z — A</option>
+      <option value="views">Terpopuler</option>
+    </select>
+  </div>
+</div>
+
+{# Card Grid #}
+<div class="info-grid" id="cardContainer">
+  {% if infografis_list %}
+    {% for item in infografis_list %}
+    <div class="info-card"
+         data-id="{{ item.id }}"
+         data-title="{{ item.judul }}"
+         data-category="{{ item.kategori }}"
+         data-desc="{{ item.deskripsi|default('') }}"
+         data-img="/uploads/infografis/{{ item.gambar_file }}"
+         data-pdf="{% if item.file_pdf %}/infografis/download/{{ item.id }}{% endif %}"
+         data-views="{{ item.views }}"
+         data-date="{{ item.created_at }}"
+         onclick="openModal(this)"
+         style="cursor:pointer;">
+
+      {# Image area #}
+      <div class="info-card-img">
+        <span class="cat-pill">{{ item.kategori }}</span>
+        <span class="view-pill"><i class="fa fa-eye"></i> {{ item.views }}</span>
+        <img src="/uploads/infografis/{{ item.gambar_file }}"
+             alt="{{ item.judul }}"
+             loading="lazy"
+             onerror="this.src='https://placehold.co/600x450/f1f5f9/94a3b8?text=Infografis'">
+        <div class="hover-overlay">
+          <i class="fa fa-expand"></i>
+          <span>Lihat Detail & Analisis</span>
+        </div>
+      </div>
+
+      {# Body #}
+      <div class="info-card-body">
+        <h3 class="info-card-title">{{ item.judul }}</h3>
+        <p class="info-card-desc">{{ item.deskripsi|default('Klik untuk melihat infografis dan analisis data selengkapnya.') }}</p>
+        <div class="info-card-footer">
+          <span class="date">
+            <i class="fa fa-calendar-o"></i>
+            {{ item.created_at.strftime('%d %b %Y') if item.created_at else '-' }}
+          </span>
+          <span class="btn-detail">
+            <i class="fa fa-bar-chart"></i> Analisis
+          </span>
+        </div>
+      </div>
+
+      {# Admin actions #}
+      {% if c.userobj and c.userobj.sysadmin %}
+      <div class="card-admin-actions" onclick="event.stopPropagation();">
+        <a href="/admin/infografis/edit/{{ item.id }}" class="card-admin-btn edit" title="Edit">
+          <i class="fa fa-pencil"></i>
+        </a>
+        <button class="card-admin-btn del" title="Hapus"
+                data-del-id="{{ item.id }}"
+                data-del-title="{{ item.judul|replace("'","'") }}"
+                onclick="openDelConfirm(this.dataset.delId, this.dataset.delTitle)">
+          <i class="fa fa-trash"></i>
+        </button>
+      </div>
+      {% endif %}
+    </div>
+    {% endfor %}
+
+  {% else %}
+    <div class="info-empty" id="emptyMsg" style="display:block;">
+      <i class="fa fa-image"></i>
+      <h3>Belum Ada Infografis</h3>
+      <p>
+        {% if c.userobj and c.userobj.sysadmin %}
+          <a href="/admin/infografis/tambah" style="color:#B00000;font-weight:700;">Tambah infografis pertama Anda</a>
+        {% else %}
+          Infografis akan segera tersedia.
+        {% endif %}
+      </p>
+    </div>
+  {% endif %}
+</div>
+
+{# --- Not-found state --- #}
+<div class="info-empty" id="emptySearch" style="display:none; grid-column:1/-1;">
+  <i class="fa fa-search"></i>
+  <h3>Tidak Ada Hasil</h3>
+  <p>Tidak ada infografis yang sesuai dengan pencarian Anda.</p>
+</div>
+
+
+{# ===== DETAIL MODAL ===== #}
+<div class="modal-backdrop" id="detailModal" onclick="handleBackdropClick(event)">
+  <div class="modal-box" onclick="event.stopPropagation()">
+
+    <div class="modal-header">
+      <span class="modal-cat-badge" id="m-cat">—</span>
+      <h2 class="modal-title" id="m-title">Judul Infografis</h2>
+      <button class="modal-close" onclick="closeModal()"><i class="fa fa-times"></i></button>
+    </div>
+
+    <div class="modal-body">
+      {# Left: full image #}
+      <div class="modal-img-panel">
+        <img id="m-img" src="" alt="Infografis">
+      </div>
+
+      {# Right: analysis #}
+      <div class="modal-analysis-panel">
+        <div class="analysis-title"><i class="fa fa-bar-chart"></i> Analisis Infografis</div>
+
+        <p class="info-desc" id="m-desc">—</p>
+
+        <div class="key-metrics">
+          <div class="km-card">
+            <div class="km-icon"><i class="fa fa-eye"></i></div>
+            <div class="km-num" id="m-views">0</div>
+            <div class="km-lbl">Total Dilihat</div>
+          </div>
+          <div class="km-card">
+            <div class="km-icon"><i class="fa fa-calendar"></i></div>
+            <div class="km-num" id="m-date" style="font-size:1rem;">—</div>
+            <div class="km-lbl">Tanggal Upload</div>
+          </div>
+        </div>
+
+        {# Chart 1: Views per category (bar) #}
+        <div class="chart-section">
+          <div class="chart-sub">Distribusi Views per Kategori</div>
+          <div class="chart-wrap"><canvas id="chartBar"></canvas></div>
+        </div>
+
+        {# Chart 2: Category distribution (donut) #}
+        <div class="chart-section">
+          <div class="chart-sub">Komposisi Kategori</div>
+          <div class="chart-wrap"><canvas id="chartDonut"></canvas></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="modal-footer">
+      <a id="m-dl-btn" href="#" class="btn-dl-modal" style="display:none;" download>
+        <i class="fa fa-download"></i> Unduh PDF
+      </a>
+      <a id="m-page-btn" href="#" class="btn-fullpage">
+        <i class="fa fa-external-link"></i> Buka Halaman Penuh
+      </a>
+    </div>
+  </div>
+</div>
+
+{# ===== DELETE CONFIRM MODAL ===== #}
+<div class="del-backdrop" id="delModal">
+  <div class="del-box">
+    <div class="del-icon"><i class="fa fa-exclamation-triangle"></i></div>
+    <h3>Hapus Infografis?</h3>
+    <p>Anda akan menghapus: <strong id="del-title"></strong><br>Tindakan ini tidak dapat dibatalkan.</p>
+    <div class="del-actions">
+      <button class="btn-del-cancel" onclick="closeDelConfirm()"><i class="fa fa-times"></i> Batal</button>
+      <form id="del-form" method="POST" style="display:inline;">
+        {{ h.csrf_input() }}
+        <button type="submit" class="btn-del-confirm"><i class="fa fa-trash"></i> Ya, Hapus</button>
+      </form>
+    </div>
+  </div>
+</div>
+
+
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js" defer></script>
+<script>
+(function () {
+  'use strict';
+
+  // ── Collect all card data ──────────────────────────────────────
+  const allCards = Array.from(document.querySelectorAll('.info-card'));
+  const allData  = allCards.map(c => ({
+    el:       c,
+    id:       c.dataset.id,
+    title:    c.dataset.title,
+    category: c.dataset.category,
+    desc:     c.dataset.desc,
+    img:      c.dataset.img,
+    pdf:      c.dataset.pdf,
+    views:    parseInt(c.dataset.views) || 0,
+    date:     c.dataset.date,
+  }));
+
+  // Aggregate category stats from ALL infografis
+  const catStats = {};
+  allData.forEach(d => {
+    catStats[d.category] = catStats[d.category] || { views: 0, count: 0 };
+    catStats[d.category].views += d.views;
+    catStats[d.category].count += 1;
+  });
+
+  // ── Chart instances — built ONCE, never destroyed ─────────────
+  let barChart = null, donutChart = null;
+  let chartsBuilt = false;
+  const COLORS = ['#B00000','#ef4444','#f97316','#eab308','#22c55e','#3b82f6','#8b5cf6'];
+
+  function buildCharts() {
+    // Jangan rebuild jika sudah dibuat — hemat CPU/GPU
+    if (chartsBuilt) return;
+    const cats   = Object.keys(catStats);
+    if (!cats.length) return;
+    const views  = cats.map(k => catStats[k].views);
+    const counts = cats.map(k => catStats[k].count);
+    const palette = cats.map((_, i) => COLORS[i % COLORS.length]);
+
+    const chartBar = document.getElementById('chartBar');
+    const chartDonut = document.getElementById('chartDonut');
+    if (!chartBar || !chartDonut) return;
+
+    barChart = new Chart(chartBar, {
+      type: 'bar',
+      data: {
+        labels: cats,
+        datasets: [{
+          label: 'Total Dilihat',
+          data: views,
+          backgroundColor: palette,
+          borderRadius: 6,
+          borderSkipped: false,
+        }]
+      },
+      options: {
+        responsive: true, maintainAspectRatio: false,
+        animation: { duration: 600 },
+        plugins: { legend: { display: false } },
+        scales: {
+          x: { grid: { display: false }, ticks: { font: { size: 11 } } },
+          y: { beginAtZero: true, grid: { color: '#f1f5f9' }, ticks: { font: { size: 11 } } }
+        }
+      }
+    });
+
+    donutChart = new Chart(chartDonut, {
+      type: 'doughnut',
+      data: {
+        labels: cats,
+        datasets: [{
+          data: counts,
+          backgroundColor: palette,
+          hoverOffset: 6,
+          borderWidth: 2,
+          borderColor: '#fff',
+        }]
+      },
+      options: {
+        responsive: true, maintainAspectRatio: false,
+        animation: { duration: 600 },
+        cutout: '60%',
+        plugins: {
+          legend: {
+            position: 'right',
+            labels: { font: { size: 11 }, boxWidth: 12, padding: 10 }
+          }
+        }
+      }
+    });
+
+    chartsBuilt = true;
+  }
+
+  // ── Open Modal ─────────────────────────────────────────────────
+  window.openModal = function(cardEl) {
+    const d = allData.find(x => x.el === cardEl);
+    if (!d) return;
+
+    document.getElementById('m-cat').textContent   = d.category || '—';
+    document.getElementById('m-title').textContent = d.title;
+    document.getElementById('m-desc').textContent  = d.desc || 'Tidak ada deskripsi.';
+    document.getElementById('m-views').textContent = d.views.toLocaleString('id-ID');
+    document.getElementById('m-img').src           = d.img;
+
+    // Format date
+    if (d.date) {
+      const dt = new Date(d.date);
+      document.getElementById('m-date').textContent = dt.toLocaleDateString('id-ID', {
+        day: 'numeric', month: 'short', year: 'numeric'
+      });
+    }
+
+    // PDF button
+    const dlBtn = document.getElementById('m-dl-btn');
+    if (d.pdf) { dlBtn.href = d.pdf; dlBtn.style.display = 'inline-flex'; }
+    else        { dlBtn.style.display = 'none'; }
+
+    // Full page button
+    document.getElementById('m-page-btn').href = '/infografis/detail/' + d.id;
+
+    document.getElementById('detailModal').classList.add('open');
+    document.body.style.overflow = 'hidden';
+
+    // Build charts hanya SEKALI — tidak destroy/rebuild tiap buka modal
+    if (typeof Chart !== 'undefined') {
+      requestAnimationFrame(buildCharts);
+    }
+  };
+
+  window.closeModal = function() {
+    document.getElementById('detailModal').classList.remove('open');
+    document.body.style.overflow = '';
+  };
+
+  window.handleBackdropClick = function(e) {
+    if (e.target === document.getElementById('detailModal')) closeModal();
+  };
+
+  // ── Delete confirm ─────────────────────────────────────────────
+  window.openDelConfirm = function(id, title) {
+    document.getElementById('del-title').textContent = title;
+    document.getElementById('del-form').action = '/admin/infografis/hapus/' + id;
+    document.getElementById('delModal').classList.add('open');
+  };
+  window.closeDelConfirm = function() {
+    document.getElementById('delModal').classList.remove('open');
+  };
+
+  // ── Client-side sort ───────────────────────────────────────────
+  const container   = document.getElementById('cardContainer');
+  const sortSelect  = document.getElementById('sortSelect');
+  const resultCount = document.getElementById('result-count');
+  const emptySearch = document.getElementById('emptySearch');
+
+  if (sortSelect) {
+    sortSelect.addEventListener('change', function() {
+      const val = this.value;
+      const sorted = [...allData].filter(d => d.el.style.display !== 'none').sort((a, b) => {
+        if (val === 'az')    return a.title.localeCompare(b.title);
+        if (val === 'za')    return b.title.localeCompare(a.title);
+        if (val === 'views') return b.views - a.views;
+        return new Date(b.date) - new Date(a.date);
+      });
+      sorted.forEach(d => container.appendChild(d.el));
+    });
+  }
+
+  // ── Client-side live search (optional, supplements server search) ──
+  // already handled by page reload on form submit
+
+  // ESC key
+  document.addEventListener('keydown', e => { if (e.key === 'Escape') closeModal(); });
+
+})();
+</script>
+{% endblock %}

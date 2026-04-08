@@ -1,0 +1,293 @@
+{% extends "page.html" %}
+
+{% block subtitle %}Admin — Edit Publikasi{% endblock %}
+
+{% block custom_styles %}
+{{ super() }}
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap');
+  *, *::before, *::after { box-sizing: border-box; }
+  body { background: #f4f6f9 !important; font-family: 'Plus Jakarta Sans', sans-serif !important; }
+  #content, .wrapper, .main, .container,
+  .primary, .secondary, .module, .module-content {
+    background: transparent !important; border: none !important; box-shadow: none !important;
+  }
+  .pub-page { max-width: 840px; margin: 0 auto; padding: 24px 16px 56px; }
+
+  /* Breadcrumb */
+  .pub-breadcrumb { display: flex; align-items: center; gap: 8px; font-size: 13px; font-weight: 600; color: #64748b; margin-bottom: 24px; }
+  .pub-breadcrumb a { color: #64748b; text-decoration: none; transition: color .2s; }
+  .pub-breadcrumb a:hover { color: #B00000; }
+  .pub-breadcrumb .sep { color: #cbd5e1; font-size: 10px; }
+  .pub-breadcrumb .current { color: #B00000; font-weight: 700; }
+
+  /* Page header card */
+  .pub-title-card {
+    background: linear-gradient(135deg, #7f0000, #B00000);
+    border-radius: 20px; padding: 30px 36px 28px;
+    margin-bottom: 28px; position: relative; overflow: hidden;
+  }
+  .pub-title-card::after {
+    content: ''; position: absolute; top: -50px; right: -50px;
+    width: 200px; height: 200px; border-radius: 50%;
+    background: rgba(255,255,255,0.06);
+  }
+  .pub-title-card-inner { position: relative; z-index: 1; display: flex; justify-content: space-between; align-items: flex-start; flex-wrap: wrap; gap: 12px; }
+  .pub-title-card h1 { color: #fff; font-size: 1.6rem; font-weight: 800; margin: 0 0 6px; }
+  .pub-title-card p { color: rgba(255,255,255,0.75); font-size: 14px; margin: 0; }
+  .pub-id-chip { background: rgba(255,255,255,0.15); border: 1px solid rgba(255,255,255,0.25); color: rgba(255,255,255,0.85); padding: 5px 14px; border-radius: 8px; font-size: 12px; font-weight: 700; align-self: flex-start; white-space: nowrap; }
+
+  /* Form card */
+  .pub-form-card { background: #fff; border-radius: 20px; border: 1px solid #e8edf4; box-shadow: 0 2px 20px rgba(0,0,0,0.05); overflow: hidden; }
+  .form-section { padding: 24px 28px; border-bottom: 1px solid #f1f5f9; }
+  .form-section:last-child { border-bottom: none; }
+  .form-section-title { font-size: 11.5px; font-weight: 800; color: #94a3b8; text-transform: uppercase; letter-spacing: 0.6px; display: flex; align-items: center; gap: 8px; margin-bottom: 18px; }
+  .form-section-title i { color: #B00000; font-size: 13px; }
+
+  .form-row { display: flex; gap: 16px; flex-wrap: wrap; }
+  .form-group { flex: 1; min-width: 200px; }
+  .sd-label { display: block; font-size: 13px; font-weight: 700; color: #334155; margin-bottom: 6px; }
+  .sd-label .req { color: #B00000; }
+  .help-text { font-size: 12px; color: #94a3b8; margin-top: 5px; }
+
+  .sd-input, .sd-textarea {
+    width: 100%; padding: 11px 14px;
+    border: 1.5px solid #e8edf4; border-radius: 10px;
+    font-family: 'Plus Jakarta Sans', sans-serif;
+    font-size: 14px; color: #0f172a; background: #fafbfc;
+    outline: none; transition: border-color .2s, box-shadow .2s;
+  }
+  .sd-input:focus, .sd-textarea:focus { border-color: #B00000; background: #fff; box-shadow: 0 0 0 3px rgba(176,0,0,0.08); }
+  .sd-input::placeholder, .sd-textarea::placeholder { color: #94a3b8; }
+  .sd-textarea { resize: vertical; line-height: 1.65; }
+
+  /* Current file indicators */
+  .current-file-box {
+    display: flex; align-items: center; gap: 12px;
+    background: #f8fafc; border: 1.5px solid #e8edf4;
+    border-radius: 12px; padding: 12px 16px; margin-bottom: 14px;
+  }
+  .current-file-icon { width: 40px; height: 40px; border-radius: 9px; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
+  .current-file-icon.img-icon { background: #dbeafe; }
+  .current-file-icon.img-icon i { color: #1d4ed8; font-size: 18px; }
+  .current-file-icon.pdf-icon { background: #fef2f2; }
+  .current-file-icon.pdf-icon i { color: #B00000; font-size: 18px; }
+  .current-file-label { font-size: 11px; color: #94a3b8; font-weight: 700; text-transform: uppercase; letter-spacing: 0.4px; }
+  .current-file-name { font-size: 13.5px; font-weight: 700; color: #0f172a; margin-top: 2px; }
+  .current-file-sub { font-size: 12px; color: #94a3b8; margin-top: 1px; }
+  .current-cover-img { width: 60px; height: 60px; object-fit: cover; border-radius: 8px; border: 1px solid #e8edf4; flex-shrink: 0; }
+
+  /* Drop zones */
+  .dz-wrap { border: 2px dashed #e8edf4; border-radius: 14px; padding: 24px 20px; text-align: center; cursor: pointer; transition: all .22s; background: #fafbfc; position: relative; }
+  .dz-wrap:hover, .dz-wrap.over { border-color: #B00000; background: #fef2f2; }
+  .dz-wrap input[type="file"] { position: absolute; inset: 0; opacity: 0; cursor: pointer; font-size: 0; }
+  .dz-icon { font-size: 28px; color: #cbd5e1; margin-bottom: 8px; transition: color .2s; }
+  .dz-wrap:hover .dz-icon, .dz-wrap.over .dz-icon { color: #B00000; }
+  .dz-title { font-size: 14px; font-weight: 700; color: #334155; margin-bottom: 3px; }
+  .dz-sub { font-size: 12px; color: #94a3b8; }
+
+  /* Previews */
+  .img-preview-wrap { display: none; margin-top: 12px; align-items: center; gap: 14px; padding: 12px 16px; background: #f8fafc; border-radius: 10px; border: 1px solid #e8edf4; }
+  .img-preview-wrap.visible { display: flex; }
+  .img-preview-thumb { width: 60px; height: 60px; object-fit: cover; border-radius: 8px; border: 1px solid #e8edf4; }
+  .pdf-preview-wrap { display: none; margin-top: 12px; align-items: center; gap: 12px; padding: 12px 16px; background: #fef2f2; border-radius: 10px; border: 1px solid rgba(176,0,0,0.15); }
+  .pdf-preview-wrap.visible { display: flex; }
+  .pdf-preview-icon { width: 40px; height: 40px; background: #B00000; border-radius: 8px; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
+  .pdf-preview-icon i { color: #fff; font-size: 18px; }
+  .preview-filename { font-size: 13.5px; font-weight: 700; color: #0f172a; }
+  .preview-filesize { font-size: 12px; color: #94a3b8; margin-top: 2px; }
+  .preview-remove { margin-left: auto; width: 28px; height: 28px; border-radius: 7px; background: #fee2e2; border: none; color: #B00000; cursor: pointer; display: flex; align-items: center; justify-content: center; font-size: 12px; transition: background .18s; flex-shrink: 0; }
+  .preview-remove:hover { background: #fca5a5; }
+
+  /* Footer */
+  .form-footer { padding: 20px 28px; background: #f8fafc; border-top: 1px solid #f1f5f9; display: flex; align-items: center; gap: 12px; flex-wrap: wrap; }
+  .btn-submit { padding: 12px 28px; background: #B00000; color: #fff; border: none; border-radius: 10px; font-weight: 800; font-size: 15px; cursor: pointer; display: flex; align-items: center; gap: 8px; transition: all .22s; box-shadow: 0 4px 16px rgba(176,0,0,0.25); }
+  .btn-submit:hover { background: #8b0000; transform: translateY(-1px); box-shadow: 0 6px 20px rgba(176,0,0,0.35); }
+  .btn-cancel { padding: 12px 22px; background: #fff; color: #475569 !important; border: 1.5px solid #e8edf4; border-radius: 10px; font-weight: 700; font-size: 14px; text-decoration: none !important; transition: all .2s; display: inline-flex; align-items: center; gap: 7px; }
+  .btn-cancel:hover { border-color: #94a3b8; color: #0f172a !important; }
+</style>
+{% endblock %}
+
+{% block toolbar %}{% endblock %}
+{% block page_header %}{% endblock %}
+{% block secondary %}{% endblock %}
+
+{% block primary %}
+<div class="pub-page">
+
+  <div class="pub-breadcrumb">
+    <a href="{{ h.url_for('home.index') }}"><i class="fa fa-home"></i> Home</a>
+    <span class="sep"><i class="fa fa-chevron-right"></i></span>
+    <a href="/publikasi"><i class="fa fa-book"></i> Publikasi</a>
+    <span class="sep"><i class="fa fa-chevron-right"></i></span>
+    <span class="current">Edit Publikasi</span>
+  </div>
+
+  <div class="pub-title-card">
+    <div class="pub-title-card-inner">
+      <div>
+        <h1><i class="fa fa-edit"></i> Edit Publikasi</h1>
+        <p>Perbarui informasi dan file dokumen publikasi.</p>
+      </div>
+      <span class="pub-id-chip"><i class="fa fa-hashtag"></i> ID: {{ publikasi.id }}</span>
+    </div>
+  </div>
+
+  <div class="pub-form-card">
+    <form method="POST" enctype="multipart/form-data">
+      {{ h.csrf_input() }}
+
+      {# Basic Info #}
+      <div class="form-section">
+        <div class="form-section-title"><i class="fa fa-tag"></i> Informasi Dokumen</div>
+        <div class="form-group" style="margin-bottom: 16px;">
+          <label class="sd-label" for="judul">Judul Publikasi <span class="req">*</span></label>
+          <input type="text" id="judul" name="judul" required
+                 value="{{ publikasi.judul }}"
+                 class="sd-input" placeholder="Judul publikasi">
+        </div>
+        <div class="form-group" style="flex: 0 0 180px; min-width: 160px;">
+          <label class="sd-label" for="tahun_terbit">Tahun Terbit <span class="req">*</span></label>
+          <input type="number" id="tahun_terbit" name="tahun_terbit" required
+                 min="2000" max="2100"
+                 value="{{ publikasi.tahun_terbit }}"
+                 class="sd-input" style="max-width: 180px;">
+        </div>
+      </div>
+
+      {# Deskripsi #}
+      <div class="form-section">
+        <div class="form-section-title"><i class="fa fa-align-left"></i> Deskripsi</div>
+        <div class="form-group">
+          <label class="sd-label" for="deskripsi">Deskripsi Singkat <span class="req">*</span></label>
+          <textarea id="deskripsi" name="deskripsi" required rows="4"
+                    class="sd-textarea">{{ publikasi.deskripsi }}</textarea>
+        </div>
+      </div>
+
+      {# Cover Image #}
+      <div class="form-section">
+        <div class="form-section-title"><i class="fa fa-image"></i> Gambar Cover <span style="color:#94a3b8; font-weight:600; font-size:11px; margin-left:4px;">(Opsional)</span></div>
+
+        {% if publikasi.gambar_cover %}
+          <div class="current-file-box">
+            <img src="/uploads/publikasi/{{ publikasi.gambar_cover }}"
+                 alt="Cover" class="current-cover-img"
+                 onerror="this.style.display='none'">
+            <div>
+              <div class="current-file-label">Cover Saat Ini</div>
+              <div class="current-file-name">{{ publikasi.gambar_cover }}</div>
+              <div class="current-file-sub">Unggah file baru untuk mengganti, atau biarkan kosong untuk mempertahankan.</div>
+            </div>
+          </div>
+        {% endif %}
+
+        <div class="dz-wrap" id="cover-dz">
+          <input type="file" id="gambar_cover" name="gambar_cover"
+                 accept="image/png,image/jpeg,image/gif"
+                 onchange="handleCoverSelect(this)">
+          <div class="dz-icon"><i class="fa fa-upload"></i></div>
+          <div class="dz-title">{% if publikasi.gambar_cover %}Ganti gambar cover{% else %}Tambah gambar cover{% endif %}</div>
+          <div class="dz-sub">PNG, JPG, GIF · Maks 5 MB</div>
+        </div>
+        <div class="img-preview-wrap" id="img-preview">
+          <img src="" alt="Preview" class="img-preview-thumb" id="img-thumb">
+          <div>
+            <div class="preview-filename" id="cover-name"></div>
+            <div class="preview-filesize" id="cover-size"></div>
+          </div>
+          <button type="button" class="preview-remove" onclick="clearCover()"><i class="fa fa-times"></i></button>
+        </div>
+      </div>
+
+      {# PDF File #}
+      <div class="form-section">
+        <div class="form-section-title"><i class="fa fa-file-pdf-o"></i> File Dokumen PDF</div>
+
+        {% if publikasi.file_pdf %}
+          <div class="current-file-box">
+            <div class="current-file-icon pdf-icon"><i class="fa fa-file-pdf-o"></i></div>
+            <div>
+              <div class="current-file-label">File PDF Saat Ini</div>
+              <div class="current-file-name">{{ publikasi.file_pdf }}</div>
+              <div class="current-file-sub">
+                {% if publikasi.ukuran_file %}{{ publikasi.ukuran_file }} · {% endif %}
+                Biarkan kosong jika tidak ingin mengganti file.
+              </div>
+            </div>
+          </div>
+        {% endif %}
+
+        <div class="dz-wrap" id="pdf-dz">
+          <input type="file" id="file_pdf" name="file_pdf"
+                 accept="application/pdf"
+                 onchange="handlePdfSelect(this)">
+          <div class="dz-icon" style="color:#dc2626;"><i class="fa fa-file-pdf-o"></i></div>
+          <div class="dz-title">{% if publikasi.file_pdf %}Ganti file PDF{% else %}Upload file PDF{% endif %}</div>
+          <div class="dz-sub">Hanya format PDF · Maks 50 MB</div>
+        </div>
+        <div class="pdf-preview-wrap" id="pdf-preview">
+          <div class="pdf-preview-icon"><i class="fa fa-file-pdf-o"></i></div>
+          <div>
+            <div class="preview-filename" id="pdf-name"></div>
+            <div class="preview-filesize" id="pdf-size"></div>
+          </div>
+          <button type="button" class="preview-remove" onclick="clearPdf()"><i class="fa fa-times"></i></button>
+        </div>
+      </div>
+
+      {# Footer #}
+      <div class="form-footer">
+        <button type="submit" class="btn-submit">
+          <i class="fa fa-save"></i> Simpan Perubahan
+        </button>
+        <a href="/publikasi" class="btn-cancel">
+          <i class="fa fa-times"></i> Batal
+        </a>
+      </div>
+    </form>
+  </div>
+
+</div>
+
+<script>
+  function fmtSize(b) {
+    if (b < 1024) return b + ' B';
+    if (b < 1048576) return (b/1024).toFixed(1) + ' KB';
+    return (b/1048576).toFixed(2) + ' MB';
+  }
+  function handleCoverSelect(input) {
+    const file = input.files[0]; if (!file) return;
+    if (!['image/png','image/jpeg','image/gif'].includes(file.type)) { alert('Format gambar harus PNG, JPG, atau GIF!'); input.value=''; return; }
+    if (file.size > 5*1024*1024) { alert('Ukuran gambar maksimal 5MB!'); input.value=''; return; }
+    const reader = new FileReader();
+    reader.onload = e => { document.getElementById('img-thumb').src = e.target.result; };
+    reader.readAsDataURL(file);
+    document.getElementById('cover-name').textContent = file.name;
+    document.getElementById('cover-size').textContent = fmtSize(file.size);
+    document.getElementById('img-preview').classList.add('visible');
+  }
+  function clearCover() {
+    document.getElementById('gambar_cover').value = '';
+    document.getElementById('img-thumb').src = '';
+    document.getElementById('img-preview').classList.remove('visible');
+  }
+  function handlePdfSelect(input) {
+    const file = input.files[0]; if (!file) return;
+    if (file.type !== 'application/pdf') { alert('Hanya file PDF yang diperbolehkan!'); input.value=''; return; }
+    if (file.size > 50*1024*1024) { alert('Ukuran file PDF maksimal 50MB!'); input.value=''; return; }
+    document.getElementById('pdf-name').textContent = file.name;
+    document.getElementById('pdf-size').textContent = fmtSize(file.size);
+    document.getElementById('pdf-preview').classList.add('visible');
+  }
+  function clearPdf() {
+    document.getElementById('file_pdf').value = '';
+    document.getElementById('pdf-preview').classList.remove('visible');
+  }
+  ['cover-dz','pdf-dz'].forEach(id => {
+    const dz = document.getElementById(id);
+    ['dragover','dragenter'].forEach(e => dz.addEventListener(e, () => dz.classList.add('over')));
+    ['dragleave','drop'].forEach(e => dz.addEventListener(e, () => dz.classList.remove('over')));
+  });
+</script>
+{% endblock %}

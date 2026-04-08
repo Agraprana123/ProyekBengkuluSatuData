@@ -1,0 +1,53 @@
+syntax: glob
+
+# generic
+__pycache__/
+*.pyc
+
+# other (candidates for removal)
+pip-requirements-local.txt
+tmp/
+solr_runtime/
+sandbox/
+fl_notes.txt
+
+# distribution
+ckan.egg-info/
+dist/
+build/
+.eggs/
+
+# artifacts from text editors and os
+*.swp
+*.swo
+*~
+.idea
+.vscode
+.DS_Store
+
+# CKAN
+ckan.log
+ckan_deb/DEBIAN/control
+ckan_deb/DEBIAN/prerm
+## this file is often created inside the clone
+## to simplify CLI interactions
+ckan.ini
+
+# node.js
+node_modules/
+
+# cypress
+cypress.env.json
+cypress/videos
+cypress/screenshots
+
+#testing
+junit
+htmlcov/
+.coverage
+.cache
+.bash_history
+.gitconfig
+.npm
+.test_durations
+.mypy_cache

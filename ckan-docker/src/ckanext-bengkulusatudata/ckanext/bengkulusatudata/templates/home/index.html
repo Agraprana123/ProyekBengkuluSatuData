@@ -1,0 +1,1260 @@
+{% extends "page.html" %}
+
+{% block content %}
+<style>
+  /* =========================================
+     MODERN HOME PAGE - BENGKULU SATU DATA
+     ========================================= */
+  
+  @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700;800&display=swap');
+  
+  :root {
+    --primary-red: #B00000;
+    --primary-dark: #8B0000;
+    --primary-darker: #5A0000;
+    --accent-pink: #ff4757;
+    --text-dark: #1a1a2e;
+    --text-gray: #636e72;
+    --text-light: #adb5bd;
+    --bg-gradient: linear-gradient(135deg, #ffffff 0%, #fef2f2 100%);
+    --white: #ffffff;
+    --shadow-sm: 0 2px 8px rgba(0,0,0,0.04);
+    --shadow-md: 0 8px 24px rgba(0,0,0,0.08);
+    --shadow-lg: 0 16px 48px rgba(176,0,0,0.15);
+    --shadow-glow: 0 0 40px rgba(176,0,0,0.2);
+    --radius: 16px;
+    --radius-lg: 24px;
+    --radius-full: 50px;
+    --transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+  }
+
+  .home-wrapper {
+    font-family: 'Poppins', sans-serif !important;
+    background: var(--bg-gradient);
+    min-height: 100vh;
+    padding-bottom: 80px;
+    overflow-x: hidden;
+    position: relative;
+  }
+
+  .home-wrapper::before {
+    content: '';
+    position: fixed;
+    top: 0; left: 0; right: 0; bottom: 0;
+    background:
+      radial-gradient(ellipse 60% 50% at 88% 8%,  rgba(176,0,0,0.09) 0%, transparent 60%),
+      radial-gradient(ellipse 50% 40% at 12% 92%, rgba(176,0,0,0.06) 0%, transparent 60%),
+      radial-gradient(ellipse 40% 35% at 50% 50%, rgba(176,0,0,0.03) 0%, transparent 70%);
+    pointer-events: none;
+    z-index: 0;
+  }
+
+  .home-wrapper > * { position: relative; z-index: 1; }
+
+  .navbar-brand img, .logo img {
+    height: 70px !important;
+    width: auto !important;
+    transition: transform 0.3s;
+  }
+  .navbar-brand:hover img { transform: scale(1.05); }
+
+  /* =========================================
+     HERO SECTION - FULL SCREEN VIEW
+     ========================================= */
+  .hero-section {
+    display: grid;
+    grid-template-columns: 1fr 400px;
+    gap: 40px;
+    padding: 0 5%;
+    align-items: center;
+    /* KUNCI PERUBAHAN: Membuat Hero section setinggi layar (dikurangi header) */
+    min-height: 85vh; 
+    margin-bottom: 40px;
+  }
+
+  .hero-content {
+    max-width: 650px;
+  }
+
+  .hero-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    background: linear-gradient(135deg, var(--primary-red), var(--primary-dark));
+    color: white;
+    padding: 8px 20px;
+    border-radius: var(--radius-full);
+    font-size: 13px;
+    font-weight: 600;
+    margin-bottom: 24px;
+    box-shadow: var(--shadow-md);
+    animation: pulse 2s infinite;
+  }
+
+  @keyframes pulse {
+    0%, 100% { box-shadow: 0 0 0 0 rgba(176,0,0,0.4); }
+    50% { box-shadow: 0 0 0 12px rgba(176,0,0,0); }
+  }
+
+  .hero-title {
+    font-size: 56px;
+    font-weight: 800;
+    color: var(--text-dark);
+    margin: 0 0 20px 0;
+    line-height: 1.1;
+    letter-spacing: -1px;
+  }
+
+  .hero-title span {
+    background: linear-gradient(135deg, var(--primary-red), var(--accent-pink));
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+    position: relative;
+  }
+
+  .hero-subtitle {
+    font-size: 17px;
+    color: var(--text-gray);
+    line-height: 1.7;
+    margin: 0 0 35px 0;
+    max-width: 550px;
+    font-weight: 400;
+  }
+
+  /* Modern Search Box */
+  .search-wrapper {
+    position: relative;
+    max-width: 520px;
+    margin-bottom: 40px;
+  }
+
+  .search-box-modern {
+    display: flex;
+    background: var(--white);
+    border-radius: var(--radius-full);
+    padding: 8px;
+    box-shadow: var(--shadow-lg), var(--shadow-glow);
+    border: 2px solid transparent;
+    transition: var(--transition);
+    position: relative;
+    overflow: hidden;
+  }
+
+  .search-box-modern:focus-within {
+    border-color: var(--primary-red);
+    transform: translateY(-2px);
+  }
+
+  .search-box-modern input {
+    flex: 1;
+    padding: 16px 24px;
+    border: none;
+    background: transparent;
+    font-size: 16px;
+    font-family: 'Poppins', sans-serif;
+    color: var(--text-dark);
+    outline: none;
+  }
+
+  .search-box-modern input::placeholder {
+    color: var(--text-light);
+    font-weight: 400;
+  }
+
+  .search-box-modern input:focus {
+    color: var(--primary-red);
+  }
+
+  .search-box-modern button {
+    background: linear-gradient(135deg, var(--primary-red), var(--primary-dark));
+    color: white;
+    border: none;
+    padding: 16px 32px;
+    border-radius: var(--radius-full);
+    font-weight: 700;
+    font-size: 15px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    transition: var(--transition);
+    white-space: nowrap;
+  }
+
+  .search-box-modern button:hover {
+    transform: scale(1.05);
+    box-shadow: 0 8px 24px rgba(176,0,0,0.4);
+  }
+
+  .search-box-modern button i {
+    font-size: 18px;
+  }
+
+  /* =========================================
+     MASCOT SECTION
+     ========================================= */
+  .mascot-wrapper {
+    position: relative;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 100%;
+    min-height: 400px;
+    perspective: 1000px;
+  }
+
+  .mascot-container {
+    position: relative;
+    width: 100%;
+    max-width: 360px; 
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    animation: float 6s ease-in-out infinite;
+  }
+
+  @keyframes float {
+    0%, 100% { transform: translateY(0) rotate(0deg); }
+    50% { transform: translateY(-15px) rotate(1deg); }
+  }
+
+  .mascot-container img {
+    width: 100%;
+    height: auto;
+    max-height: 420px; 
+    object-fit: contain; 
+    z-index: 2;
+    filter: drop-shadow(0 20px 40px rgba(0,0,0,0.15));
+    transition: transform 0.3s;
+    cursor: pointer;
+  }
+
+  .mascot-container:hover img {
+    transform: scale(1.03);
+  }
+
+  /* Comic Bubbles Modern */
+  .bubble {
+    position: absolute;
+    background: var(--white);
+    color: var(--text-dark);
+    padding: 12px 24px;
+    border-radius: var(--radius-full);
+    font-weight: 700;
+    font-size: 14px;
+    box-shadow: var(--shadow-md);
+    z-index: 3;
+    white-space: nowrap;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    animation: bounce 2s ease-in-out infinite;
+    border: 2px solid var(--primary-red);
+    text-decoration: none !important;
+    cursor: pointer;
+  }
+
+  .bubble:hover {
+    transform: scale(1.05);
+  }
+
+  .bubble i {
+    color: var(--primary-red);
+    font-size: 16px;
+  }
+
+  .bubble-1 {
+    top: 5%;
+    left: -15%;
+    animation-delay: 0s;
+  }
+
+  .bubble-2 {
+    bottom: 10%;
+    right: -10%;
+    animation-delay: 1s;
+    background: linear-gradient(135deg, var(--primary-red), var(--primary-dark));
+    color: white;
+    border: none;
+  }
+
+  .bubble-2 i { color: white; }
+
+  @keyframes bounce {
+    0%, 100% { transform: translateY(0); }
+    50% { transform: translateY(-8px); }
+  }
+
+  .bubble::after {
+    content: '';
+    position: absolute;
+    width: 0;
+    height: 0;
+  }
+
+  .bubble-1::after {
+    bottom: -12px;
+    right: 30px;
+    border: 12px solid transparent;
+    border-top-color: var(--white);
+    border-bottom: 0;
+  }
+
+  .bubble-2::after {
+    top: -12px;
+    left: 30px;
+    border: 12px solid transparent;
+    border-bottom-color: var(--primary-red);
+    border-top: 0;
+  }
+
+  /* =========================================
+     STATS GRID 
+     ========================================= */
+  .stats-section {
+    padding: 0 5%;
+    margin-top: 40px;
+    margin-bottom: 60px;
+    position: relative;
+    z-index: 2;
+  }
+
+  .stats-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+    gap: 24px;
+  }
+
+  .stat-card {
+    background: var(--white);
+    border-radius: var(--radius-lg);
+    padding: 28px 24px;
+    display: flex;
+    align-items: center;
+    gap: 18px;
+    box-shadow: var(--shadow-md);
+    border: 1px solid rgba(255,255,255,0.8);
+    text-decoration: none !important;
+    transition: var(--transition);
+    position: relative;
+    overflow: hidden;
+  }
+
+  .stat-card::before {
+    content: '';
+    position: absolute;
+    top: 0; left: 0; right: 0;
+    height: 4px;
+    background: linear-gradient(90deg, var(--primary-red), var(--accent-pink));
+    transform: scaleX(0);
+    transform-origin: left;
+    transition: transform 0.4s ease;
+  }
+
+  .stat-card:hover {
+    transform: translateY(-8px);
+    box-shadow: var(--shadow-lg);
+    border-color: var(--primary-red);
+  }
+
+  .stat-card:hover::before {
+    transform: scaleX(1);
+  }
+
+  .stat-icon-wrapper {
+    width: 60px;
+    height: 60px;
+    background: linear-gradient(135deg, rgba(176,0,0,0.1), rgba(176,0,0,0.05));
+    border-radius: 16px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+    transition: var(--transition);
+  }
+
+  .stat-card:hover .stat-icon-wrapper {
+    background: linear-gradient(135deg, var(--primary-red), var(--primary-dark));
+    transform: rotate(5deg) scale(1.1);
+  }
+
+  .stat-icon {
+    font-size: 28px;
+    color: var(--primary-red);
+    transition: var(--transition);
+  }
+
+  .stat-card:hover .stat-icon {
+    color: white;
+  }
+
+  .stat-info h3 {
+    margin: 0;
+    font-size: 32px;
+    font-weight: 800;
+    color: var(--primary-red);
+    line-height: 1;
+    transition: var(--transition);
+  }
+
+  .stat-card:hover .stat-info h3 {
+    color: var(--text-dark);
+  }
+
+  .stat-info span {
+    font-size: 15px;
+    font-weight: 700;
+    color: var(--text-dark);
+    display: block;
+    margin: 4px 0 2px;
+  }
+
+  .stat-info p {
+    margin: 0;
+    font-size: 12px;
+    color: var(--text-light);
+    font-weight: 400;
+  }
+
+  /* =========================================
+     FILTER & SORT SECTION
+     ========================================= */
+  .filter-section {
+    padding: 40px 5% 30px;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 12px;
+    align-items: center;
+    background: var(--white);
+    border-radius: var(--radius-lg);
+    margin: 0 5% 50px;
+    box-shadow: var(--shadow-sm);
+  }
+
+  .filter-label {
+    font-size: 14px;
+    font-weight: 600;
+    color: var(--text-gray);
+    margin-right: 10px;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+  }
+
+  .filter-pill {
+    background: #f8f9fa;
+    color: var(--text-gray);
+    padding: 10px 24px;
+    border-radius: var(--radius-full);
+    font-weight: 600;
+    font-size: 14px;
+    text-decoration: none !important;
+    transition: var(--transition);
+    border: 2px solid transparent;
+    cursor: pointer;
+  }
+
+  .filter-pill:hover,
+  .filter-pill.active {
+    background: var(--primary-red);
+    color: white;
+    border-color: var(--primary-red);
+    transform: translateY(-2px);
+    box-shadow: var(--shadow-md);
+  }
+
+  .sort-wrapper {
+    margin-left: auto;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+  }
+
+  .sort-label {
+    font-size: 14px;
+    font-weight: 600;
+    color: var(--text-gray);
+    white-space: nowrap;
+  }
+
+  .sort-select {
+    padding: 10px 20px;
+    border-radius: var(--radius-full);
+    border: 2px solid #e9ecef;
+    background: var(--white);
+    font-family: 'Poppins', sans-serif;
+    font-weight: 600;
+    font-size: 14px;
+    cursor: pointer;
+    outline: none;
+    transition: var(--transition);
+    color: var(--text-dark);
+    min-width: 200px;
+  }
+
+  .sort-select:hover,
+  .sort-select:focus {
+    border-color: var(--primary-red);
+    box-shadow: 0 4px 12px rgba(176,0,0,0.15);
+  }
+
+  /* =========================================
+     DATASET GRID
+     ========================================= */
+  .dataset-section {
+    padding: 0 5%;
+  }
+
+  .section-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 30px;
+    flex-wrap: wrap;
+    gap: 15px;
+  }
+
+  .section-title {
+    font-size: 24px;
+    font-weight: 700;
+    color: var(--text-dark);
+    margin: 0;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+
+  .section-title i {
+    color: var(--primary-red);
+  }
+
+  .view-all-link {
+    color: var(--primary-red);
+    font-weight: 600;
+    font-size: 14px;
+    text-decoration: none;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    transition: var(--transition);
+  }
+
+  .view-all-link:hover {
+    gap: 10px;
+  }
+
+  .dataset-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(340px, 1fr));
+    gap: 24px;
+  }
+
+  .dataset-card {
+    background: linear-gradient(135deg, var(--primary-red) 0%, var(--primary-dark) 100%);
+    border-radius: var(--radius-lg);
+    padding: 28px;
+    color: white;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    min-height: 200px;
+    box-shadow: var(--shadow-md);
+    transition: var(--transition);
+    border: 2px solid transparent;
+    position: relative;
+    overflow: hidden;
+    text-decoration: none !important;
+  }
+
+  .dataset-card::before {
+    content: '';
+    position: absolute;
+    top: -50%;
+    right: -50%;
+    width: 200px;
+    height: 200px;
+    background: radial-gradient(circle, rgba(255,255,255,0.15) 0%, transparent 70%);
+    border-radius: 50%;
+    transition: transform 0.5s ease;
+    transform: scale(0);
+  }
+
+  .dataset-card:hover {
+    transform: translateY(-10px);
+    box-shadow: var(--shadow-lg), var(--shadow-glow);
+    border-color: rgba(255,255,255,0.3);
+  }
+
+  .dataset-card:hover::before {
+    transform: scale(1.5);
+  }
+
+  .card-top {
+    display: flex;
+    gap: 18px;
+    align-items: flex-start;
+  }
+
+  .card-logo {
+    background: var(--white);
+    border-radius: 50%;
+    width: 70px;
+    height: 70px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+    transition: var(--transition);
+  }
+
+  .dataset-card:hover .card-logo {
+    transform: rotate(-10deg) scale(1.1);
+  }
+
+  .card-logo i {
+    color: var(--primary-red);
+    font-size: 30px;
+  }
+
+  .card-title {
+    font-size: 16px;
+    font-weight: 600;
+    line-height: 1.5;
+    color: white;
+    text-decoration: none !important;
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    line-clamp: 2;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+    transition: var(--transition);
+  }
+
+  .dataset-card:hover .card-title {
+    color: rgba(255,255,255,0.95);
+  }
+
+  .card-bottom {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-top: 20px;
+    padding-top: 20px;
+    border-top: 1px solid rgba(255,255,255,0.2);
+  }
+
+  .update-badge {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 13px;
+    font-weight: 500;
+    opacity: 0.9;
+  }
+
+  .update-badge i {
+    font-size: 16px;
+  }
+
+  .btn-view {
+    background: var(--white);
+    color: var(--primary-red);
+    padding: 8px 22px;
+    border-radius: var(--radius-full);
+    font-size: 13px;
+    font-weight: 700;
+    text-decoration: none !important;
+    transition: var(--transition);
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+  }
+
+  .btn-view:hover {
+    background: var(--primary-darker);
+    color: white;
+    transform: translateX(4px);
+  }
+
+  /* Loading & Empty States */
+  .loading-state,
+  .empty-state {
+    grid-column: 1 / -1;
+    text-align: center;
+    padding: 60px 40px;
+    background: var(--white);
+    border-radius: var(--radius-lg);
+    box-shadow: var(--shadow-md);
+  }
+
+  .loading-icon {
+    font-size: 48px;
+    color: var(--primary-red);
+    margin-bottom: 20px;
+    animation: spin 1s linear infinite;
+  }
+
+  @keyframes spin {
+    100% { transform: rotate(360deg); }
+  }
+
+  .empty-icon {
+    font-size: 60px;
+    color: var(--text-light);
+    margin-bottom: 20px;
+  }
+
+  .state-title {
+    font-size: 20px;
+    font-weight: 700;
+    color: var(--text-dark);
+    margin: 0 0 10px 0;
+  }
+
+  .state-text {
+    font-size: 15px;
+    color: var(--text-gray);
+    margin: 0;
+  }
+
+  /* =========================================
+     RESPONSIVE DESIGN
+     ========================================= */
+  @media (max-width: 1024px) {
+    .hero-section {
+      grid-template-columns: 1fr;
+      text-align: center;
+      padding: 40px 5% 20px;
+      gap: 30px;
+      min-height: auto; /* Membatalkan full screen di mobile agar muat */
+    }
+
+    .hero-content {
+      margin: 0 auto;
+    }
+
+    .hero-title {
+      font-size: 42px;
+    }
+
+    .hero-subtitle {
+      margin: 0 auto 30px;
+    }
+
+    .search-wrapper {
+      margin: 0 auto 30px;
+    }
+
+    .mascot-wrapper {
+      order: -1;
+      height: auto;
+      min-height: 300px;
+    }
+
+    .mascot-container {
+      width: 100%;
+      max-width: 280px;
+    }
+
+    .mascot-container img {
+      max-height: 300px;
+    }
+
+    .bubble-1 { left: 0; top: 0; }
+    .bubble-2 { right: 0; bottom: 0; }
+  }
+
+  @media (max-width: 768px) {
+    .hero-title {
+      font-size: 34px;
+    }
+
+    .hero-subtitle {
+      font-size: 15px;
+    }
+
+    .search-box-modern {
+      flex-direction: column;
+      padding: 12px;
+    }
+
+    .search-box-modern input {
+      text-align: center;
+      padding: 12px;
+    }
+
+    .search-box-modern button {
+      width: 100%;
+      justify-content: center;
+      margin-top: 10px;
+    }
+
+    .mascot-container {
+      max-width: 240px;
+    }
+
+    .mascot-container img {
+      max-height: 260px;
+    }
+
+    .bubble {
+      font-size: 12px;
+      padding: 8px 16px;
+    }
+
+    .stats-grid {
+      grid-template-columns: repeat(2, 1fr);
+    }
+
+    .filter-section {
+      flex-direction: column;
+      align-items: stretch;
+      gap: 15px;
+      margin: 0 5% 40px;
+    }
+
+    .filter-label {
+      margin-right: 0;
+      margin-bottom: 5px;
+    }
+
+    .filter-pills-wrapper {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+    }
+
+    .sort-wrapper {
+      width: 100%;
+      margin-left: 0;
+      margin-top: 10px;
+      justify-content: flex-start;
+    }
+
+    .sort-select {
+      width: 100%;
+      min-width: auto;
+    }
+
+    .dataset-grid {
+      grid-template-columns: 1fr;
+    }
+
+    .section-header {
+      flex-direction: column;
+      align-items: flex-start;
+    }
+
+    .view-all-link {
+      align-self: flex-end;
+    }
+  }
+
+  @media (max-width: 480px) {
+    .hero-title {
+      font-size: 28px;
+    }
+
+    .stat-card {
+      padding: 20px 18px;
+    }
+
+    .stat-icon-wrapper {
+      width: 50px;
+      height: 50px;
+    }
+
+    .stat-info h3 {
+      font-size: 26px;
+    }
+
+    .dataset-card {
+      padding: 22px;
+    }
+
+    .card-logo {
+      width: 60px;
+      height: 60px;
+    }
+  }
+
+  /* =========================================
+     ANIMATIONS
+     ========================================= */
+  @keyframes fadeInUp {
+    from {
+      opacity: 0;
+      transform: translateY(30px);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+
+  .animate-on-scroll {
+    animation: fadeInUp 0.6s ease-out forwards;
+  }
+
+  .stat-card:nth-child(1) { animation-delay: 0.1s; }
+  .stat-card:nth-child(2) { animation-delay: 0.2s; }
+  .stat-card:nth-child(3) { animation-delay: 0.3s; }
+  .stat-card:nth-child(4) { animation-delay: 0.4s; }
+</style>
+
+<div class="home-wrapper">
+  
+  {# HERO SECTION #}
+  <section class="hero-section">
+    <div class="hero-content animate-on-scroll">
+      <div class="hero-badge">
+        <i class="fa fa-star"></i>
+        <span>Portal Resmi Pemerintah Provinsi</span>
+      </div>
+      <h1 class="hero-title">
+        Portal <span>Bengkulu</span><br><span>Satu Data</span>
+      </h1>
+      <p class="hero-subtitle">
+        Pusat Integrasi, Publikasi, dan Transparansi Data Pemerintah Provinsi Bengkulu 
+        Berbasis Standar Nasional untuk mendukung pembangunan daerah yang berbasis data.
+      </p>
+      
+      <div class="search-wrapper">
+        <form action="/dataset" method="GET" class="search-box-modern">
+          <input type="text" name="q" placeholder="Cari dataset, organisasi, atau topik..." autocomplete="off">
+          <button type="submit">
+            <i class="fa fa-search"></i>
+            Cari Data
+          </button>
+        </form>
+      </div>
+    </div>
+    
+    <div class="mascot-wrapper animate-on-scroll">
+      <div class="mascot-container">
+        <a href="/about" class="bubble bubble-1">
+          <i class="fa fa-comment"></i>
+          Ada Pertanyaan?
+        </a>
+        <a href="/arnold" class="bubble bubble-2">
+          <i class="fa fa-robot"></i>
+          Tanya Arnold!
+        </a>
+        <a href="#" onclick="document.getElementById('arnold-trigger').click(); return false;">
+          <img src="{{ h.url_for_static('/base/images/poster-bsd.png') }}" alt="Maskot Arnold Bengkulu">
+        </a>
+      </div>
+    </div>
+  </section>
+
+  {# STATS SECTION #}
+  <section class="stats-section">
+    <div class="stats-grid">
+      <a href="/dataset" class="stat-card animate-on-scroll">
+        <div class="stat-icon-wrapper">
+          <i class="fa fa-database stat-icon"></i>
+        </div>
+        <div class="stat-info">
+          <h3>{{ c.dataset_count | default('306') }}</h3>
+          <span>Dataset</span>
+          <p>Temukan berbagai dataset</p>
+        </div>
+      </a>
+      <a href="/organization" class="stat-card animate-on-scroll">
+        <div class="stat-icon-wrapper">
+          <i class="fa fa-institution stat-icon"></i>
+        </div>
+        <div class="stat-info">
+          <h3>42</h3>
+          <span>Organisasi</span>
+          <p>Sumber data resmi Bengkulu</p>
+        </div>
+      </a>
+      <a href="/publikasi" class="stat-card animate-on-scroll">
+        <div class="stat-icon-wrapper">
+          <i class="fa fa-book stat-icon"></i>
+        </div>
+        <div class="stat-info">
+          <h3>0</h3>
+          <span>Publikasi</span>
+          <p>Dokumen &amp; laporan resmi</p>
+        </div>
+      </a>
+      <a href="/infografis" class="stat-card animate-on-scroll">
+        <div class="stat-icon-wrapper">
+          <i class="fa fa-signal stat-icon"></i>
+        </div>
+        <div class="stat-info">
+          <h3>0</h3>
+          <span>Infografis</span>
+          <p>Visualisasi data menarik</p>
+        </div>
+      </a>
+    </div>
+  </section>
+
+  {# FILTER & SORT SECTION - FIXED #}
+  <section class="filter-section">
+    <div style="display: flex; flex-wrap: wrap; gap: 8px; align-items: center; flex: 1;">
+      <span class="filter-label"><i class="fa fa-filter"></i> Filter:</span>
+      <button class="filter-pill active" data-category="all" onclick="filterDatasets('all', this)">Semua</button>
+      <button class="filter-pill" data-category="penduduk" onclick="filterDatasets('penduduk', this)">Penduduk</button>
+      <button class="filter-pill" data-category="asn" onclick="filterDatasets('asn', this)">ASN</button>
+      <button class="filter-pill" data-category="kesehatan" onclick="filterDatasets('kesehatan', this)">Kesehatan</button>
+      <button class="filter-pill" data-category="pariwisata" onclick="filterDatasets('pariwisata', this)">Pariwisata</button>
+      <button class="filter-pill" data-category="peternakan" onclick="filterDatasets('peternakan', this)">Peternakan</button>
+    </div>
+    
+    <div class="sort-wrapper">
+      <span class="sort-label"><i class="fa fa-sort"></i> Urutkan:</span>
+      <select class="sort-select" id="sortSelect" onchange="sortDatasets()">
+        <option value="metadata_modified desc">Tanggal Terbaru</option>
+        <option value="title_string asc">A - Z</option>
+        <option value="title_string desc">Z - A</option>
+        <option value="views_recent desc">Paling Dilihat</option>
+      </select>
+    </div>
+  </section>
+
+  {# DATASET SECTION #}
+  <section class="dataset-section">
+    <div class="section-header">
+      <h2 class="section-title">
+        <i class="fa fa-fire"></i>
+        Dataset Terbaru
+      </h2>
+      <a href="/dataset" class="view-all-link">
+        Lihat Semua <i class="fa fa-arrow-right"></i>
+      </a>
+    </div>
+
+    <div id="dynamic-dataset-grid" class="dataset-grid">
+      <div class="loading-state">
+        <i class="fa fa-spinner fa-spin loading-icon"></i>
+        <h3 class="state-title">Memuat Dataset...</h3>
+        <p class="state-text">Sedang mengambil data dari server</p>
+      </div>
+    </div>
+  </section>
+
+</div> 
+
+<script>
+  // Global variable to store datasets
+  let allDatasets = [];
+  let currentFilter = 'all';
+
+  // Fetch datasets from CKAN API
+  function fetchDatasets(sort = 'metadata_modified desc') {
+    const container = document.getElementById('dynamic-dataset-grid');
+    
+    fetch(`/api/3/action/package_search?rows=12&sort=${sort}`)
+      .then(response => {
+        if (!response.ok) throw new Error('Network response was not ok');
+        return response.json();
+      })
+      .then(data => {
+        allDatasets = data.result?.results || [];
+        displayDatasets(allDatasets);
+      })
+      .catch(error => {
+        console.error('Error fetching datasets:', error);
+        container.innerHTML = `
+          <div class="empty-state">
+            <i class="fa fa-exclamation-triangle empty-icon" style="color:#ff6b6b;"></i>
+            <h3 class="state-title">Gagal Memuat Data</h3>
+            <p class="state-text">Silakan refresh halaman atau coba beberapa saat lagi.</p>
+          </div>
+        `;
+      });
+  }
+
+  // Display datasets in grid
+  function displayDatasets(datasets) {
+    const container = document.getElementById('dynamic-dataset-grid');
+
+    if (datasets.length === 0) {
+      container.innerHTML = `
+        <div class="empty-state">
+          <i class="fa fa-folder-open-o empty-icon"></i>
+          <h3 class="state-title">Tidak Ada Dataset</h3>
+          <p class="state-text">Tidak ada dataset yang sesuai dengan filter saat ini.</p>
+        </div>
+      `;
+      return;
+    }
+
+    container.innerHTML = datasets.map(pkg => {
+      let updateText = "Baru ditambahkan";
+      if (pkg.metadata_modified) {
+        const date = new Date(pkg.metadata_modified);
+        updateText = date.toLocaleDateString('id-ID', { 
+          day: 'numeric', 
+          month: 'short', 
+          year: 'numeric' 
+        });
+      }
+
+      const orgName  = pkg.organization?.title || pkg.organization?.name || 'Unknown';
+      // CKAN image_display_url bisa berupa URL absolut atau path relatif
+      let orgImage = pkg.organization?.image_display_url || '';
+      // Normalkan path relatif (misal /uploads/group/...) agar tetap berfungsi
+      if (orgImage && !orgImage.startsWith('http') && !orgImage.startsWith('/')) {
+        orgImage = '/' + orgImage;
+      }
+
+      const logoHtml = orgImage
+        ? `<img src="${orgImage}" alt="${orgName}"
+               style="width:100%;height:100%;object-fit:cover;border-radius:50%;display:block;"
+               onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';">
+           <span style="display:none;width:100%;height:100%;align-items:center;justify-content:center;">
+             <i class='fa fa-institution' style='font-size:26px;color:var(--primary-red);'></i>
+           </span>`
+        : `<i class='fa fa-institution' style='font-size:26px;color:var(--primary-red);'></i>`;
+
+      return `
+        <a href="/dataset/${pkg.name}" class="dataset-card animate-on-scroll">
+          <div class="card-top">
+            <div class="card-logo" style="overflow:hidden;">
+              ${logoHtml}
+            </div>
+            <div class="card-title">${pkg.title || pkg.name}</div>
+          </div>
+          <div class="card-bottom">
+            <div class="update-badge">
+              <i class="fa fa-clock-o"></i>
+              <span>${updateText}</span>
+            </div>
+            <span class="btn-view">
+              Lihat <i class="fa fa-arrow-right"></i>
+            </span>
+          </div>
+        </a>
+      `;
+    }).join('');
+
+    // Add animation delay
+    container.querySelectorAll('.dataset-card').forEach((card, index) => {
+      card.style.animationDelay = `${0.1 + index * 0.1}s`;
+    });
+  }
+
+  // Filter datasets by category (keyword search)
+  function filterDatasets(category, btnElement) {
+    currentFilter = category;
+    
+    // Update active button
+    document.querySelectorAll('.filter-pill').forEach(btn => {
+      btn.classList.remove('active');
+    });
+    btnElement.classList.add('active');
+
+    const sortValue = document.getElementById('sortSelect').value;
+    
+    if (category === 'all') {
+      // Fetch all datasets
+      fetchDatasets(sortValue);
+    } else {
+      // Filter by keyword
+      fetch(`/api/3/action/package_search?q=${category}&rows=12&sort=${sortValue}`)
+        .then(response => response.json())
+        .then(data => {
+          allDatasets = data.result?.results || [];
+          displayDatasets(allDatasets);
+        })
+        .catch(error => {
+          console.error('Error filtering datasets:', error);
+        });
+    }
+  }
+
+  // Sort datasets
+  function sortDatasets() {
+    const sortValue = document.getElementById('sortSelect').value;
+    
+    if (currentFilter === 'all') {
+      fetchDatasets(sortValue);
+    } else {
+      // Re-apply current filter with new sort
+      fetch(`/api/3/action/package_search?q=${currentFilter}&rows=12&sort=${sortValue}`)
+        .then(response => response.json())
+        .then(data => {
+          allDatasets = data.result?.results || [];
+          displayDatasets(allDatasets);
+        })
+        .catch(error => {
+          console.error('Error sorting datasets:', error);
+        });
+    }
+  }
+
+// Function to fetch and update statistics in real-time
+function updateStatistics() {
+  // Fetch Dataset Count
+  fetch('/api/3/action/package_search?rows=0')
+    .then(response => response.json())
+    .then(data => {
+      const count = data.result?.count || 0;
+      const datasetEl = document.querySelector('.stat-card:nth-child(1) h3');
+      if (datasetEl) animateNumber(datasetEl, count);
+    })
+    .catch(error => console.error('Error fetching dataset count:', error));
+
+  // Fetch Organization Count
+  fetch('/api/3/action/organization_list?all_fields=false')
+    .then(response => response.json())
+    .then(data => {
+      const count = data.result?.length || 0;
+      const orgEl = document.querySelector('.stat-card:nth-child(2) h3');
+      if (orgEl) animateNumber(orgEl, count);
+    })
+    .catch(error => console.error('Error fetching organization count:', error));
+
+  // Fetch Publikasi Count — dari tabel custom PostgreSQL
+  fetch('/api/stats/publikasi-count')
+    .then(response => response.json())
+    .then(data => {
+      const count = data.count || 0;
+      const pubEl = document.querySelector('.stat-card:nth-child(3) h3');
+      if (pubEl) animateNumber(pubEl, count);
+    })
+    .catch(error => console.error('Error fetching publikasi count:', error));
+
+  // Fetch Infografis Count — dari tabel custom PostgreSQL
+  fetch('/api/stats/infografis-count')
+    .then(response => response.json())
+    .then(data => {
+      const count = data.count || 0;
+      const infoEl = document.querySelector('.stat-card:nth-child(4) h3');
+      if (infoEl) animateNumber(infoEl, count);
+    })
+    .catch(error => console.error('Error fetching infografis count:', error));
+}
+
+// Animation function for counting numbers
+function animateNumber(element, target) {
+  const start = parseInt(element.textContent.replace(/\D/g,'')) || 0;
+  if (start === target) return;
+  const steps = 30;
+  const inc = Math.ceil(Math.abs(target - start) / steps);
+  let current = start;
+  const timer = setInterval(() => {
+    current = target > start
+      ? Math.min(current + inc, target)
+      : Math.max(current - inc, target);
+    element.textContent = current.toLocaleString('id-ID');
+    if (current === target) clearInterval(timer);
+  }, 30);
+}
+
+// Gabungkan DOMContentLoaded: load dataset + update statistics
+document.addEventListener('DOMContentLoaded', function() {
+  fetchDatasets();
+  updateStatistics();
+  // Refresh statistik setiap 30 detik (real-time)
+  setInterval(updateStatistics, 30000);
+});
+</script>
+{% endblock %}

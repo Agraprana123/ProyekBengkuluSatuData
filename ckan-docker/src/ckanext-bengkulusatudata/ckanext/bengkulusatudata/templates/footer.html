@@ -1,0 +1,342 @@
+<style>
+
+/* =========================
+FOOTER BENGKULU SATU DATA
+VERSI BERSIH
+========================= */
+
+.portal-footer{
+
+background:linear-gradient(
+180deg,
+#b30000,
+#9a0000
+);
+
+color:white;
+
+font-family:'Poppins',sans-serif;
+
+margin-top:60px;
+
+position:relative; /* penting untuk back to top */
+
+}
+
+/* MAIN */
+
+.footer-main{
+
+padding:35px 8%;
+
+display:grid;
+
+grid-template-columns:1.5fr 1fr;
+
+gap:40px;
+
+align-items:center;
+
+}
+
+
+/* BRAND */
+
+.footer-brand{
+
+display:flex;
+
+gap:16px;
+
+align-items:flex-start;
+
+}
+
+.footer-brand-logo{
+
+width:60px;
+
+height:60px;
+
+background:white;
+
+border-radius:50%;
+
+display:flex;
+
+align-items:center;
+
+justify-content:center;
+
+flex-shrink:0;
+
+}
+
+.footer-brand-logo img{
+
+width:40px;
+
+}
+
+.footer-brand-text h2{
+
+margin:0;
+
+font-size:20px;
+
+font-weight:700;
+
+}
+
+.footer-brand-text p{
+
+margin-top:6px;
+
+font-size:13px;
+
+line-height:1.5;
+
+opacity:.9;
+
+}
+
+
+/* CONTACT */
+
+.footer-title{
+
+font-size:16px;
+
+font-weight:600;
+
+margin-bottom:10px;
+
+}
+
+.footer-contact{
+
+list-style:none;
+
+padding:0;
+
+margin:0;
+
+}
+
+.footer-contact li{
+
+display:flex;
+
+gap:8px;
+
+margin-bottom:8px;
+
+font-size:13px;
+
+align-items:center;
+
+}
+
+.footer-contact i{
+
+width:16px;
+
+}
+
+
+/* COPYRIGHT */
+
+.footer-bottom{
+
+border-top:1px solid rgba(255,255,255,0.2);
+
+padding:12px 8%;
+
+display:flex;
+
+justify-content:space-between;
+
+align-items:center;
+
+font-size:12px;
+
+}
+
+
+/* BACK TO TOP (HANYA DI FOOTER) */
+
+.back-top{
+
+position:absolute;
+
+right:25px;
+
+bottom:25px;
+
+width:40px;
+
+height:40px;
+
+background:#b30000;
+
+color:white;
+
+border-radius:50%;
+
+display:flex;
+
+align-items:center;
+
+justify-content:center;
+
+font-size:16px;
+
+cursor:pointer;
+
+box-shadow:0 5px 12px rgba(0,0,0,0.3);
+
+transition:.2s;
+
+}
+
+.back-top:hover{
+
+transform:translateY(-2px);
+
+background:#d60000;
+
+}
+
+
+/* MOBILE */
+
+@media(max-width:900px){
+
+.footer-main{
+
+grid-template-columns:1fr;
+
+gap:25px;
+
+text-align:center;
+
+}
+
+.footer-brand{
+
+flex-direction:column;
+
+align-items:center;
+
+}
+
+.footer-bottom{
+
+flex-direction:column;
+
+gap:5px;
+
+text-align:center;
+
+}
+
+}
+
+</style>
+
+
+
+<footer class="portal-footer">
+
+
+<div class="footer-main">
+
+
+<!-- KOLOM 1 -->
+
+<div>
+
+<div class="footer-brand">
+
+<div class="footer-brand-logo">
+
+<img src="{{ h.url_for_static('/base/images/logo-pemprov.png') }}">
+
+</div>
+
+<div class="footer-brand-text">
+
+<h2>Bengkulu Satu Data</h2>
+
+<p>
+Portal integrasi dan publikasi data resmi
+Pemerintah Provinsi Bengkulu untuk mendukung
+transparansi dan pembangunan berbasis data.
+</p>
+
+</div>
+
+</div>
+
+</div>
+
+
+<!-- KOLOM 2 -->
+
+<div>
+
+<div class="footer-title">
+Kontak
+</div>
+
+<ul class="footer-contact">
+
+<li>
+<i class="fa fa-map-marker"></i>
+Jl. Basuki Rahmat No.06 Bengkulu
+</li>
+
+<li>
+<i class="fa fa-phone"></i>
+(0736) 7325176
+</li>
+
+<li>
+<i class="fa fa-envelope"></i>
+staper.kominfo@bengkuluprov.go.id
+</li>
+
+<li>
+<i class="fa fa-instagram"></i>
+@statistik.kominfobengkuluprov
+</li>
+
+</ul>
+
+</div>
+
+
+</div>
+
+
+<div class="footer-bottom">
+
+<div>
+Copyright © 2026 Dinas Komunikasi, Informatika dan Statistik Provinsi Bengkulu. All Right Reserved
+</div>
+
+<div>
+Portal Data Pemerintah Provinsi Bengkulu
+</div>
+
+</div>
+
+
+<!-- BACK TO TOP -->
+
+<div class="back-top" onclick="window.scrollTo({top:0,behavior:'smooth'})">
+↑
+</div>
+
+
+</footer>
