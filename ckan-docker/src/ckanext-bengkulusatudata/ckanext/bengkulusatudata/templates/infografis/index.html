@@ -212,10 +212,13 @@
     overflow: hidden;
     border: 1.5px solid #f1f5f9;
     box-shadow: 0 4px 18px rgba(0,0,0,0.05);
-    transition: all .32s cubic-bezier(.22,.68,0,1.2);
+    /* Spesifik properti saja — JANGAN transition:all */
+    transition: transform .28s ease, box-shadow .28s ease, border-color .28s ease;
     cursor: pointer;
     display: flex; flex-direction: column;
     position: relative;
+    /* Paksa GPU layer sejak awal — menghindari repaint saat hover */
+    will-change: transform;
   }
   .info-card:hover {
     transform: translateY(-8px);
@@ -241,7 +244,7 @@
     background: rgba(176,0,0,0.88); color: #fff;
     font-size: 10.5px; font-weight: 800; letter-spacing: 0.4px;
     padding: 4px 10px; border-radius: 999px; text-transform: uppercase;
-    backdrop-filter: blur(4px);
+    /* TIDAK pakai backdrop-filter — berat di GPU */
   }
   .info-card-img .view-pill {
     position: absolute; top: 12px; right: 12px;
@@ -764,7 +767,8 @@
 </div>
 
 
-<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js" defer></script>
+{# Chart.js di-load LAZY — hanya saat user pertama kali buka modal #}
+{# Tidak ada CDN request saat halaman pertama dibuka #}
 <script>
 (function () {
   'use strict';
@@ -890,9 +894,18 @@
     document.getElementById('detailModal').classList.add('open');
     document.body.style.overflow = 'hidden';
 
-    // Build charts hanya SEKALI — tidak destroy/rebuild tiap buka modal
-    if (typeof Chart !== 'undefined') {
-      requestAnimationFrame(buildCharts);
+    // Lazy-load Chart.js — hanya diunduh saat modal pertama kali dibuka
+    if (!chartsBuilt) {
+      if (typeof Chart !== 'undefined') {
+        // Chart.js sudah ada (misal dimuat sebelumnya)
+        requestAnimationFrame(buildCharts);
+      } else {
+        // Muat Chart.js secara dinamis — tidak memblok halaman awal
+        var s = document.createElement('script');
+        s.src = 'https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js';
+        s.onload = function() { requestAnimationFrame(buildCharts); };
+        document.head.appendChild(s);
+      }
     }
   };
 
