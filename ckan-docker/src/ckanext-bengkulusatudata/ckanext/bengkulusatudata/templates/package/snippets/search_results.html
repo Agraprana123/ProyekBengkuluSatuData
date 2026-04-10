@@ -1,10 +1,18 @@
 <section class="module" id="search-results" hx-swap-oob="true" hx-swap="none">
   <div class="module-content">
     {% block page_primary_action %}
-      {% if h.check_access('package_create') %}
-        <div class="page_primary_action">
-          {% snippet 'snippets/add_dataset.html', dataset_type=dataset_type %}
-        </div>
+      {% if group_dict %}
+        {% if h.check_access('package_create', {'owner_org': group_dict.id}) %}
+          <div class="page_primary_action">
+            {% snippet 'snippets/add_dataset.html', dataset_type=dataset_type, group=group_dict.id %}
+          </div>
+        {% endif %}
+      {% else %}
+        {% if h.check_access('package_create') %}
+          <div class="page_primary_action">
+            {% snippet 'snippets/add_dataset.html', dataset_type=dataset_type %}
+          </div>
+        {% endif %}
       {% endif %}
     {% endblock %}
     {% block form %}
