@@ -6,6 +6,7 @@
       {{ super() }}
     {% endblock %}
     {% snippet "package/snippets/search_results.html",
+      group_dict=group_dict,
       dataset_type=dataset_type,
       fields_grouped=fields_grouped,
       search_facets=search_facets,
