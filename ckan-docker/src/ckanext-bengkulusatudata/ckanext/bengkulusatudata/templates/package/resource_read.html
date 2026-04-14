@@ -7,6 +7,140 @@
   {% set description = h.markdown_extract(h.get_translated(res, 'description'), extract_length=200) if res.description else h.markdown_extract(h.get_translated(package, 'notes'), extract_length=200) %}
   <meta property="og:title" content="{{ h.dataset_display_name(package) }} - {{ h.resource_display_name(res) }} - {{ g.site_title }}">
   <meta property="og:description" content="{{ description|forceescape }}">
+  <style>
+    /* Percantik tampilan Data Viewer Khusus untuk File resource / Gambar */
+    .resource-view img, .ckanext-datapreview img, .prose.notes img {
+      max-width: 100%;
+      max-height: 500px;
+      width: auto;
+      height: auto;
+      border-radius: 12px;
+      box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+      display: block;
+      margin: 20px auto 30px auto;
+      object-fit: contain;
+    }
+    
+    /* Memastikan Iframe (peta) tidak melampaui layar HP */
+    .resource-view iframe, .ckanext-datapreview iframe, #data-preview iframe {
+      max-width: 100% !important;
+      width: 100% !important;
+    }
+    
+    .module-resource {
+      background: white;
+      border-radius: 15px;
+      padding: 30px;
+      box-shadow: 0 5px 25px rgba(0,0,0,0.05);
+      border: 1px solid #f0f0f0;
+      margin-bottom: 30px;
+      
+      /* KUNCI RESPONSIVITAS: Mencegah teks meluber */
+      overflow-wrap: break-word;
+      word-wrap: break-word;
+      word-break: break-word;
+      overflow-x: hidden; 
+    }
+    
+    .page-heading {
+      font-family: 'Poppins', sans-serif;
+      font-weight: 700;
+      color: #222;
+      border-bottom: 2px solid #f8f9fa;
+      padding-bottom: 15px;
+      margin-bottom: 25px;
+      /* Memecah judul yang panjang tanpa spasi */
+      word-break: break-all;
+    }
+    
+    /* Link panjang dipecah */
+    a.resource-url-analytics, p.text-muted.ellipsis {
+      white-space: normal !important;
+      word-break: break-all !important;
+    }
+    
+    /* Percantik tombol navigasi/aksi */
+    .btn-secondary {
+      background-color: #f8f9fa;
+      border-color: #e9ecef;
+      color: #495057;
+      border-radius: 8px;
+      transition: all 0.3s ease;
+    }
+    .btn-secondary:hover {
+      background-color: #e9ecef;
+      color: #B00000;
+      transform: translateY(-2px);
+      box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+    }
+    
+    .btn-primary.resource-url-analytics {
+      background-color: #B00000;
+      border-color: #B00000;
+      border-radius: 8px;
+      padding: 8px 20px;
+      transition: all 0.3s ease;
+      color: white !important;
+    }
+    .btn-primary.resource-url-analytics:hover {
+      background-color: #8B0000;
+      transform: translateY(-2px);
+      box-shadow: 0 4px 15px rgba(176,0,0,0.3);
+    }
+    
+    /* Percantik tabel Additional Information */
+    .table-bordered {
+      border-radius: 12px;
+      overflow: hidden;
+      border: none;
+      box-shadow: 0 4px 15px rgba(0,0,0,0.05);
+    }
+    .table-bordered th {
+      background-color: #f9f9f9;
+      font-weight: 600;
+      color: #444;
+      border-bottom: 2px solid #eee;
+    }
+    .module-content h2 {
+      font-family: 'Poppins', sans-serif;
+      font-weight: 600;
+      color: #B00000;
+      margin-bottom: 20px;
+      margin-top: 10px;
+    }
+    
+    /* --- MOBILE RESPONSIVE adjustments --- */
+    @media (max-width: 768px) {
+      .module-resource {
+        padding: 15px; /* Kurangi padding di HP */
+        border-radius: 10px;
+      }
+      .page-heading {
+        font-size: 22px;
+      }
+      .actions ul {
+        justify-content: flex-start !important;
+      }
+      .btn-primary.resource-url-analytics, .btn-secondary {
+        width: 100%; /* Tombol melebar di HP */
+        margin-bottom: 5px;
+        text-align: center;
+        justify-content: center;
+      }
+      .btn-group {
+        display: flex;
+        flex-direction: column;
+        width: 100%;
+      }
+      /* Cegah tabel meluber keluar layar */
+      .table-responsive {
+        display: block;
+        width: 100%;
+        overflow-x: auto;
+        -webkit-overflow-scrolling: touch;
+      }
+    }
+  </style>
 {% endblock -%}
 
 {% block subtitle %}{{ h.dataset_display_name(package) }} {{ g.template_title_delimiter }} {{ h.resource_display_name(res) }}{% endblock %}

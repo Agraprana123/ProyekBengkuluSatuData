@@ -1,0 +1,292 @@
+{% extends "page.html" %}
+
+{% block subtitle %}Manajemen User Walidata – Admin{% endblock %}
+
+{% block styles %}
+{{ super() }}
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap');
+*, *::before, *::after { box-sizing: border-box; }
+body { font-family: 'Poppins', sans-serif; background: #f0f2f5; }
+
+.hero {
+  background: linear-gradient(135deg, #312e81 0%, #3730a3 50%, #4338ca 100%);
+  padding: 34px 0 28px;
+  position: relative;
+}
+.hero .badge { 
+  display: inline-block;
+  background: rgba(255,255,255,0.15); color: white;
+  padding: 5px 14px; border-radius: 20px;
+  font-size: 11px; font-weight: 700; letter-spacing: 1.2px;
+  text-transform: uppercase; margin-bottom: 10px;
+  border: 1px solid rgba(255,255,255,0.25);
+}
+.hero h1 { color: white; font-size: 26px; font-weight: 700; margin-bottom: 5px; }
+.hero p  { color: rgba(255,255,255,0.6); font-size: 13px; margin: 0; }
+.back-btn {
+  display: inline-flex; align-items: center; gap: 6px;
+  color: white; font-size: 13px; font-weight: 600;
+  text-decoration: none; padding: 7px 16px;
+  border: 1px solid rgba(255,255,255,0.25);
+  border-radius: 9px; background: rgba(255,255,255,0.1);
+  transition: all 0.2s; margin-top: 16px;
+}
+.back-btn:hover { background: rgba(255,255,255,0.2); color: white; }
+
+.body-wrap { max-width: 960px; margin: 28px auto; padding: 0 20px 40px; }
+
+/* ALERTS */
+.alert-flash {
+  border-radius: 11px; padding: 13px 18px; margin-bottom: 18px;
+  font-size: 13px; font-weight: 500;
+  display: flex; align-items: center; gap: 10px;
+}
+.alert-flash.success { background: #d1fae5; border-left: 4px solid #10b981; color: #065f46; }
+.alert-flash.error   { background: #fee2e2; border-left: 4px solid #ef4444; color: #7f1d1d; }
+
+/* INFO BOX */
+.info-box {
+  background: #eff6ff; border: 1px solid #bfdbfe; border-radius: 14px;
+  padding: 16px 20px; margin-bottom: 24px;
+  display: flex; gap: 14px; align-items: flex-start;
+}
+.info-box i { color: #2563eb; font-size: 20px; flex-shrink: 0; margin-top: 2px; }
+.info-box p { margin: 0; font-size: 13px; color: #1e40af; line-height: 1.65; }
+.info-box strong { color: #1e3a8a; }
+
+/* PANEL */
+.panel {
+  background: white; border-radius: 16px;
+  box-shadow: 0 2px 14px rgba(0,0,0,0.07);
+  overflow: hidden; margin-bottom: 22px;
+}
+.panel-hdr {
+  padding: 16px 22px; border-bottom: 1px solid #f3f4f6;
+  display: flex; align-items: center; gap: 12px;
+}
+.panel-hdr-icon {
+  width: 40px; height: 40px; border-radius: 11px;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 17px; flex-shrink: 0;
+}
+.panel-hdr-icon.purple { background: #ede9fe; color: #7c3aed; }
+.panel-hdr-icon.green  { background: #d1fae5; color: #059669; }
+.panel-hdr h2 { font-size: 15px; font-weight: 700; color: #1f2937; margin: 0; }
+.panel-hdr p  { font-size: 12px; color: #6b7280; margin: 2px 0 0; }
+
+/* FORM */
+.form-body { padding: 22px; }
+.form-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-bottom: 18px; }
+.form-group label {
+  display: block; font-size: 11px; font-weight: 700;
+  color: #374151; text-transform: uppercase; letter-spacing: 0.5px;
+  margin-bottom: 6px;
+}
+.form-input {
+  width: 100%; border: 1.5px solid #e5e7eb; border-radius: 10px;
+  padding: 10px 13px; font-size: 13px;
+  font-family: 'Poppins', sans-serif;
+  outline: none; transition: border 0.2s; color: #374151;
+}
+.form-input:focus { border-color: #7c3aed; box-shadow: 0 0 0 3px rgba(124,58,237,0.1); }
+.form-input::placeholder { color: #d1d5db; }
+.hint-box {
+  background: #f8fafc; border: 1px solid #e5e7eb; border-radius: 9px;
+  padding: 10px 14px; font-size: 12px; color: #6b7280;
+  margin-top: 8px;
+  display: flex; align-items: flex-start; gap: 7px;
+}
+.btn-submit {
+  background: linear-gradient(135deg, #7c3aed, #6d28d9); color: white;
+  border: none; border-radius: 10px; padding: 11px 24px;
+  font-size: 13px; font-weight: 700; cursor: pointer;
+  display: inline-flex; align-items: center; gap: 8px;
+  transition: all 0.25s;
+}
+.btn-submit:hover { transform: translateY(-2px); box-shadow: 0 6px 18px rgba(124,58,237,0.4); }
+
+/* TABLE */
+table.wd-table { width: 100%; border-collapse: collapse; }
+table.wd-table thead th {
+  background: #f8fafc; padding: 11px 18px;
+  font-size: 10px; font-weight: 800;
+  text-transform: uppercase; letter-spacing: 0.8px;
+  color: #6b7280; text-align: left;
+  border-bottom: 1px solid #e5e7eb;
+}
+table.wd-table tbody tr { transition: background 0.15s; border-bottom: 1px solid #f3f4f6; }
+table.wd-table tbody tr:hover { background: #fafafa; }
+table.wd-table tbody td { padding: 14px 18px; font-size: 13px; color: #374151; vertical-align: middle; }
+
+.avatar {
+  width: 38px; height: 38px; border-radius: 50%;
+  background: linear-gradient(135deg, #7c3aed, #4f46e5);
+  display: inline-flex; align-items: center; justify-content: center;
+  color: white; font-size: 14px; font-weight: 700; margin-right: 10px;
+}
+.u-name   { font-size: 14px; font-weight: 600; color: #1f2937; display: block; }
+.u-sub    { font-size: 11px; color: #9ca3af; }
+.role-tag {
+  display: inline-flex; align-items: center; gap: 5px;
+  background: linear-gradient(135deg,#ede9fe,#ddd6fe);
+  color: #6d28d9; padding: 4px 11px; border-radius: 20px;
+  font-size: 11px; font-weight: 700; border: 1px solid #c4b5fd;
+}
+.btn-revoke {
+  background: #fee2e2; color: #dc2626; border: none;
+  border-radius: 8px; padding: 7px 13px;
+  font-size: 12px; font-weight: 600; cursor: pointer;
+  display: inline-flex; align-items: center; gap: 5px;
+  transition: all 0.2s;
+}
+.btn-revoke:hover { background: #dc2626; color: white; }
+
+.empty-wd {
+  text-align: center; padding: 48px 20px; color: #6b7280;
+}
+.empty-wd i { font-size: 38px; color: #d1d5db; display: block; margin-bottom: 12px; }
+.empty-wd p { font-size: 13px; margin: 0; }
+
+@media (max-width: 640px) {
+  .form-grid { grid-template-columns: 1fr; }
+}
+</style>
+{% endblock %}
+
+{% block primary_content %}
+<!-- HERO -->
+<div class="hero">
+  <div class="container">
+    <span class="badge">⚙ Sysadmin Panel</span>
+    <h1><i class="fa fa-users" style="margin-right:9px;"></i>Manajemen User Walidata</h1>
+    <p>Tunjuk atau cabut role Walidata (Verifikator Data) dari portal Bengkulu Satu Data</p>
+    <a href="/walidata" class="back-btn"><i class="fa fa-arrow-left"></i> Kembali ke Dashboard Walidata</a>
+  </div>
+</div>
+
+<div class="body-wrap">
+
+  <!-- ALERTS -->
+  {% with messages = get_flashed_messages(with_categories=True) %}
+    {% if messages %}{% for cat, msg in messages %}
+      <div class="alert-flash {{ 'success' if cat == 'success' else 'error' }}">
+        <i class="fa fa-{{ 'check-circle' if cat == 'success' else 'exclamation-triangle' }}"></i>{{ msg }}
+      </div>
+    {% endfor %}{% endif %}
+  {% endwith %}
+
+  <!-- INFO BOX -->
+  <div class="info-box">
+    <i class="fa fa-info-circle"></i>
+    <p>
+      <strong>Apa itu Walidata?</strong><br>
+      Walidata adalah verifikator data yang dipegang oleh <strong>Diskominfotik</strong>.
+      Mereka dapat melihat semua dataset <em>Private</em> dari seluruh OPD, lalu <strong>menyetujui</strong> (publikasi),
+      <strong>menolak</strong> (revisi), atau <strong>memberikan catatan</strong> kepada Produsen Data.
+      Walidata <strong>bukan Sysadmin</strong> — mereka tidak bisa menghapus atau edit data sembarangan.
+    </p>
+  </div>
+
+  <!-- PANEL TAMBAH WALIDATA -->
+  <div class="panel">
+    <div class="panel-hdr">
+      <div class="panel-hdr-icon purple"><i class="fa fa-user-plus"></i></div>
+      <div>
+        <h2>Tunjuk User sebagai Walidata</h2>
+        <p>Masukkan username CKAN yang sudah terdaftar di sistem</p>
+      </div>
+    </div>
+    <div class="form-body">
+      <form method="POST" action="/admin/walidata/tambah">
+        {{ h.csrf_input() }}
+        <div class="form-grid">
+          <div class="form-group">
+            <label>Username CKAN <span style="color:#ef4444;">*</span></label>
+            <input type="text" name="user_name" class="form-input"
+                   placeholder="contoh: budi_diskominfo" required autocomplete="off">
+            <div class="hint-box">
+              <i class="fa fa-lightbulb-o" style="color:#d97706; flex-shrink:0;"></i>
+              <span>Lihat daftar user di <a href="/user" target="_blank" style="color:#2563eb;">halaman /user</a>. Gunakan username yang tepat, bukan email.</span>
+            </div>
+          </div>
+          <div class="form-group">
+            <label>Catatan (Opsional)</label>
+            <input type="text" name="catatan" class="form-input"
+                   placeholder="contoh: Staf Diskominfotik Bidang Statistik">
+          </div>
+        </div>
+        <button type="submit" class="btn-submit">
+          <i class="fa fa-plus-circle"></i> Tunjuk sebagai Walidata
+        </button>
+      </form>
+    </div>
+  </div>
+
+  <!-- PANEL DAFTAR WALIDATA -->
+  <div class="panel">
+    <div class="panel-hdr">
+      <div class="panel-hdr-icon green"><i class="fa fa-shield"></i></div>
+      <div>
+        <h2>Daftar User Walidata Aktif</h2>
+        <p>{{ walidata_list|length }} user terdaftar sebagai Walidata</p>
+      </div>
+    </div>
+
+    {% if walidata_list %}
+    <table class="wd-table">
+      <thead>
+        <tr>
+          <th>User</th>
+          <th>Role</th>
+          <th>Catatan</th>
+          <th>Ditunjuk Oleh</th>
+          <th>Tanggal</th>
+          <th>Aksi</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for wd in walidata_list %}
+        <tr>
+          <td>
+            <div style="display:flex; align-items:center;">
+              <div class="avatar">{{ wd.user_name[0].upper() }}</div>
+              <div>
+                <span class="u-name">{{ wd.user_name }}</span>
+                <span class="u-sub">ID: {{ wd.user_id[:14] }}…</span>
+              </div>
+            </div>
+          </td>
+          <td><span class="role-tag"><i class="fa fa-shield"></i> Walidata</span></td>
+          <td style="font-size:12px; color:#6b7280; max-width:160px;">
+            {{ wd.catatan or '—' }}
+          </td>
+          <td style="font-size:12px; color:#6b7280;">
+            <i class="fa fa-user-secret" style="margin-right:4px;"></i>{{ wd.ditunjuk_oleh or '—' }}
+          </td>
+          <td style="font-size:12px; color:#6b7280; white-space:nowrap;">
+            {% if wd.created_at %}{{ wd.created_at.strftime('%d %b %Y') }}{% else %}—{% endif %}
+          </td>
+          <td>
+            <form method="POST" action="/admin/walidata/hapus/{{ wd.user_id }}"
+                  onsubmit="return confirm('Cabut role Walidata dari {{ wd.user_name }}?')">
+              {{ h.csrf_input() }}
+              <button type="submit" class="btn-revoke">
+                <i class="fa fa-user-times"></i> Cabut Role
+              </button>
+            </form>
+          </td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+    {% else %}
+    <div class="empty-wd">
+      <i class="fa fa-users"></i>
+      <p>Belum ada Walidata yang ditunjuk.<br>Gunakan form di atas untuk mendaftarkan Walidata pertama.</p>
+    </div>
+    {% endif %}
+  </div>
+
+</div>
+{% endblock %}

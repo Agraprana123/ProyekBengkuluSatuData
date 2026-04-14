@@ -188,7 +188,7 @@
   
   @media (max-width: 991px) {
     .custom-header {
-      padding: 12px 0;
+      padding: 12px 15px;
     }
     
     .navbar-collapse {
@@ -209,6 +209,24 @@
       margin: 15px auto 0;
       justify-content: center;
     }
+
+    /* Penyesuaian khusus agar logo tidak menutupi tombol hamburger di HP */
+    .custom-header .navbar-brand {
+      font-size: 20px !important;
+      margin-right: 10px !important;
+    }
+    
+    .custom-header .navbar-brand img {
+      height: 45px !important;
+      transform: scale(1.5) !important;
+      margin-right: 25px !important;
+    }
+
+    /* Tombol hamburger dipaksa agar selalu bisa di-klik (z-index) */
+    .navbar-toggler {
+      position: relative;
+      z-index: 9999;
+    }
   }
 </style>
 
@@ -216,16 +234,16 @@
   <div class="container-fluid" style="padding: 0 3%;">
     <nav class="navbar navbar-expand-lg navbar-dark">
       
-      {# --- KIRI: LOGO & JUDUL (DIBIARKAN SAMA PERSIS) --- #}
+      {# --- KIRI: LOGO & JUDUL --- #}
       <a class="navbar-brand" href="{{ h.url_for('home.index') }}">
         <img src="{{ h.url_for_static('/base/images/logo-bengkulu.png') }}" 
              alt="Logo Bengkulu" 
-             style="height: 75px !important; width: auto !important; flex-shrink: 0 !important; object-fit: contain !important; display: block !important; transform: scale(2.8) !important; transform-origin: left center !important; filter: brightness(0) invert(1) !important; margin-right: 45px !important;" />
+             style="height: 75px; width: auto; flex-shrink: 0; object-fit: contain; display: block; transform: scale(2.8); transform-origin: left center; filter: brightness(0) invert(1); margin-right: 45px;" />
         <span style="white-space: nowrap;">Bengkulu Satu Data</span>
       </a>
 
-      {# --- TOMBOL TOGGLE UNTUK VERSI HP --- #}
-      <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#main-navigation-toggle"
+      {# --- TOMBOL TOGGLE UNTUK VERSI HP (DENGAN DUKUNGAN GANDA BOOTSTRAP 3 & 5) --- #}
+      <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#main-navigation-toggle" data-bs-toggle="collapse" data-bs-target="#main-navigation-toggle"
         aria-controls="main-navigation-toggle" aria-expanded="false" aria-label="Toggle navigation">
         <span class="fa fa-bars"></span>
       </button>
@@ -242,7 +260,16 @@
           {# MENU PUBLIKASI DITAMBAHKAN DI SINI #}
           <li class="nav-item"><a class="nav-link" href="/publikasi">Publikasi</a></li>
           <li class="nav-item"><a class="nav-link" href="#">Geoportal</a></li>
-          <li class="nav-item"><a class="nav-link" href="#">Lainnya</a></li>
+          <li class="nav-item dropdown">
+            <a class="nav-link dropdown-toggle" href="#" id="navbarDropdownLainnya" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+              Lainnya
+            </a>
+            <ul class="dropdown-menu shadow" aria-labelledby="navbarDropdownLainnya" style="border-radius: 8px; border: none; margin-top: 10px;">
+              <li><a class="dropdown-item" href="{{ h.url_for('lainnya_bp.sop') }}" style="padding: 10px 20px; font-weight: 500;">Standar Operasional Prosedur</a></li>
+              <li><a class="dropdown-item" href="{{ h.url_for('lainnya_bp.regulasi') }}" style="padding: 10px 20px; font-weight: 500;">Regulasi</a></li>
+              <li><a class="dropdown-item" href="{{ h.url_for('lainnya_bp.survey') }}" style="padding: 10px 20px; font-weight: 500;">Survey Kepuasan</a></li>
+            </ul>
+          </li>
         </ul>
 
         {# --- BAGIAN KANAN: LOGIN / PROFIL --- #}
@@ -271,4 +298,19 @@
     </nav>
   </div>
 </header>
+{# Auto-redirect KE /walidata hanya untuk user yang terdaftar sebagai Walidata (bukan sysadmin) #}
+{% if c.userobj and not c.userobj.sysadmin %}
+<script>
+(function(){
+  var p = window.location.pathname;
+  var shouldCheck = (p === '/' || p === '/dashboard');
+  if (!shouldCheck) return;
+  fetch('/api/walidata/check')
+    .then(function(r){ return r.json(); })
+    .then(function(d){ if (d.is_walidata) window.location.replace('/walidata'); })
+    .catch(function(){});
+})();
+</script>
+{% endif %}
 {% endblock %}
+

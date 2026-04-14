@@ -142,15 +142,114 @@ def ensure_standar_data_tables():
     return False
 
 
+# ===== HELPER WALIDATA =====
+def ensure_walidata_tables():
+    """Buat tabel walidata_users dan walidata_catatan jika belum ada."""
+    try:
+        engine = model.meta.engine
+        if engine:
+            with engine.begin() as conn:
+                conn.execute(text("""
+                    CREATE TABLE IF NOT EXISTS walidata_users (
+                        id SERIAL PRIMARY KEY,
+                        user_id VARCHAR(100) UNIQUE NOT NULL,
+                        user_name VARCHAR(100) NOT NULL,
+                        ditunjuk_oleh VARCHAR(100),
+                        catatan TEXT,
+                        created_at TIMESTAMP DEFAULT NOW()
+                    )
+                """))
+                conn.execute(text("""
+                    CREATE TABLE IF NOT EXISTS walidata_catatan (
+                        id SERIAL PRIMARY KEY,
+                        dataset_id VARCHAR(100) NOT NULL,
+                        dataset_name VARCHAR(500),
+                        walidata_user VARCHAR(100) NOT NULL,
+                        aksi VARCHAR(20) NOT NULL,
+                        pesan TEXT,
+                        created_at TIMESTAMP DEFAULT NOW()
+                    )
+                """))
+            return True
+    except Exception as e:
+        print(f"Error creating walidata tables: {e}")
+    return False
+
+
+def is_walidata(user):
+    """Return True jika user adalah Walidata terdaftar atau Sysadmin."""
+    if not user:
+        return False
+    if user.sysadmin:
+        return True
+    try:
+        session = model.Session
+        result = session.execute(
+            text("SELECT id FROM walidata_users WHERE user_id = :uid"),
+            {'uid': user.id}
+        )
+        return result.fetchone() is not None
+    except:
+        return False
+
+
 class BengkuluSatuDataPlugin(plugins.SingletonPlugin):
+
     plugins.implements(plugins.IConfigurer)
     plugins.implements(plugins.IResourceController, inherit=True)
     plugins.implements(plugins.IBlueprint)
+    plugins.implements(plugins.IPackageController, inherit=True)
 
     def update_config(self, config):
         toolkit.add_template_directory(config, 'templates')
         toolkit.add_public_directory(config, 'public')
         toolkit.add_resource('assets', 'ckanext_bengkulusatudata')
+
+    # ===== FORCE PRIVATE & REVISI TRACKING =====
+    def _ensure_walidata_rules(self, entity, action):
+        """Paksa dataset Private & catat otomatis revisi produsen."""
+        try:
+            import ckan.model as model
+            from sqlalchemy import text
+            
+            user_name = getattr(toolkit.c, 'user', None)
+            if not user_name: return
+            
+            user_obj = model.User.get(user_name)
+            if not user_obj: return
+            
+            # Jika Walidata / Sysadmin, biarkan
+            if user_obj.sysadmin or is_walidata(user_obj):
+                return
+                
+            # PRODUSEN DATA: Paksa private apapun pilihan formnya
+            entity.private = True
+            
+            # Jika Produsen update (revisi), catat revisi agar masuk ke dashboard Walidata kembali
+            if action == 'edit':
+                try:
+                    ensure_walidata_tables()
+                    with model.meta.engine.begin() as conn:
+                        conn.execute(text("""
+                            INSERT INTO walidata_catatan
+                                (dataset_id, dataset_name, walidata_user, aksi, pesan)
+                            VALUES (:did, :dname, :wuser, 'revisi', 'Dataset telah diperbarui oleh Produsen (Revisi)')
+                        """), {
+                            'did': entity.id,
+                            'dname': entity.title or entity.name,
+                            'wuser': user_name
+                        })
+                except Exception as ex_db:
+                    pass
+        except Exception as e:
+            print(f'Force private error: {e}')
+
+    def create(self, entity):
+        self._ensure_walidata_rules(entity, 'create')
+
+    def edit(self, entity):
+        self._ensure_walidata_rules(entity, 'edit')
+
 
     def get_blueprint(self):
         # ===== 1. BLUEPRINT INFOGRAFIS =====
@@ -1061,8 +1160,405 @@ class BengkuluSatuDataPlugin(plugins.SingletonPlugin):
             upload_dir = get_upload_dir()
             return send_from_directory(upload_dir, filename)
 
+        # ===== 6. BLUEPRINT WALIDATA =====
+        walidata_bp = Blueprint('walidata_bp', __name__)
+
+        # Redirect otomatis sebelum render portal utama
+        @walidata_bp.before_app_request
+        def seamless_walidata_redirect():
+            if request.endpoint in ['user.dashboard', 'dashboard.datasets', 'dashboard.groups', 'dashboard.organizations', 'user.me', 'home.index']:
+                user = getattr(toolkit.g, 'userobj', None) or getattr(toolkit.c, 'userobj', None)
+                if user and not user.sysadmin and is_walidata(user):
+                    return toolkit.redirect_to('/walidata')
+
+        @walidata_bp.route('/walidata', strict_slashes=False, endpoint='dashboard')
+        def walidata_dashboard():
+            user = getattr(toolkit.g, 'userobj', None) or getattr(toolkit.c, 'userobj', None)
+            if not user:
+                return toolkit.redirect_to(toolkit.h.url_for('user.login'))
+            ensure_walidata_tables()
+            if not is_walidata(user):
+                return toolkit.abort(403, 'Akses Ditolak: Anda bukan Walidata yang terdaftar.')
+
+            selected_org = request.args.get('org', '')
+            search_query = request.args.get('q', '')
+
+            # Ambil semua dataset Private (ignore_auth agar bisa lihat semua OPD)
+            try:
+                context = {'ignore_auth': True, 'user': user.name}
+                fq = 'capacity:private'
+                if selected_org:
+                    fq += f' +organization:{selected_org}'
+                search_params = {
+                    'fq': fq,
+                    'rows': 200,
+                    'start': 0,
+                    'include_private': True,
+                    'sort': 'metadata_created desc'
+                }
+                if search_query:
+                    search_params['q'] = search_query
+                result = toolkit.get_action('package_search')(context, search_params)
+                raw_datasets = result.get('results', [])
+                
+                # Filter dataset yang ditolak (tidak muncul di antrian sampai direvisi produsen)
+                with model.meta.engine.begin() as conn:
+                    # Gunakan DISTINCT ON PostgreSQL untuk ambil status log terakhir per dataset
+                    from sqlalchemy import text
+                    rows = conn.execute(text("SELECT DISTINCT ON (dataset_id) dataset_id, aksi FROM walidata_catatan ORDER BY dataset_id, created_at DESC"))
+                    status_map = {row.dataset_id: row.aksi for row in rows}
+                
+                datasets = []
+                for ds in raw_datasets:
+                    if status_map.get(ds['id']) == 'tolak':
+                        continue # Sembunyikan yang masih ditolak
+                    datasets.append(ds)
+                
+            except Exception as e:
+                print(f"Walidata - Error fetching datasets: {e}")
+                datasets = []
+
+            # Daftar organisasi untuk filter
+            try:
+                ctx2 = {'ignore_auth': True}
+                org_result = toolkit.get_action('organization_list')(ctx2, {
+                    'all_fields': True, 'include_dataset_count': False
+                })
+                organisations = org_result
+            except:
+                organisations = []
+
+            # Statistik
+            try:
+                ctx_stat = {'ignore_auth': True}
+                total_all = toolkit.get_action('package_search')(
+                    ctx_stat, {'rows': 0, 'include_private': True}
+                ).get('count', 0)
+                total_private = toolkit.get_action('package_search')(
+                    ctx_stat, {'fq': 'capacity:private', 'rows': 0, 'include_private': True}
+                ).get('count', 0)
+                sess = model.Session
+                approved_count = sess.execute(
+                    text("SELECT COUNT(*) FROM walidata_catatan WHERE aksi='approve'")
+                ).scalar() or 0
+                rejected_count = sess.execute(
+                    text("SELECT COUNT(*) FROM walidata_catatan WHERE aksi='tolak'")
+                ).scalar() or 0
+                stats = {
+                    'pending': total_private,
+                    'approved': approved_count,
+                    'rejected': rejected_count,
+                    'total': total_all
+                }
+            except Exception as e:
+                print(f"Walidata - Error stats: {e}")
+                stats = {'pending': 0, 'approved': 0, 'rejected': 0, 'total': 0}
+
+            # Log verifikasi terbaru (20 entri)
+            try:
+                sess = model.Session
+                log_rows = sess.execute(text(
+                    "SELECT * FROM walidata_catatan ORDER BY created_at DESC LIMIT 20"
+                ))
+                log_list = [dict(r._mapping) for r in log_rows]
+            except:
+                log_list = []
+
+            return toolkit.render('walidata/dashboard.html', extra_vars={
+                'datasets': datasets,
+                'organisations': organisations,
+                'selected_org': selected_org,
+                'search_query': search_query,
+                'stats': stats,
+                'log_list': log_list
+            })
+
+        @walidata_bp.route('/walidata/approve/<dataset_id>', methods=['POST'], strict_slashes=False)
+        def walidata_approve(dataset_id):
+            user = getattr(toolkit.g, 'userobj', None) or getattr(toolkit.c, 'userobj', None)
+            if not user:
+                return toolkit.abort(401, 'Login required')
+            ensure_walidata_tables()
+            if not is_walidata(user):
+                return toolkit.abort(403, 'Akses Ditolak')
+
+            pesan = request.form.get('pesan', '').strip()
+            try:
+                context = {'ignore_auth': True, 'user': user.name}
+                pkg = toolkit.get_action('package_show')(context, {'id': dataset_id})
+                dataset_name = pkg.get('title') or pkg.get('name', dataset_id)
+
+                # Ubah private → public
+                pkg['private'] = False
+                toolkit.get_action('package_update')(context, pkg)
+
+                # Log
+                with model.meta.engine.begin() as conn:
+                    conn.execute(text("""
+                        INSERT INTO walidata_catatan
+                            (dataset_id, dataset_name, walidata_user, aksi, pesan)
+                        VALUES (:did, :dname, :wuser, 'approve', :pesan)
+                    """), {
+                        'did': dataset_id,
+                        'dname': dataset_name,
+                        'wuser': user.name,
+                        'pesan': pesan or None
+                    })
+
+                toolkit.h.flash_success(
+                    f'Dataset "{dataset_name}" berhasil disetujui dan sekarang berstatus Publik!'
+                )
+            except Exception as e:
+                toolkit.h.flash_error(f'Gagal approve dataset: {str(e)}')
+                print(f"Walidata approve error: {e}")
+
+            return toolkit.redirect_to('/walidata')
+
+        @walidata_bp.route('/walidata/tolak/<dataset_id>', methods=['POST'], strict_slashes=False)
+        def walidata_tolak(dataset_id):
+            user = getattr(toolkit.g, 'userobj', None) or getattr(toolkit.c, 'userobj', None)
+            if not user:
+                return toolkit.abort(401, 'Login required')
+            ensure_walidata_tables()
+            if not is_walidata(user):
+                return toolkit.abort(403, 'Akses Ditolak')
+
+            pesan = request.form.get('pesan', '').strip()
+            if not pesan:
+                toolkit.h.flash_error('Alasan penolakan wajib diisi!')
+                return toolkit.redirect_to('/walidata')
+
+            try:
+                context = {'ignore_auth': True, 'user': user.name}
+                pkg = toolkit.get_action('package_show')(context, {'id': dataset_id})
+                dataset_name = pkg.get('title') or pkg.get('name', dataset_id)
+
+                # Dataset tetap private, hanya simpan catatan
+                with model.meta.engine.begin() as conn:
+                    conn.execute(text("""
+                        INSERT INTO walidata_catatan
+                            (dataset_id, dataset_name, walidata_user, aksi, pesan)
+                        VALUES (:did, :dname, :wuser, 'tolak', :pesan)
+                    """), {
+                        'did': dataset_id,
+                        'dname': dataset_name,
+                        'wuser': user.name,
+                        'pesan': pesan
+                    })
+
+                toolkit.h.flash_success(
+                    f'Dataset "{dataset_name}" ditolak. Catatan revisi telah disimpan.'
+                )
+            except Exception as e:
+                toolkit.h.flash_error(f'Gagal menyimpan penolakan: {str(e)}')
+                print(f"Walidata tolak error: {e}")
+
+            return toolkit.redirect_to('/walidata')
+
+        @walidata_bp.route('/walidata/catatan/<dataset_id>', methods=['POST'], strict_slashes=False)
+        def walidata_catatan(dataset_id):
+            """Kirim notes/catatan ke produsen data tanpa mengubah status dataset."""
+            user = getattr(toolkit.g, 'userobj', None) or getattr(toolkit.c, 'userobj', None)
+            if not user:
+                return toolkit.abort(401, 'Login required')
+            ensure_walidata_tables()
+            if not is_walidata(user):
+                return toolkit.abort(403, 'Akses Ditolak')
+
+            pesan = request.form.get('pesan', '').strip()
+            if not pesan:
+                toolkit.h.flash_error('Isi notes tidak boleh kosong!')
+                return toolkit.redirect_to('/walidata')
+
+            try:
+                context = {'ignore_auth': True}
+                pkg = toolkit.get_action('package_show')(context, {'id': dataset_id})
+                dataset_name = pkg.get('title') or pkg.get('name', dataset_id)
+
+                with model.meta.engine.begin() as conn:
+                    conn.execute(text("""
+                        INSERT INTO walidata_catatan
+                            (dataset_id, dataset_name, walidata_user, aksi, pesan)
+                        VALUES (:did, :dname, :wuser, 'catatan', :pesan)
+                    """), {
+                        'did': dataset_id,
+                        'dname': dataset_name,
+                        'wuser': user.name,
+                        'pesan': pesan
+                    })
+
+                toolkit.h.flash_success(
+                    f'Notes untuk dataset "{dataset_name}" berhasil disimpan.'
+                )
+            except Exception as e:
+                toolkit.h.flash_error(f'Gagal menyimpan notes: {str(e)}')
+                print(f"Walidata catatan error: {e}")
+
+            return toolkit.redirect_to('/walidata')
+
+        # ===== API: cek apakah user adalah Walidata terdaftar (bukan sysadmin) =====
+        @walidata_bp.route('/api/walidata/check', strict_slashes=False)
+        def api_walidata_check():
+            from flask import jsonify
+            user = getattr(toolkit.g, 'userobj', None) or getattr(toolkit.c, 'userobj', None)
+            # Sysadmin TIDAK dianggap Walidata untuk keperluan redirect otomatis
+            # Mereka tetap bisa akses /walidata via URL manual
+            if not user or user.sysadmin:
+                return jsonify({'is_walidata': False})
+            return jsonify({'is_walidata': is_walidata(user)})
+
+        # ===== CATATAN PRODUSEN: Produsen data lihat review Walidata =====
+        @walidata_bp.route('/dataset/<dataset_name>/catatan-walidata', strict_slashes=False)
+        def catatan_produsen(dataset_name):
+            """Halaman bagi Produsen Data melihat catatan verifikasi dari Walidata."""
+            user = getattr(toolkit.g, 'userobj', None) or getattr(toolkit.c, 'userobj', None)
+            if not user:
+                return toolkit.redirect_to(toolkit.h.url_for('user.login'))
+            try:
+                ctx = {'user': user.name}
+                pkg = toolkit.get_action('package_show')(ctx, {'id': dataset_name})
+            except toolkit.NotAuthorized:
+                return toolkit.abort(403, 'Anda tidak punya akses ke dataset ini')
+            except Exception:
+                return toolkit.abort(404, 'Dataset tidak ditemukan')
+
+            ensure_walidata_tables()
+            try:
+                sess = model.Session
+                rows = sess.execute(text(
+                    "SELECT * FROM walidata_catatan WHERE dataset_id = :did ORDER BY created_at DESC"
+                ), {'did': pkg['id']})
+                catatan_list = [dict(r._mapping) for r in rows]
+            except Exception as e:
+                print(f"Catatan produsen error: {e}")
+                catatan_list = []
+
+            return toolkit.render('walidata/catatan_produsen.html', extra_vars={
+                'pkg': pkg,
+                'catatan_list': catatan_list,
+                'is_walidata_user': is_walidata(user)
+            })
+
+        # ===== 7. BLUEPRINT ADMIN WALIDATA =====
+        walidata_admin_bp = Blueprint('walidata_admin_bp', __name__)
+
+
+        @walidata_admin_bp.route('/admin/walidata', strict_slashes=False)
+        def admin_walidata():
+            user = getattr(toolkit.g, 'userobj', None) or getattr(toolkit.c, 'userobj', None)
+            if not user or not user.sysadmin:
+                return toolkit.abort(403, 'Hanya Sysadmin yang dapat mengelola Walidata.')
+
+            ensure_walidata_tables()
+            try:
+                sess = model.Session
+                rows = sess.execute(
+                    text("SELECT * FROM walidata_users ORDER BY created_at DESC")
+                )
+                walidata_list = [dict(r._mapping) for r in rows]
+            except:
+                walidata_list = []
+
+            return toolkit.render('walidata/admin_users.html', extra_vars={
+                'walidata_list': walidata_list
+            })
+
+        @walidata_admin_bp.route('/admin/walidata/tambah', methods=['POST'], strict_slashes=False)
+        def admin_tambah_walidata():
+            user = getattr(toolkit.g, 'userobj', None) or getattr(toolkit.c, 'userobj', None)
+            if not user or not user.sysadmin:
+                return toolkit.abort(403, 'Akses Ditolak')
+
+            ensure_walidata_tables()
+            user_name = request.form.get('user_name', '').strip()
+            catatan   = request.form.get('catatan', '').strip()
+
+            if not user_name:
+                toolkit.h.flash_error('Username wajib diisi!')
+                return toolkit.redirect_to('/admin/walidata')
+
+            try:
+                ctx = {'ignore_auth': True}
+                ckan_user = toolkit.get_action('user_show')(ctx, {'id': user_name})
+                uid = ckan_user['id']
+
+                with model.meta.engine.begin() as conn:
+                    conn.execute(text("""
+                        INSERT INTO walidata_users
+                            (user_id, user_name, ditunjuk_oleh, catatan)
+                        VALUES (:uid, :uname, :ditunjuk, :catatan)
+                        ON CONFLICT (user_id) DO UPDATE SET
+                            user_name    = EXCLUDED.user_name,
+                            ditunjuk_oleh = EXCLUDED.ditunjuk_oleh,
+                            catatan      = EXCLUDED.catatan
+                    """), {
+                        'uid': uid,
+                        'uname': user_name,
+                        'ditunjuk': user.name,
+                        'catatan': catatan or None
+                    })
+
+                toolkit.h.flash_success(
+                    f'User "{user_name}" berhasil ditunjuk sebagai Walidata!'
+                )
+            except toolkit.ObjectNotFound:
+                toolkit.h.flash_error(
+                    f'User "{user_name}" tidak ditemukan. Pastikan username sudah benar.'
+                )
+            except Exception as e:
+                toolkit.h.flash_error(f'Gagal menambahkan Walidata: {str(e)}')
+                print(f"admin tambah walidata error: {e}")
+
+            return toolkit.redirect_to('/admin/walidata')
+
+        @walidata_admin_bp.route('/admin/walidata/hapus/<user_id>', methods=['POST'], strict_slashes=False)
+        def admin_hapus_walidata(user_id):
+            user = getattr(toolkit.g, 'userobj', None) or getattr(toolkit.c, 'userobj', None)
+            if not user or not user.sysadmin:
+                return toolkit.abort(403, 'Akses Ditolak')
+
+            try:
+                sess = model.Session
+                target = sess.execute(
+                    text("SELECT user_name FROM walidata_users WHERE user_id = :uid"),
+                    {'uid': user_id}
+                ).fetchone()
+
+                with model.meta.engine.begin() as conn:
+                    conn.execute(
+                        text("DELETE FROM walidata_users WHERE user_id = :uid"),
+                        {'uid': user_id}
+                    )
+
+                name = target.user_name if target else user_id
+                toolkit.h.flash_success(f'Role Walidata dari user "{name}" berhasil dicabut.')
+            except Exception as e:
+                toolkit.h.flash_error(f'Gagal mencabut role: {str(e)}')
+
+            return toolkit.redirect_to('/admin/walidata')
+
+        # ===== 8. BLUEPRINT LAINNYA =====
+        lainnya_bp = Blueprint('lainnya_bp', __name__)
+
+        @lainnya_bp.route('/lainnya/sop', strict_slashes=False, endpoint='sop')
+        def sop():
+            return toolkit.render('lainnya/sop.html')
+
+        @lainnya_bp.route('/lainnya/regulasi', strict_slashes=False, endpoint='regulasi')
+        def regulasi():
+            return toolkit.render('lainnya/regulasi.html')
+
+        @lainnya_bp.route('/lainnya/survey-kepuasan', strict_slashes=False, endpoint='survey')
+        def survey():
+            return toolkit.render('lainnya/survey.html')
+
         # ===== KEMBALIKAN SEMUA BLUEPRINT =====
-        return [infografis_bp, standar_data_bp, arnold_bp, publikasi_bp, publikasi_admin_bp]
+        return [
+            infografis_bp, standar_data_bp, arnold_bp,
+            publikasi_bp, publikasi_admin_bp,
+            walidata_bp, walidata_admin_bp, lainnya_bp
+        ]
+
 
     def before_show(self, resource_dict):
         if resource_dict.get('format', '').upper() == 'WMS':
