@@ -24,7 +24,7 @@ body { background: #0f172a !important; margin: 0 !important; padding: 0 !importa
 /* ===== SIDEBAR ===== */
 .wd-sidebar {
   width: 235px; flex-shrink: 0;
-  background: linear-gradient(180deg, #1e1b4b 0%, #0f172a 100%);
+  background: linear-gradient(180deg, #A00000 0%, #4a0000 100%);
   display: flex; flex-direction: column;
   border-right: 1px solid rgba(255,255,255,0.07);
 }
@@ -74,7 +74,7 @@ body { background: #0f172a !important; margin: 0 !important; padding: 0 !importa
 }
 .user-avatar {
   width: 33px; height: 33px; border-radius: 50%;
-  background: linear-gradient(135deg, #7c3aed, #4f46e5);
+  background: linear-gradient(135deg, #B00000, #dc2626);
   display: flex; align-items: center; justify-content: center;
   font-size: 13px; font-weight: 700; color: white; flex-shrink: 0;
   text-transform: uppercase;
@@ -103,7 +103,7 @@ body { background: #0f172a !important; margin: 0 !important; padding: 0 !importa
 .topbar-right { display: flex; align-items: center; gap: 12px; }
 .topbar-date { font-size: 12px; color: #94a3b8; }
 .admin-pill {
-  background: linear-gradient(135deg,#7c3aed,#4f46e5);
+  background: linear-gradient(135deg,#B00000,#dc2626);
   color: white; padding: 3px 11px; border-radius: 20px;
   font-size: 11px; font-weight: 700;
 }
@@ -125,15 +125,15 @@ body { background: #0f172a !important; margin: 0 !important; padding: 0 !importa
 .stat-card.sp { border-left-color: #f59e0b; }
 .stat-card.sa { border-left-color: #10b981; }
 .stat-card.sr { border-left-color: #ef4444; }
-.stat-card.st { border-left-color: #6366f1; }
+.stat-card.st { border-left-color: #B00000; }
 .stat-icon { width: 44px; height: 44px; border-radius: 11px; display: flex; align-items: center; justify-content: center; font-size: 18px; flex-shrink: 0; }
 .sp .stat-icon { background:#fef3c7; color:#d97706; }
 .sa .stat-icon { background:#d1fae5; color:#059669; }
 .sr .stat-icon { background:#fee2e2; color:#dc2626; }
-.st .stat-icon { background:#e0e7ff; color:#4f46e5; }
+.st .stat-icon { background:#e0e7ff; color:#8B0000; }
 .stat-num { font-size: 26px; font-weight: 800; line-height: 1; }
 .sp .stat-num { color:#d97706; } .sa .stat-num { color:#059669; }
-.sr .stat-num { color:#dc2626; } .st .stat-num { color:#4f46e5; }
+.sr .stat-num { color:#dc2626; } .st .stat-num { color:#8B0000; }
 .stat-lbl { font-size: 11px; color:#94a3b8; font-weight: 500; margin-top: 3px; }
 
 /* FLASH */
@@ -157,13 +157,13 @@ body { background: #0f172a !important; margin: 0 !important; padding: 0 !importa
 }
 .f-select { min-width: 160px; }
 .f-input  { min-width: 180px; }
-.f-select:focus,.f-input:focus { border-color: #6366f1; background: white; }
+.f-select:focus,.f-input:focus { border-color: #B00000; background: white; }
 .btn-cari {
-  background: #6366f1; color: white; border: none; border-radius: 9px;
+  background: #B00000; color: white; border: none; border-radius: 9px;
   padding: 8px 17px; font-size: 13px; font-weight: 600; cursor: pointer;
   display: inline-flex; align-items: center; gap: 6px; transition: all 0.2s;
 }
-.btn-cari:hover { background: #4f46e5; }
+.btn-cari:hover { background: #8B0000; }
 .btn-reset {
   background: #f3f4f6; color: #6b7280; border: none; border-radius: 9px;
   padding: 8px 12px; font-size: 13px; cursor: pointer; text-decoration: none;
@@ -200,7 +200,7 @@ table.ds-t tbody tr:hover { background:#fafbff; }
 table.ds-t tbody td { padding:12px 15px; font-size:13px; color:#374151; vertical-align:middle; }
 
 .ds-title { font-weight:600; color:#1e293b; font-size:13px; display:block; margin-bottom:2px; text-decoration:none; }
-.ds-title:hover { color:#6366f1; }
+.ds-title:hover { color:#B00000; }
 .ds-desc { font-size:11px; color:#94a3b8; max-width:240px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; display:block; }
 .org-chip { display:inline-flex; align-items:center; gap:4px; background:#eff6ff; color:#2563eb; padding:4px 10px; border-radius:20px; font-size:11px; font-weight:600; }
 .status-chip { display:inline-flex; align-items:center; gap:5px; padding:4px 10px; border-radius:20px; font-size:11px; font-weight:700; background:#fef3c7; color:#d97706; }
@@ -251,7 +251,7 @@ table.ds-t tbody td { padding:12px 15px; font-size:13px; color:#374151; vertical
 .modal-ds { background:#f8fafc; border:1px solid #e2e8f0; border-radius:9px; padding:10px 13px; font-size:13px; font-weight:600; color:#374151; margin-bottom:13px; display:flex; align-items:center; gap:8px; }
 .modal-lbl { font-size:11px; font-weight:700; color:#374151; text-transform:uppercase; letter-spacing:.5px; display:block; margin-bottom:5px; }
 .modal-ta { width:100%; border:2px solid #e2e8f0; border-radius:9px; padding:9px 12px; font-size:13px; font-family:'Poppins',sans-serif; resize:vertical; min-height:75px; outline:none; transition:border .2s; color:#374151; }
-.modal-ta:focus { border-color:#6366f1; }
+.modal-ta:focus { border-color:#B00000; }
 .modal-acts { display:flex; gap:9px; margin-top:14px; }
 .modal-acts button { flex:1; padding:10px; border-radius:9px; font-size:13px; font-weight:700; cursor:pointer; border:none; transition:all .25s; font-family:'Poppins',sans-serif; }
 .btn-cancel { background:#f3f4f6; color:#6b7280; }
@@ -360,7 +360,7 @@ table.ds-t tbody td { padding:12px 15px; font-size:13px; color:#374151; vertical
 
       <!-- FILTER -->
       <form method="GET" action="/walidata" class="filter-bar">
-        <label><i class="fa fa-filter" style="color:#6366f1; margin-right:4px;"></i>Filter:</label>
+        <label><i class="fa fa-filter" style="color:#B00000; margin-right:4px;"></i>Filter:</label>
         <select name="org" class="f-select" onchange="this.form.submit()">
           <option value="">Semua OPD</option>
           {% for org in organisations %}
@@ -440,7 +440,7 @@ table.ds-t tbody td { padding:12px 15px; font-size:13px; color:#374151; vertical
       <!-- LOG -->
       <div class="log-card">
         <div class="log-hdr">
-          <i class="fa fa-history" style="color:#6366f1; font-size:15px;"></i>
+          <i class="fa fa-history" style="color:#B00000; font-size:15px;"></i>
           <h3>Riwayat Verifikasi Terbaru</h3>
         </div>
         {% if log_list %}
@@ -485,7 +485,7 @@ table.ds-t tbody td { padding:12px 15px; font-size:13px; color:#374151; vertical
     <div class="modal-ico m-green"><i class="fa fa-check-circle"></i></div>
     <h3>Setujui & Publikasi?</h3>
     <p class="modal-sub">Dataset berubah menjadi <strong>Public</strong> dan dapat diakses masyarakat.</p>
-    <div class="modal-ds"><i class="fa fa-database" style="color:#6366f1;"></i><span id="approveTitle">—</span></div>
+    <div class="modal-ds"><i class="fa fa-database" style="color:#B00000;"></i><span id="approveTitle">—</span></div>
     <label class="modal-lbl">Catatan (opsional)</label>
     <textarea class="modal-ta" id="approvePesan" placeholder="Catatan persetujuan Anda..."></textarea>
     <div class="modal-acts">

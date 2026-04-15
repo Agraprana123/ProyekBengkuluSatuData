@@ -175,7 +175,6 @@ def ensure_walidata_tables():
         print(f"Error creating walidata tables: {e}")
     return False
 
-
 def is_walidata(user):
     """Return True jika user adalah Walidata terdaftar atau Sysadmin."""
     if not user:
@@ -1183,12 +1182,14 @@ class BengkuluSatuDataPlugin(plugins.SingletonPlugin):
             selected_org = request.args.get('org', '')
             search_query = request.args.get('q', '')
 
+            status_map = {}
+
             # Ambil semua dataset Private (ignore_auth agar bisa lihat semua OPD)
             try:
                 context = {'ignore_auth': True, 'user': user.name}
                 fq = 'capacity:private'
                 if selected_org:
-                    fq += f' +organization:{selected_org}'
+                    fq += f' +organization:"{selected_org}"'
                 search_params = {
                     'fq': fq,
                     'rows': 200,
@@ -1234,9 +1235,13 @@ class BengkuluSatuDataPlugin(plugins.SingletonPlugin):
                 total_all = toolkit.get_action('package_search')(
                     ctx_stat, {'rows': 0, 'include_private': True}
                 ).get('count', 0)
-                total_private = toolkit.get_action('package_search')(
-                    ctx_stat, {'fq': 'capacity:private', 'rows': 0, 'include_private': True}
-                ).get('count', 0)
+                
+                # Fetch all private to calculate true pending (excluding tolaks)
+                global_private_res = toolkit.get_action('package_search')(
+                    ctx_stat, {'fq': 'capacity:private', 'rows': 1000, 'include_private': True}
+                ).get('results', [])
+                total_pending = len([d for d in global_private_res if status_map.get(d['id']) != 'tolak'])
+
                 sess = model.Session
                 approved_count = sess.execute(
                     text("SELECT COUNT(*) FROM walidata_catatan WHERE aksi='approve'")
@@ -1245,7 +1250,7 @@ class BengkuluSatuDataPlugin(plugins.SingletonPlugin):
                     text("SELECT COUNT(*) FROM walidata_catatan WHERE aksi='tolak'")
                 ).scalar() or 0
                 stats = {
-                    'pending': total_private,
+                    'pending': total_pending,
                     'approved': approved_count,
                     'rejected': rejected_count,
                     'total': total_all
@@ -1552,12 +1557,12 @@ class BengkuluSatuDataPlugin(plugins.SingletonPlugin):
         def survey():
             return toolkit.render('lainnya/survey.html')
 
-        # ===== KEMBALIKAN SEMUA BLUEPRINT =====
         return [
             infografis_bp, standar_data_bp, arnold_bp,
             publikasi_bp, publikasi_admin_bp,
             walidata_bp, walidata_admin_bp, lainnya_bp
         ]
+
 
 
     def before_show(self, resource_dict):

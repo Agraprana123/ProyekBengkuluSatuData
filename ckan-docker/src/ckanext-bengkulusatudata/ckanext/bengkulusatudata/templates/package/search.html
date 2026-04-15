@@ -378,13 +378,16 @@
     .card-icon-wrapper { width: 60px; height: 60px; font-size: 24px; }
     .premium-search-box { flex-direction: column; background: transparent; padding: 0; border: none; }
     .premium-search-box i.fa-search { display: none; }
-    .premium-search-box input { background: #F8FAFC !important; margin-bottom: 10px; border-radius: 10px !important; padding: 15px !important;}
+    .premium-search-box input { background: #F8FAFC !important; margin-bottom: 10px; border-radius: 10px !important; padding: 15px !important; width: 100%;}
     .premium-search-box button { width: 100%; }
-    .premium-sidebar { padding-right: 0; }
+    .premium-sidebar { padding-right: 0; margin-bottom: 20px;}
     .btn-add-dataset {
       width: 100%;
       justify-content: center;
     }
+    .row { margin-left: 0; margin-right: 0; }
+    .col-md-3, .col-md-9 { padding-left: 0; padding-right: 0; }
+    .pagination ul { flex-wrap: wrap; justify-content: center; }
   }
 </style>
 
@@ -418,7 +421,7 @@
 
   <div class="row">
     {# --- 3. SIDEBAR (UNIFIED) --- #}
-    <div class="col-lg-3 premium-sidebar">
+    <div class="col-md-3 premium-sidebar">
       <div class="unified-sidebar-wrapper">
         {# Master Header Filter #}
         <div class="sidebar-master-header">
@@ -432,7 +435,7 @@
     </div>
 
     {# --- 4. KONTEN DATASET --- #}
-    <div class="col-lg-9">
+    <div class="col-md-9">
       
       {# Info & Sorting #}
       <div class="results-top-bar">

@@ -126,6 +126,17 @@
     white-space: nowrap;
     text-decoration: none; 
     transition: all 0.2s ease;
+    max-width: 120px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+  
+  .user-name span {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    display: inline-block;
+    max-width: 100px;
   }
 
   .user-name:hover {
@@ -259,7 +270,7 @@
           <li class="nav-item"><a class="nav-link" href="{{ h.url_for('standar_data_bp.index') }}">Standar Data</a></li>
           {# MENU PUBLIKASI DITAMBAHKAN DI SINI #}
           <li class="nav-item"><a class="nav-link" href="/publikasi">Publikasi</a></li>
-          <li class="nav-item"><a class="nav-link" href="#">Geoportal</a></li>
+          <li class="nav-item"><a class="nav-link" href="https://geo.bengkuluprov.go.id/main/" target="_blank">Geoportal</a></li>
           <li class="nav-item dropdown">
             <a class="nav-link dropdown-toggle" href="#" id="navbarDropdownLainnya" role="button" data-bs-toggle="dropdown" aria-expanded="false">
               Lainnya

@@ -470,6 +470,9 @@
 
   /* Responsive */
   @media (max-width: 768px) {
+    /* Memulihkan padding pinggir HP yang tidak sengaja dihapus oleh baris 19 */
+    .primary, .secondary { padding-left: 15px !important; padding-right: 15px !important; }
+    
     .info-grid { grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); }
     .modal-body { grid-template-columns: 1fr; }
     .modal-img-panel { min-height: 220px; }
@@ -477,6 +480,10 @@
     .key-metrics { grid-template-columns: 1fr 1fr; }
     .info-hero { padding: 28px 24px 24px; }
     .info-hero h1 { font-size: 1.5rem; }
+    
+    .info-action-bar { flex-direction: column; align-items: stretch; }
+    .info-search-form { width: 100%; }
+    .btn-add-infografis { width: 100%; text-align: center; justify-content: center; }
   }
   @media (max-width: 480px) {
     .info-grid { grid-template-columns: 1fr; }
