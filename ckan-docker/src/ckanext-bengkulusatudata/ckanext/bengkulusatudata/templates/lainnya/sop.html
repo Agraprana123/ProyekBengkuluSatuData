@@ -7,11 +7,202 @@
   <li class="active"><a href="">Standar Operasional Prosedur</a></li>
 {% endblock %}
 
+{% block custom_styles %}
+{{ super() }}
+<style>
+  .sop-header-title {
+    margin-top: 20px;
+    margin-bottom: 30px;
+    font-size: 2.2rem;
+    font-weight: 600;
+    color: #333;
+  }
+
+  .sop-grid-container {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+    gap: 25px;
+    margin-bottom: 50px;
+  }
+
+  .sop-card {
+    background: #fff;
+    border-radius: 12px;
+    box-shadow: 0 4px 15px rgba(0,0,0,0.08);
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+    border: 1px solid #f0f0f0;
+  }
+
+  .sop-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 8px 25px rgba(0,0,0,0.15);
+  }
+
+  .sop-cover-container {
+    padding: 20px;
+    background-color: #fcfcfc;
+    text-align: center;
+    border-bottom: 1px solid #f0f0f0;
+    min-height: 200px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  .sop-cover-container img {
+    max-width: 100%;
+    max-height: 220px;
+    object-fit: contain;
+    box-shadow: 2px 4px 10px rgba(0,0,0,0.1);
+    /* Sedikit efek lengkung agar lebih mirip buku 3D jika dibutuhkan */
+    border-radius: 2px 8px 8px 2px;
+  }
+
+  .sop-info {
+    padding: 20px;
+    display: flex;
+    flex-direction: column;
+    flex-grow: 1;
+  }
+
+  .sop-title {
+    font-size: 16px;
+    font-weight: 600;
+    color: #333;
+    line-height: 1.4;
+    margin-bottom: 15px;
+  }
+
+  .sop-meta {
+    font-size: 13px;
+    color: #666;
+    margin-bottom: 25px;
+    display: flex;
+    align-items: flex-start;
+    gap: 5px;
+  }
+  
+  .sop-meta i {
+    color: #888;
+    margin-top: 3px;
+  }
+
+  .btn-unduh-sop {
+    margin-top: auto;
+    background-color: #c9302c;
+    color: #fff !important;
+    text-align: center;
+    padding: 10px 15px;
+    border-radius: 6px;
+    font-weight: bold;
+    text-decoration: none;
+    transition: background-color 0.3s ease;
+    display: block;
+  }
+
+  .btn-unduh-sop:hover {
+    background-color: #ac2925;
+    text-decoration: none;
+  }
+  
+</style>
+{% endblock %}
+
 {% block primary_content_inner %}
-  <div class="module-content">
-    <h1 class="page-heading">Standar Operasional Prosedur (SOP)</h1>
-    <div class="cms-content p-4 bg-white rounded shadow-sm mt-4">
-      <p>Halaman ini berisi daftar SOP terkait pengelolaan dan tata kelola Bengkulu Satu Data. Saat ini konten sedang dalam tahap penyesuaian dan pembaruan.</p>
-    </div>
+  <div class="module-content" style="background: white; border-radius: 12px; box-shadow: 0 4px 15px rgba(0,0,0,0.05); border: none; padding: 40px;">
+    <h1 class="sop-header-title">Standar Operasional Prosedur</h1>
+    
+    <!-- GRID CONTAINER -->
+    <div class="sop-grid-container">
+
+      <!-- ==============================================
+           BUKU 1: Permintaan Data Statistik Sektoral 
+      =============================================== -->
+      <div class="sop-card">
+        <div class="sop-cover-container">
+          <!-- Ganti nama file gambar cover di bawah ini (Pastikan Anda sudah menaruh gambarnya di public/base/sop/) -->
+          <!-- Contoh jika gambarnya hilang, Anda bisa pakai placeholder default -->
+          <img src="{{ h.url_for_static('/base/sop/dokumen 1.png') }}" onerror="this.style.display='none'" alt="Cover Buku">
+        </div>
+        <div class="sop-info">
+          <h3 class="sop-title">Permintaan Data Statistik Sektoral</h3>
+          <div class="sop-meta">
+            <i class="fa fa-folder-open"></i>
+            <span>Dinas Komunikasi Informatika dan Statistik Prov. Bengkulu</span>
+          </div>
+          <!-- Ganti nama file PDF di bawah ini (Pastikan Anda sudah menaruh PDFnya di public/base/sop/) -->
+          <a href="{{ h.url_for_static('/base/sop/dokumen 1.pdf') }}" target="_blank" class="btn-unduh-sop">
+            Unduh <i class="fa fa-download" style="margin-left: 5px;"></i>
+          </a>
+        </div>
+      </div>
+
+      <!-- ==============================================
+           BUKU 2: Input Data Sektoral 
+      =============================================== -->
+      <div class="sop-card">
+        <div class="sop-cover-container">
+          <!-- Ganti nama file gambar cover di bawah ini -->
+          <img src="{{ h.url_for_static('/base/sop/dokumen 2.png') }}" onerror="this.style.display='none'" alt="Cover Buku">
+        </div>
+        <div class="sop-info">
+          <h3 class="sop-title">Input Data Sektoral</h3>
+          <div class="sop-meta">
+            <i class="fa fa-folder-open"></i>
+            <span>Dinas Komunikasi Informatika dan Statistik Prov. Bengkulu</span>
+          </div>
+          <!-- Ganti nama file PDF di bawah ini -->
+          <a href="{{ h.url_for_static('/base/sop/dokumen 2.pdf') }}" target="_blank" class="btn-unduh-sop">
+            Unduh <i class="fa fa-download" style="margin-left: 5px;"></i>
+          </a>
+        </div>
+      </div>
+
+      <!-- ==============================================
+           BUKU 3: Pemeriksaan Statistik Sektoral 
+      =============================================== -->
+      <div class="sop-card">
+        <div class="sop-cover-container">
+          <!-- Ganti nama file gambar cover di bawah ini -->
+          <img src="{{ h.url_for_static('/base/sop/dokumen 3.png') }}" onerror="this.style.display='none'" alt="Cover Buku">
+        </div>
+        <div class="sop-info">
+          <h3 class="sop-title">Pemeriksaan Statistik Sektoral</h3>
+          <div class="sop-meta">
+            <i class="fa fa-folder-open"></i>
+            <span>Dinas Komunikasi Informatika dan Statistik Prov. Bengkulu</span>
+          </div>
+          <!-- Ganti nama file PDF di bawah ini -->
+          <a href="{{ h.url_for_static('/base/sop/dokumen 3.pdf') }}" target="_blank" class="btn-unduh-sop">
+            Unduh <i class="fa fa-download" style="margin-left: 5px;"></i>
+          </a>
+        </div>
+      </div>
+
+      <!-- ==============================================
+           BUKU 4: Hak Akses Data Sektoral 
+      =============================================== -->
+      <div class="sop-card">
+        <div class="sop-cover-container">
+          <!-- Ganti nama file gambar cover di bawah ini -->
+          <img src="{{ h.url_for_static('/base/sop/dokumen 4.png') }}" onerror="this.style.display='none'" alt="Cover Buku">
+        </div>
+        <div class="sop-info">
+          <h3 class="sop-title">Hak Akses Data Sektoral</h3>
+          <div class="sop-meta">
+            <i class="fa fa-folder-open"></i>
+            <span>Dinas Komunikasi Informatika dan Komunikasi Prov. Bengkulu</span>
+          </div>
+          <!-- Ganti nama file PDF di bawah ini -->
+          <a href="{{ h.url_for_static('/base/sop/dokumen 4.pdf') }}" target="_blank" class="btn-unduh-sop">
+            Unduh <i class="fa fa-download" style="margin-left: 5px;"></i>
+          </a>
+        </div>
+      </div>
+
+    </div> <!-- Akhir Grid -->
   </div>
 {% endblock %}

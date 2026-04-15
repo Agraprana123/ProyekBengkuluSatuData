@@ -1,6 +1,6 @@
 import os
 import requests
-import google.generativeai as genai
+from google import genai
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
@@ -17,12 +17,11 @@ _key_valid = (
     and len(GEMINI_API_KEY) > 20
 )
 
-gemini_model = None
+gemini_client = None
 if _key_valid:
     try:
-        genai.configure(api_key=GEMINI_API_KEY)
-        gemini_model = genai.GenerativeModel("gemini-1.5-flash")
-        print("✅ Gemini AI aktif (gemini-1.5-flash)")
+        gemini_client = genai.Client(api_key=GEMINI_API_KEY)
+        print("✅ Gemini AI aktif (gemini-2.5-flash)")
     except Exception as e:
         print(f"❌ Gagal init Gemini: {e}")
 else:
@@ -199,7 +198,10 @@ def jawab_dengan_ai(user_message: str) -> str:
     full_prompt += f"\n\nPertanyaan pengguna: {user_message}"
 
     try:
-        response = gemini_model.generate_content(full_prompt)
+        response = gemini_client.models.generate_content(
+            model='gemini-2.5-flash',
+            contents=full_prompt
+        )
         return response.text.strip()
     except Exception as e:
         print(f"Gemini error: {e}")
@@ -367,7 +369,7 @@ def jawab_fallback(user_message: str) -> str:
 def home():
     return {
         "status": "Arnold AI berjalan",
-        "ai_mode": "gemini-1.5-flash" if gemini_model else "fallback (isi GEMINI_API_KEY di .env)",
+        "ai_mode": "gemini-2.5-flash" if gemini_client else "fallback (isi GEMINI_API_KEY di .env)",
         "portal": CKAN_SITE_URL
     }
 
@@ -376,7 +378,7 @@ def chat(msg: Message):
     if not msg.message.strip():
         return {"reply": "Silakan ketik pertanyaan Anda 😊"}
 
-    if gemini_model:
+    if gemini_client:
         reply = jawab_dengan_ai(msg.message)
     else:
         reply = jawab_fallback(msg.message)
@@ -387,7 +389,7 @@ def chat(msg: Message):
 def status():
     count = get_dataset_count()
     return {
-        "ai_engine": "gemini-1.5-flash" if gemini_model else "fallback (no valid API key)",
+        "ai_engine": "gemini-2.5-flash" if gemini_client else "fallback (no valid API key)",
         "api_key_configured": _key_valid,
         "ckan_connected": count > 0,
         "dataset_count": count,

@@ -108,6 +108,54 @@
         .search-form input.form-control:focus { border-color: #B00000; box-shadow: none; }
         .search-form button.btn { border-radius: 0 50px 50px 0 !important; }
         
+        /* 7. Perbaikan UI Mobile Global (Semua Halaman) */
+        @media (max-width: 768px) {
+            /* Responsivitas Kontainer Utama CKAN (Grup, Organisasi, dsb) */
+            .wrapper, .container, .content, body {
+                overflow-x: hidden;
+            }
+            .primary, .secondary, .content, .sidebar-outer, .content-outer {
+                padding-left: 15px !important;
+                padding-right: 15px !important;
+            }
+            .module {
+                margin-left: 0 !important;
+                margin-right: 0 !important;
+            }
+            .row {
+                margin-left: 0 !important;
+                margin-right: 0 !important;
+            }
+            
+            /* Pengecilan Otomatis Gambar/Logo Organisasi yang Raksasa */
+            .image img, .group-image, .profile-image {
+                max-width: 130px !important;
+                max-height: 130px !important;
+                margin: 20px auto;
+                display: block;
+                object-fit: contain;
+            }
+            
+            /* Penyesuaian Heading & Judul */
+            h1, .page-heading {
+                font-size: 22px !important;
+                text-align: center;
+                word-wrap: break-word;
+            }
+            .module-heading {
+                text-align: center;
+            }
+            
+            /* Roti Penunjuk Arah (Breadcrumb) jangan sampai nabrak pinggir */
+            .toolbar .breadcrumb, .breadcrumb {
+                white-space: normal !important;
+                word-wrap: break-word !important;
+                padding: 10px 15px !important;
+                font-size: 13px !important;
+                line-height: 1.5;
+            }
+        }
+        
         /* =========================================================
            GAYA CSS KHUSUS CHATBOT MODAL ARNOLD (PERSIS JKT SATU DATA)
            ========================================================= */
