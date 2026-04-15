@@ -1,0 +1,571 @@
+{% extends "page.html" %}
+
+{% block subtitle %}Dashboard Walidata – Verifikasi Data{% endblock %}
+
+{# ===== HAPUS HEADER DAN FOOTER PORTAL BSD ===== #}
+{% block header %}{% endblock %}
+{% block footer %}{% endblock %}
+
+{% block styles %}
+{{ super() }}
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+/* Reset CKAN page wrapper agar dashboard bisa full screen */
+body { background: #0f172a !important; margin: 0 !important; padding: 0 !important; overflow: hidden; }
+.container, .container-fluid { padding: 0 !important; max-width: 100% !important; margin: 0 !important; }
+*, *::before, *::after { box-sizing: border-box; }
+
+/* ===== LAYOUT UTAMA ===== */
+.wd-app {
+  display: flex; height: 100vh; overflow: hidden;
+  font-family: 'Poppins', sans-serif;
+}
+
+/* ===== SIDEBAR ===== */
+.wd-sidebar {
+  width: 235px; flex-shrink: 0;
+  background: linear-gradient(180deg, #1e1b4b 0%, #0f172a 100%);
+  display: flex; flex-direction: column;
+  border-right: 1px solid rgba(255,255,255,0.07);
+}
+.sidebar-logo {
+  padding: 20px 18px 16px;
+  border-bottom: 1px solid rgba(255,255,255,0.08);
+  display: flex; align-items: center; gap: 10px;
+}
+.sidebar-logo-icon {
+  width: 40px; height: 40px; border-radius: 11px;
+  background: linear-gradient(135deg, #f59e0b, #d97706);
+  display: flex; align-items: center; justify-content: center;
+  font-size: 16px; font-weight: 800; color: #000; flex-shrink: 0;
+}
+.sidebar-logo .s-title { font-size: 13px; font-weight: 700; color: white; display: block; }
+.sidebar-logo .s-sub   { font-size: 10px; color: rgba(255,255,255,0.4); text-transform: uppercase; letter-spacing: 0.8px; }
+
+.sidebar-nav { flex: 1; padding: 14px 10px; overflow-y: auto; }
+.nav-section-lbl {
+  font-size: 9px; font-weight: 700; letter-spacing: 1.5px;
+  text-transform: uppercase; color: rgba(255,255,255,0.3);
+  padding: 10px 10px 5px;
+}
+.nav-link {
+  display: flex; align-items: center; gap: 10px;
+  padding: 9px 12px; border-radius: 9px;
+  color: rgba(255,255,255,0.55); font-size: 13px; font-weight: 500;
+  text-decoration: none; transition: all 0.2s; margin-bottom: 2px;
+}
+.nav-link:hover { background: rgba(255,255,255,0.09); color: white; text-decoration: none; }
+.nav-link.active { background: rgba(245,158,11,0.15); color: #fbbf24; }
+.nav-link i { width: 18px; text-align: center; font-size: 14px; flex-shrink: 0; }
+.nav-badge {
+  margin-left: auto; background: #ef4444; color: white;
+  font-size: 10px; font-weight: 800; padding: 2px 7px;
+  border-radius: 10px; min-width: 20px; text-align: center;
+}
+
+.sidebar-footer {
+  padding: 14px 10px;
+  border-top: 1px solid rgba(255,255,255,0.08);
+}
+.user-card {
+  display: flex; align-items: center; gap: 9px;
+  padding: 10px 12px; border-radius: 10px;
+  background: rgba(255,255,255,0.06); margin-bottom: 6px;
+}
+.user-avatar {
+  width: 33px; height: 33px; border-radius: 50%;
+  background: linear-gradient(135deg, #7c3aed, #4f46e5);
+  display: flex; align-items: center; justify-content: center;
+  font-size: 13px; font-weight: 700; color: white; flex-shrink: 0;
+  text-transform: uppercase;
+}
+.user-name { font-size: 12px; font-weight: 600; color: white; display: block; }
+.user-role { font-size: 10px; color: rgba(255,255,255,0.4); }
+.btn-logout {
+  display: flex; align-items: center; gap: 8px;
+  padding: 8px 12px; border-radius: 9px;
+  color: rgba(255,255,255,0.45); font-size: 12px;
+  text-decoration: none; transition: all 0.2s;
+}
+.btn-logout:hover { background: rgba(239,68,68,0.15); color: #f87171; text-decoration: none; }
+
+/* ===== MAIN ===== */
+.wd-main { flex: 1; display: flex; flex-direction: column; overflow: hidden; background: #f1f5f9; }
+
+.wd-topbar {
+  background: white; border-bottom: 1px solid #e2e8f0;
+  padding: 0 26px; height: 58px;
+  display: flex; align-items: center; justify-content: space-between;
+  flex-shrink: 0; gap: 12px;
+}
+.topbar-title { font-size: 16px; font-weight: 700; color: #1e293b; display: flex; align-items: center; gap: 8px; }
+.topbar-title span { color: #f59e0b; }
+.topbar-right { display: flex; align-items: center; gap: 12px; }
+.topbar-date { font-size: 12px; color: #94a3b8; }
+.admin-pill {
+  background: linear-gradient(135deg,#7c3aed,#4f46e5);
+  color: white; padding: 3px 11px; border-radius: 20px;
+  font-size: 11px; font-weight: 700;
+}
+
+.wd-scroll { flex: 1; overflow-y: auto; padding: 22px 26px; }
+
+/* ===== STAT CARDS ===== */
+.stats-grid {
+  display: grid; grid-template-columns: repeat(4,1fr);
+  gap: 14px; margin-bottom: 20px;
+}
+.stat-card {
+  background: white; border-radius: 13px;
+  padding: 16px 15px; box-shadow: 0 1px 5px rgba(0,0,0,0.06);
+  display: flex; align-items: center; gap: 13px;
+  border-left: 4px solid transparent; transition: transform 0.2s;
+}
+.stat-card:hover { transform: translateY(-2px); box-shadow: 0 5px 18px rgba(0,0,0,0.1); }
+.stat-card.sp { border-left-color: #f59e0b; }
+.stat-card.sa { border-left-color: #10b981; }
+.stat-card.sr { border-left-color: #ef4444; }
+.stat-card.st { border-left-color: #6366f1; }
+.stat-icon { width: 44px; height: 44px; border-radius: 11px; display: flex; align-items: center; justify-content: center; font-size: 18px; flex-shrink: 0; }
+.sp .stat-icon { background:#fef3c7; color:#d97706; }
+.sa .stat-icon { background:#d1fae5; color:#059669; }
+.sr .stat-icon { background:#fee2e2; color:#dc2626; }
+.st .stat-icon { background:#e0e7ff; color:#4f46e5; }
+.stat-num { font-size: 26px; font-weight: 800; line-height: 1; }
+.sp .stat-num { color:#d97706; } .sa .stat-num { color:#059669; }
+.sr .stat-num { color:#dc2626; } .st .stat-num { color:#4f46e5; }
+.stat-lbl { font-size: 11px; color:#94a3b8; font-weight: 500; margin-top: 3px; }
+
+/* FLASH */
+.flash { border-radius: 10px; padding: 11px 16px; font-size: 13px; font-weight: 500; display: flex; align-items: center; gap: 10px; margin-bottom: 12px; }
+.flash.ok  { background:#d1fae5; border-left:4px solid #10b981; color:#065f46; }
+.flash.err { background:#fee2e2; border-left:4px solid #ef4444; color:#7f1d1d; }
+
+/* FILTER */
+.filter-bar {
+  background: white; border-radius: 12px;
+  padding: 13px 17px; margin-bottom: 16px;
+  display: flex; align-items: center; gap: 10px; flex-wrap: wrap;
+  box-shadow: 0 1px 4px rgba(0,0,0,0.05);
+}
+.filter-bar label { font-size: 12px; font-weight: 700; color: #374151; white-space: nowrap; }
+.f-select, .f-input {
+  border: 1.5px solid #e5e7eb; border-radius: 9px;
+  padding: 8px 11px; font-size: 13px;
+  font-family: 'Poppins',sans-serif; outline: none;
+  color: #374151; transition: border 0.2s; background: #fafafa;
+}
+.f-select { min-width: 160px; }
+.f-input  { min-width: 180px; }
+.f-select:focus,.f-input:focus { border-color: #6366f1; background: white; }
+.btn-cari {
+  background: #6366f1; color: white; border: none; border-radius: 9px;
+  padding: 8px 17px; font-size: 13px; font-weight: 600; cursor: pointer;
+  display: inline-flex; align-items: center; gap: 6px; transition: all 0.2s;
+}
+.btn-cari:hover { background: #4f46e5; }
+.btn-reset {
+  background: #f3f4f6; color: #6b7280; border: none; border-radius: 9px;
+  padding: 8px 12px; font-size: 13px; cursor: pointer; text-decoration: none;
+  display: inline-flex; align-items: center; gap: 5px; transition: all 0.2s;
+}
+.btn-reset:hover { background: #e5e7eb; color: #374151; }
+.f-count { margin-left: auto; font-size: 12px; color: #94a3b8; }
+
+/* TABLE CARD */
+.tbl-card {
+  background: white; border-radius: 14px;
+  box-shadow: 0 1px 5px rgba(0,0,0,0.06);
+  overflow: hidden; margin-bottom: 22px;
+}
+.tbl-card-hdr {
+  padding: 14px 20px; border-bottom: 1px solid #f1f5f9;
+  display: flex; align-items: center; justify-content: space-between;
+}
+.tbl-card-hdr h2 {
+  font-size: 14px; font-weight: 700; color: #1e293b; margin: 0;
+  display: flex; align-items: center; gap: 8px;
+}
+.count-pill { background:#fef3c7; color:#d97706; padding:3px 10px; border-radius:20px; font-size:11px; font-weight:700; }
+
+table.ds-t { width:100%; border-collapse:collapse; }
+table.ds-t thead th {
+  background:#f8fafc; padding:9px 15px;
+  font-size:10px; font-weight:800; letter-spacing:0.8px;
+  text-transform:uppercase; color:#94a3b8; text-align:left;
+  border-bottom:1px solid #e2e8f0;
+}
+table.ds-t tbody tr { border-bottom:1px solid #f8fafc; transition:background 0.15s; }
+table.ds-t tbody tr:hover { background:#fafbff; }
+table.ds-t tbody td { padding:12px 15px; font-size:13px; color:#374151; vertical-align:middle; }
+
+.ds-title { font-weight:600; color:#1e293b; font-size:13px; display:block; margin-bottom:2px; text-decoration:none; }
+.ds-title:hover { color:#6366f1; }
+.ds-desc { font-size:11px; color:#94a3b8; max-width:240px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; display:block; }
+.org-chip { display:inline-flex; align-items:center; gap:4px; background:#eff6ff; color:#2563eb; padding:4px 10px; border-radius:20px; font-size:11px; font-weight:600; }
+.status-chip { display:inline-flex; align-items:center; gap:5px; padding:4px 10px; border-radius:20px; font-size:11px; font-weight:700; background:#fef3c7; color:#d97706; }
+.status-chip::before { content:'●'; font-size:7px; animation:blink 1.5s infinite; }
+@keyframes blink { 0%,100%{opacity:1}50%{opacity:.3} }
+.res-chip { background:#f0f9ff; color:#0284c7; padding:3px 10px; border-radius:20px; font-size:11px; font-weight:700; }
+
+.act-wrap { display:flex; gap:5px; align-items:center; flex-wrap:wrap; }
+.btn-app { background:linear-gradient(135deg,#10b981,#059669); color:white; border:none; border-radius:7px; padding:5px 11px; font-size:11px; font-weight:700; cursor:pointer; display:inline-flex; align-items:center; gap:4px; transition:all 0.2s; }
+.btn-app:hover { box-shadow:0 4px 12px rgba(16,185,129,.4); transform:translateY(-1px); }
+.btn-tol { background:linear-gradient(135deg,#ef4444,#dc2626); color:white; border:none; border-radius:7px; padding:5px 11px; font-size:11px; font-weight:700; cursor:pointer; display:inline-flex; align-items:center; gap:4px; transition:all 0.2s; }
+.btn-tol:hover { box-shadow:0 4px 12px rgba(239,68,68,.4); transform:translateY(-1px); }
+.btn-cat { background:#eff6ff; color:#2563eb; border:none; border-radius:7px; padding:5px 9px; font-size:11px; font-weight:700; cursor:pointer; display:inline-flex; align-items:center; gap:4px; transition:all 0.2s; }
+.btn-cat:hover { background:#dbeafe; }
+.btn-eye { background:#f3f4f6; color:#6b7280; border:none; border-radius:7px; padding:5px 9px; cursor:pointer; display:inline-flex; align-items:center; text-decoration:none; transition:all 0.2s; }
+.btn-eye:hover { background:#e5e7eb; color:#374151; }
+
+/* EMPTY */
+.empty-st { padding:48px 20px; text-align:center; }
+.empty-ico { width:68px; height:68px; border-radius:50%; background:linear-gradient(135deg,#d1fae5,#a7f3d0); display:flex; align-items:center; justify-content:center; font-size:28px; margin:0 auto 12px; }
+.empty-st h3 { font-size:15px; font-weight:700; color:#059669; margin-bottom:5px; }
+.empty-st p  { font-size:13px; color:#94a3b8; }
+
+/* LOG */
+.log-card { background:white; border-radius:14px; box-shadow:0 1px 5px rgba(0,0,0,0.06); overflow:hidden; margin-bottom:30px; }
+.log-hdr  { padding:13px 20px; border-bottom:1px solid #f1f5f9; display:flex; align-items:center; gap:8px; }
+.log-hdr h3 { font-size:14px; font-weight:700; color:#1e293b; margin:0; }
+.log-item { padding:12px 20px; border-bottom:1px solid #f8fafc; display:flex; align-items:flex-start; gap:11px; }
+.log-item:last-child { border-bottom:none; }
+.log-dot { width:31px; height:31px; border-radius:50%; display:flex; align-items:center; justify-content:center; font-size:12px; flex-shrink:0; }
+.ld-approve { background:#d1fae5; color:#059669; }
+.ld-tolak   { background:#fee2e2; color:#dc2626; }
+.ld-catatan { background:#dbeafe; color:#2563eb; }
+.log-text { font-size:13px; color:#374151; margin:0 0 3px; line-height:1.5; }
+.log-sub  { font-size:11px; color:#94a3b8; }
+
+/* MODAL */
+.modal-mask { display:none; position:fixed; inset:0; background:rgba(15,23,42,.7); backdrop-filter:blur(6px); z-index:9999; align-items:center; justify-content:center; }
+.modal-mask.open { display:flex; }
+.modal-box { background:white; border-radius:20px; padding:30px 26px; width:100%; max-width:450px; box-shadow:0 24px 70px rgba(0,0,0,.25); animation:popIn .28s cubic-bezier(.34,1.56,.64,1); }
+@keyframes popIn { from{transform:scale(.9) translateY(10px);opacity:0} to{transform:scale(1) translateY(0);opacity:1} }
+.modal-ico { width:58px; height:58px; border-radius:15px; display:flex; align-items:center; justify-content:center; font-size:24px; margin:0 auto 14px; }
+.m-green { background:#d1fae5; color:#059669; }
+.m-red   { background:#fee2e2; color:#dc2626; }
+.m-blue  { background:#dbeafe; color:#2563eb; }
+.modal-box h3 { font-size:18px; font-weight:700; color:#1e293b; text-align:center; margin-bottom:4px; }
+.modal-sub { text-align:center; font-size:12px; color:#94a3b8; margin-bottom:14px; }
+.modal-ds { background:#f8fafc; border:1px solid #e2e8f0; border-radius:9px; padding:10px 13px; font-size:13px; font-weight:600; color:#374151; margin-bottom:13px; display:flex; align-items:center; gap:8px; }
+.modal-lbl { font-size:11px; font-weight:700; color:#374151; text-transform:uppercase; letter-spacing:.5px; display:block; margin-bottom:5px; }
+.modal-ta { width:100%; border:2px solid #e2e8f0; border-radius:9px; padding:9px 12px; font-size:13px; font-family:'Poppins',sans-serif; resize:vertical; min-height:75px; outline:none; transition:border .2s; color:#374151; }
+.modal-ta:focus { border-color:#6366f1; }
+.modal-acts { display:flex; gap:9px; margin-top:14px; }
+.modal-acts button { flex:1; padding:10px; border-radius:9px; font-size:13px; font-weight:700; cursor:pointer; border:none; transition:all .25s; font-family:'Poppins',sans-serif; }
+.btn-cancel { background:#f3f4f6; color:#6b7280; }
+.btn-cancel:hover { background:#e5e7eb; }
+.btn-m-app { background:linear-gradient(135deg,#10b981,#059669); color:white; }
+.btn-m-app:hover { box-shadow:0 4px 14px rgba(16,185,129,.4); }
+.btn-m-tol { background:linear-gradient(135deg,#ef4444,#dc2626); color:white; }
+.btn-m-tol:hover { box-shadow:0 4px 14px rgba(239,68,68,.4); }
+.btn-m-cat { background:linear-gradient(135deg,#3b82f6,#2563eb); color:white; }
+.btn-m-cat:hover { box-shadow:0 4px 14px rgba(59,130,246,.4); }
+.err-hint { font-size:11px; color:#ef4444; margin-top:4px; display:none; }
+
+@media (max-width: 900px) {
+  .wd-sidebar { display:none; }
+  .stats-grid { grid-template-columns: repeat(2,1fr); }
+  .wd-scroll { padding:14px; }
+}
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="wd-app">
+
+  <!-- ===== SIDEBAR ===== -->
+  <aside class="wd-sidebar">
+    <div class="sidebar-logo">
+      <div class="sidebar-logo-icon">W</div>
+      <div>
+        <span class="s-title">Walidata</span>
+        <span class="s-sub">Diskominfotik</span>
+      </div>
+    </div>
+    <nav class="sidebar-nav">
+      <div class="nav-section-lbl">Verifikasi</div>
+      <a href="/walidata" class="nav-link active">
+        <i class="fa fa-th-large"></i> Dashboard
+        {% if stats.pending > 0 %}<span class="nav-badge">{{ stats.pending }}</span>{% endif %}
+      </a>
+      {% if c.userobj and c.userobj.sysadmin %}
+      <div class="nav-section-lbl">Admin</div>
+      <a href="/admin/walidata" class="nav-link">
+        <i class="fa fa-users"></i> Kelola Walidata
+      </a>
+      <a href="/ckan-admin" class="nav-link">
+        <i class="fa fa-cog"></i> Admin CKAN
+      </a>
+      {% endif %}
+    </nav>
+    <div class="sidebar-footer">
+      <div class="user-card">
+        <div class="user-avatar">{{ c.userobj.display_name[0] if c.userobj else 'W' }}</div>
+        <div>
+          <span class="user-name">{{ c.userobj.display_name if c.userobj else '—' }}</span>
+          <span class="user-role">{{ 'Sysadmin' if c.userobj and c.userobj.sysadmin else 'Walidata' }}</span>
+        </div>
+      </div>
+      <a href="/user/_logout" class="btn-logout"><i class="fa fa-sign-out"></i> Keluar</a>
+    </div>
+  </aside>
+
+  <!-- ===== MAIN ===== -->
+  <div class="wd-main">
+    <div class="wd-topbar">
+      <div class="topbar-title">
+        <i class="fa fa-shield" style="color:#f59e0b;"></i>
+        Dashboard <span>Verifikasi</span>
+      </div>
+      <div class="topbar-right">
+        <span class="topbar-date" id="wdClock"></span>
+        {% if c.userobj and c.userobj.sysadmin %}
+          <span class="admin-pill">⚡ Sysadmin</span>
+        {% endif %}
+      </div>
+    </div>
+
+    <div class="wd-scroll">
+
+      <!-- STAT CARDS -->
+      <div class="stats-grid">
+        <div class="stat-card sp">
+          <div class="stat-icon"><i class="fa fa-clock-o"></i></div>
+          <div><div class="stat-num">{{ stats.pending }}</div><div class="stat-lbl">Menunggu Verifikasi</div></div>
+        </div>
+        <div class="stat-card sa">
+          <div class="stat-icon"><i class="fa fa-check-circle"></i></div>
+          <div><div class="stat-num">{{ stats.approved }}</div><div class="stat-lbl">Disetujui</div></div>
+        </div>
+        <div class="stat-card sr">
+          <div class="stat-icon"><i class="fa fa-times-circle"></i></div>
+          <div><div class="stat-num">{{ stats.rejected }}</div><div class="stat-lbl">Ditolak</div></div>
+        </div>
+        <div class="stat-card st">
+          <div class="stat-icon"><i class="fa fa-database"></i></div>
+          <div><div class="stat-num">{{ stats.total }}</div><div class="stat-lbl">Total Dataset</div></div>
+        </div>
+      </div>
+
+      <!-- FLASH MESSAGES -->
+      {% with messages = get_flashed_messages(with_categories=True) %}
+        {% for cat, msg in messages %}
+          <div class="flash {{ 'ok' if cat == 'success' else 'err' }}">
+            <i class="fa fa-{{ 'check-circle' if cat == 'success' else 'exclamation-triangle' }}"></i>{{ msg }}
+          </div>
+        {% endfor %}
+      {% endwith %}
+
+      <!-- FILTER -->
+      <form method="GET" action="/walidata" class="filter-bar">
+        <label><i class="fa fa-filter" style="color:#6366f1; margin-right:4px;"></i>Filter:</label>
+        <select name="org" class="f-select" onchange="this.form.submit()">
+          <option value="">Semua OPD</option>
+          {% for org in organisations %}
+            <option value="{{ org.name }}" {% if selected_org == org.name %}selected{% endif %}>{{ org.display_name }}</option>
+          {% endfor %}
+        </select>
+        <input type="text" name="q" class="f-input" placeholder="🔍 Cari nama dataset..." value="{{ search_query }}">
+        <button type="submit" class="btn-cari"><i class="fa fa-search"></i> Cari</button>
+        {% if selected_org or search_query %}
+          <a href="/walidata" class="btn-reset"><i class="fa fa-times"></i> Reset</a>
+        {% endif %}
+        <span class="f-count">{{ datasets|length }} dataset private</span>
+      </form>
+
+      <!-- TABLE -->
+      <div class="tbl-card">
+        <div class="tbl-card-hdr">
+          <h2><i class="fa fa-inbox" style="color:#f59e0b;"></i> Dataset Menunggu Verifikasi (Private)</h2>
+          <span class="count-pill">{{ datasets|length }} dataset</span>
+        </div>
+        {% if datasets %}
+        <table class="ds-t">
+          <thead>
+            <tr>
+              <th style="width:32%;">Nama Dataset</th>
+              <th style="width:20%;">OPD</th>
+              <th style="width:10%;">Status</th>
+              <th style="width:10%;">Tgl Upload</th>
+              <th style="width:7%; text-align:center;">File</th>
+              <th style="width:21%;">Aksi Verifikasi</th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for ds in datasets %}
+            <tr>
+              <td>
+                <a href="/dataset/{{ ds.name }}" target="_blank" class="ds-title">{{ ds.title or ds.name }}</a>
+                <span class="ds-desc">{{ ds.notes[:60] if ds.get('notes') else '—' }}</span>
+              </td>
+              <td>
+                <span class="org-chip">
+                  <i class="fa fa-building"></i>{{ ds.organization.title if ds.organization else '—' }}
+                </span>
+              </td>
+              <td><span class="status-chip">Private</span></td>
+              <td style="font-size:12px; color:#94a3b8; white-space:nowrap;">{{ ds.metadata_created[:10] if ds.get('metadata_created') else '—' }}</td>
+              <td style="text-align:center;"><span class="res-chip">{{ ds.get('num_resources',0) }}</span></td>
+              <td>
+                <div class="act-wrap">
+                  <button class="btn-app" data-id="{{ ds.id }}" data-name="{{ ds.title or ds.name }}" onclick="openApprove(this.dataset.id, this.dataset.name)">
+                    <i class="fa fa-check"></i> Setujui
+                  </button>
+                  <button class="btn-tol" data-id="{{ ds.id }}" data-name="{{ ds.title or ds.name }}" onclick="openReject(this.dataset.id, this.dataset.name)">
+                    <i class="fa fa-times"></i> Tolak
+                  </button>
+                  <button class="btn-cat" data-id="{{ ds.id }}" data-name="{{ ds.title or ds.name }}" onclick="openNotes(this.dataset.id, this.dataset.name)" title="Kirim catatan">
+                    <i class="fa fa-comment"></i>
+                  </button>
+                  <a href="/dataset/{{ ds.name }}/catatan-walidata" class="btn-eye" title="Lihat catatan">
+                    <i class="fa fa-history"></i>
+                  </a>
+                </div>
+              </td>
+            </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+        {% else %}
+        <div class="empty-st">
+          <div class="empty-ico">✅</div>
+          <h3>Semua Dataset Sudah Terverifikasi!</h3>
+          <p>Tidak ada dataset Private yang menunggu verifikasi saat ini.</p>
+        </div>
+        {% endif %}
+      </div>
+
+      <!-- LOG -->
+      <div class="log-card">
+        <div class="log-hdr">
+          <i class="fa fa-history" style="color:#6366f1; font-size:15px;"></i>
+          <h3>Riwayat Verifikasi Terbaru</h3>
+        </div>
+        {% if log_list %}
+          {% for log in log_list %}
+          <div class="log-item">
+            <div class="log-dot {{ 'ld-approve' if log.aksi=='approve' else ('ld-tolak' if log.aksi=='tolak' else 'ld-catatan') }}">
+              <i class="fa fa-{{ 'check' if log.aksi=='approve' else ('times' if log.aksi=='tolak' else 'comment') }}"></i>
+            </div>
+            <div>
+              <p class="log-text">
+                {% if log.aksi=='approve' %}<strong style="color:#059669;">✔ Disetujui</strong>
+                {% elif log.aksi=='tolak' %}<strong style="color:#dc2626;">✘ Ditolak</strong>
+                {% else %}<strong style="color:#2563eb;">💬 Catatan</strong>{% endif %}
+                — <strong>{{ log.dataset_name or log.dataset_id }}</strong>
+                {% if log.pesan %}
+                  <br><span style="font-size:11px; color:#94a3b8; font-style:italic;">"{{ log.pesan[:90] }}{% if log.pesan|length > 90 %}…{% endif %}"</span>
+                {% endif %}
+              </p>
+              <span class="log-sub">
+                <i class="fa fa-shield" style="margin-right:3px;"></i>{{ log.walidata_user }}
+                &nbsp;·&nbsp;
+                <i class="fa fa-clock-o" style="margin-right:3px;"></i>
+                {{ log.created_at.strftime('%d %b %Y, %H:%M') if log.created_at else '—' }}
+              </span>
+            </div>
+          </div>
+          {% endfor %}
+        {% else %}
+          <div style="padding:22px; text-align:center; font-size:13px; color:#94a3b8;">
+            <i class="fa fa-info-circle" style="margin-right:5px;"></i>Belum ada riwayat verifikasi
+          </div>
+        {% endif %}
+      </div>
+
+    </div>{# /scroll #}
+  </div>{# /main #}
+</div>{# /app #}
+
+<!-- MODAL APPROVE -->
+<div class="modal-mask" id="modalApprove">
+  <div class="modal-box">
+    <div class="modal-ico m-green"><i class="fa fa-check-circle"></i></div>
+    <h3>Setujui & Publikasi?</h3>
+    <p class="modal-sub">Dataset berubah menjadi <strong>Public</strong> dan dapat diakses masyarakat.</p>
+    <div class="modal-ds"><i class="fa fa-database" style="color:#6366f1;"></i><span id="approveTitle">—</span></div>
+    <label class="modal-lbl">Catatan (opsional)</label>
+    <textarea class="modal-ta" id="approvePesan" placeholder="Catatan persetujuan Anda..."></textarea>
+    <div class="modal-acts">
+      <button class="btn-cancel" onclick="closeAll()">Batal</button>
+      <button class="btn-m-app" onclick="doSubmit('fApprove','approvePesan',false)"><i class="fa fa-check"></i> Setujui</button>
+    </div>
+  </div>
+</div>
+
+<!-- MODAL TOLAK -->
+<div class="modal-mask" id="modalReject">
+  <div class="modal-box">
+    <div class="modal-ico m-red"><i class="fa fa-times-circle"></i></div>
+    <h3>Tolak Dataset?</h3>
+    <p class="modal-sub">Dataset tetap <strong>Private</strong>. Catatan akan tersimpan untuk produsen data.</p>
+    <div class="modal-ds"><i class="fa fa-database" style="color:#dc2626;"></i><span id="rejectTitle">—</span></div>
+    <label class="modal-lbl">Alasan Penolakan <span style="color:#ef4444;">*</span></label>
+    <textarea class="modal-ta" id="rejectPesan" placeholder="Wajib diisi. Jelaskan alasan penolakan atau revisi yang diperlukan..."></textarea>
+    <p class="err-hint" id="rejectErr"><i class="fa fa-exclamation-triangle"></i> Alasan wajib diisi!</p>
+    <div class="modal-acts">
+      <button class="btn-cancel" onclick="closeAll()">Batal</button>
+      <button class="btn-m-tol" onclick="doSubmit('fReject','rejectPesan',true)"><i class="fa fa-times"></i> Tolak & Kirim</button>
+    </div>
+  </div>
+</div>
+
+<!-- MODAL NOTES -->
+<div class="modal-mask" id="modalNotes">
+  <div class="modal-box">
+    <div class="modal-ico m-blue"><i class="fa fa-comment"></i></div>
+    <h3>Kirim Catatan</h3>
+    <p class="modal-sub">Dataset tetap Private. Hanya mengirim catatan/pertanyaan ke produsen.</p>
+    <div class="modal-ds"><i class="fa fa-database" style="color:#2563eb;"></i><span id="notesTitle">—</span></div>
+    <label class="modal-lbl">Isi Catatan <span style="color:#ef4444;">*</span></label>
+    <textarea class="modal-ta" id="notesPesan" placeholder="Tulis catatan atau pertanyaan untuk produsen data..."></textarea>
+    <p class="err-hint" id="notesErr"><i class="fa fa-exclamation-triangle"></i> Catatan tidak boleh kosong!</p>
+    <div class="modal-acts">
+      <button class="btn-cancel" onclick="closeAll()">Batal</button>
+      <button class="btn-m-cat" onclick="doSubmit('fNotes','notesPesan',true)"><i class="fa fa-paper-plane"></i> Kirim</button>
+    </div>
+  </div>
+</div>
+
+<!-- HIDDEN FORMS -->
+<form id="fApprove" method="POST" style="display:none;">{{ h.csrf_input() }}<input type="hidden" name="pesan" id="fApprovePesan"></form>
+<form id="fReject"  method="POST" style="display:none;">{{ h.csrf_input() }}<input type="hidden" name="pesan" id="fRejectPesan"></form>
+<form id="fNotes"   method="POST" style="display:none;">{{ h.csrf_input() }}<input type="hidden" name="pesan" id="fNotesPesan"></form>
+{% endblock %}
+
+{% block scripts %}
+{{ super() }}
+<script>
+// Clock
+(function tick(){
+  var el=document.getElementById('wdClock');
+  if(el){var d=new Date();el.textContent=d.toLocaleDateString('id-ID',{weekday:'long',day:'numeric',month:'long',year:'numeric'});}
+  setTimeout(tick,60000);
+})();
+
+var _cid=null;
+function openApprove(id,name){_cid=id; document.getElementById('approveTitle').textContent=name; document.getElementById('approvePesan').value=''; document.getElementById('modalApprove').classList.add('open');}
+function openReject(id,name){_cid=id; document.getElementById('rejectTitle').textContent=name; document.getElementById('rejectPesan').value=''; document.getElementById('rejectErr').style.display='none'; document.getElementById('modalReject').classList.add('open');}
+function openNotes(id,name){_cid=id; document.getElementById('notesTitle').textContent=name; document.getElementById('notesPesan').value=''; document.getElementById('notesErr').style.display='none'; document.getElementById('modalNotes').classList.add('open');}
+function closeAll(){document.querySelectorAll('.modal-mask').forEach(function(m){m.classList.remove('open');}); _cid=null;}
+function doSubmit(fid,tid,req){
+  if(!_cid) return;
+  var val=document.getElementById(tid).value.trim();
+  if(req&&!val){
+    var errId=fid==='fReject'?'rejectErr':'notesErr';
+    document.getElementById(errId).style.display='block';
+    document.getElementById(tid).focus(); return;
+  }
+  var f=document.getElementById(fid);
+  f.querySelector('input[name="pesan"]').value=val;
+  if(fid==='fApprove') f.action='/walidata/approve/'+_cid;
+  else if(fid==='fReject') f.action='/walidata/tolak/'+_cid;
+  else f.action='/walidata/catatan/'+_cid;
+  f.submit();
+}
+document.querySelectorAll('.modal-mask').forEach(function(m){m.addEventListener('click',function(e){if(e.target===m)closeAll();});});
+document.addEventListener('keydown',function(e){if(e.key==='Escape')closeAll();});
+</script>
+{% endblock %}

@@ -110,6 +110,8 @@ services:
       context: postgresql/
     networks:
       - dbnet
+    ports:
+      - "5433:5432"
     environment:
       - POSTGRES_USER
       - POSTGRES_PASSWORD
@@ -180,6 +182,5 @@ networks:
   solrnet:
     internal: true
   dbnet:
-    internal: true
   redisnet:
     internal: true

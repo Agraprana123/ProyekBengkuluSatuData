@@ -261,6 +261,16 @@
     {% endblock %}
 
     {%- block head_extras %}
+      <style>
+        /* Mencegah gambar di mode Fullscreen (Data Viewer) menjadi raksasa */
+        body > img, .image-view img {
+            max-width: 100% !important;
+            max-height: 90vh !important;
+            object-fit: contain !important;
+            display: block;
+            margin: 0 auto;
+        }
+      </style>
     {% endblock %}
 
   </head>
@@ -279,41 +289,56 @@
     {{ h.render_assets('style') }}
     {{ h.render_assets('script') }}
     
-    <div id="arnold-float-group" class="arnold-float-group">
-        <div id="arnold-trigger" class="arnold-trigger-btn">
-            <div class="arnold-avatar-circle">
-                <img src="/base/images/poster-bsd.png" alt="Arnold">
-            </div>
-            <div class="arnold-trigger-text">
-                <span class="title">Klik di sini</span>
-                <span class="subtitle">untuk tanya arnold</span>
-            </div>
+    {% if '/view/' not in request.path %}
+    <div id="arnold-chatbot-container" style="display: none;">
+      <div id="arnold-float-group" class="arnold-float-group">
+          <div id="arnold-trigger" class="arnold-trigger-btn">
+              <div class="arnold-avatar-circle">
+                  <img src="/base/images/poster-bsd.png" alt="Arnold">
+              </div>
+              <div class="arnold-trigger-text">
+                  <span class="title">Klik di sini</span>
+                  <span class="subtitle">untuk tanya arnold</span>
+              </div>
+          </div>
+          <button id="arnold-banner-close" class="arnold-close-x" title="Tutup Banner">
+              <i class="fa fa-times"></i>
+          </button>
+      </div>
+      
+      <div id="arnold-widget" class="arnold-widget">
+        <div class="arnold-header">
+          <div class="arnold-title">
+              <i class="fa fa-robot"></i> Arnold AI
+          </div>
+          <button id="arnold-close" class="arnold-close-btn">&times;</button>
         </div>
-        <button id="arnold-banner-close" class="arnold-close-x" title="Tutup Banner">
-            <i class="fa fa-times"></i>
-        </button>
+        <div class="arnold-chat-body" id="arnold-chat-box">
+          <div class="chat-message bot">
+              Halo! Saya Arnold, asisten AI resmi Bengkulu Satu Data. Ada yang bisa saya bantu terkait data hari ini?
+          </div>
+        </div>
+        <div class="arnold-input-area">
+          <input type="text" id="arnold-input" placeholder="Ketik pertanyaan di sini..." autocomplete="off">
+          <button id="arnold-send"><i class="fa fa-paper-plane"></i></button>
+        </div>
+      </div>
     </div>
-    
-    <div id="arnold-widget" class="arnold-widget">
-      <div class="arnold-header">
-        <div class="arnold-title">
-            <i class="fa fa-robot"></i> Arnold AI
-        </div>
-        <button id="arnold-close" class="arnold-close-btn">&times;</button>
-      </div>
-      <div class="arnold-chat-body" id="arnold-chat-box">
-        <div class="chat-message bot">
-            Halo! Saya Arnold, asisten AI resmi Bengkulu Satu Data. Ada yang bisa saya bantu terkait data hari ini?
-        </div>
-      </div>
-      <div class="arnold-input-area">
-        <input type="text" id="arnold-input" placeholder="Ketik pertanyaan di sini..." autocomplete="off">
-        <button id="arnold-send"><i class="fa fa-paper-plane"></i></button>
-      </div>
-    </div>
+    {% endif %}
     
     <script>
       document.addEventListener("DOMContentLoaded", function() {
+          // Hanya tampilkan Chatbot Arnold jika berada di jendela utama (Top Level Window)
+          // Ini mencegah Arnold muncul ganda (bocor) di dalam iframe data viewer / resource preview!
+          if (window.self === window.top) {
+              const chatbotContainer = document.getElementById("arnold-chatbot-container");
+              if (chatbotContainer) {
+                  chatbotContainer.style.display = "block";
+              }
+          } else {
+              return; // Matikan seluruh logic Chatbot jika di dalam iframe
+          }
+
           const floatGroup = document.getElementById("arnold-float-group");
           const triggerBtn = document.getElementById("arnold-trigger");
           const bannerCloseBtn = document.getElementById("arnold-banner-close");
@@ -322,6 +347,8 @@
           const chatBox = document.getElementById("arnold-chat-box");
           const inputField = document.getElementById("arnold-input");
           const sendBtn = document.getElementById("arnold-send");
+          
+          if(!floatGroup || !triggerBtn) return;
           
           const FASTAPI_URL = "http://localhost:8001/chat"; 
       
