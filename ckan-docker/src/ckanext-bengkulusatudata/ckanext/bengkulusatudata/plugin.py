@@ -192,17 +192,80 @@ def is_walidata(user):
         return False
 
 
+def get_catatan_walidata_for_dataset(dataset_id):
+    """Helper: Ambil catatan walidata terbaru untuk satu dataset.
+    Digunakan di template package/read.html agar Produsen Data bisa melihat
+    notifikasi catatan/penolakan dari Walidata secara langsung.
+    """
+    if not dataset_id:
+        return []
+    try:
+        ensure_walidata_tables()
+        sess = model.Session
+        rows = sess.execute(
+            text("""
+                SELECT aksi, pesan, walidata_user, created_at
+                FROM walidata_catatan
+                WHERE dataset_id = :did
+                ORDER BY created_at DESC
+                LIMIT 5
+            """),
+            {'did': dataset_id}
+        )
+        return [dict(r._mapping) for r in rows]
+    except Exception as e:
+        print(f'get_catatan_walidata error: {e}')
+        return []
+
+
+def get_org_logo_url(package_dict):
+    """Helper: Mengembalikan URL lengkap untuk logo organisasi dataset."""
+    if not isinstance(package_dict, dict):
+        return ''
+    org = package_dict.get('organization')
+    if not org:
+        return ''
+    
+    # Prioritas 1: image_display_url (sudah absolut / lengkap)
+    logo = org.get('image_display_url')
+    if logo:
+        # Tambahkan slash di awal jika path relatif agar browser mengambil dari root
+        if not logo.startswith('http') and not logo.startswith('/'):
+            logo = '/' + logo
+        return logo
+        
+    # Prioritas 2: image_url (biasanya hanya nama file)
+    logo = org.get('image_url')
+    if not logo:
+        return ''
+        
+    if logo.startswith('http') or logo.startswith('/'):
+        return logo
+        
+    # Standar CKAN upload path untuk logo organisasi adalah di /uploads/group/
+    return f'/uploads/group/{logo}'
+
+
 class BengkuluSatuDataPlugin(plugins.SingletonPlugin):
 
     plugins.implements(plugins.IConfigurer)
     plugins.implements(plugins.IResourceController, inherit=True)
     plugins.implements(plugins.IBlueprint)
     plugins.implements(plugins.IPackageController, inherit=True)
+    plugins.implements(plugins.ITemplateHelpers)
 
     def update_config(self, config):
         toolkit.add_template_directory(config, 'templates')
         toolkit.add_public_directory(config, 'public')
         toolkit.add_resource('assets', 'ckanext_bengkulusatudata')
+
+    def get_helpers(self):
+        """Daftarkan custom template helpers agar bisa dipakai di Jinja2."""
+        return {
+            'get_catatan_walidata_for_dataset': get_catatan_walidata_for_dataset,
+            'is_walidata': is_walidata,
+            'get_org_logo_url': get_org_logo_url,
+        }
 
     # ===== FORCE PRIVATE & REVISI TRACKING =====
     def _ensure_walidata_rules(self, entity, action):

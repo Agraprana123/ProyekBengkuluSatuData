@@ -1103,16 +1103,22 @@
       }
 
       const orgName  = pkg.organization?.title || pkg.organization?.name || 'Unknown';
-      // CKAN image_display_url bisa berupa URL absolut atau path relatif
-      let orgImage = pkg.organization?.image_display_url || '';
-      // Normalkan path relatif (misal /uploads/group/...) agar tetap berfungsi
-      if (orgImage && !orgImage.startsWith('http') && !orgImage.startsWith('/')) {
-        orgImage = '/' + orgImage;
+      // Resolusi URL Logo yang lebih kuat (Mirip dengan helper backend)
+      let orgImage = pkg.organization?.image_display_url || pkg.organization?.image_url || '';
+      
+      if (orgImage) {
+        // Jika path relatif (hanya nama file), arahkan ke folder upload standar CKAN
+        if (!orgImage.startsWith('http') && !orgImage.startsWith('/')) {
+          orgImage = '/uploads/group/' + orgImage;
+        } else if (orgImage.startsWith('http') && !orgImage.startsWith(window.location.origin) && orgImage.includes('localhost:5000')) {
+          // Jika URL mengarah ke port internal 5000, ubah ke origin saat ini (misal 8443)
+          orgImage = orgImage.replace(/https?:\/\/[^\/]+/, ''); 
+        }
       }
 
       const logoHtml = orgImage
         ? `<img src="${orgImage}" alt="${orgName}"
-               style="width:100%;height:100%;object-fit:cover;border-radius:50%;display:block;"
+               style="width:100%;height:100%;object-fit:contain;padding:5px;border-radius:50%;display:block;"
                onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';">
            <span style="display:none;width:100%;height:100%;align-items:center;justify-content:center;">
              <i class='fa fa-institution' style='font-size:26px;color:var(--primary-red);'></i>

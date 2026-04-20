@@ -1,5 +1,80 @@
 {% extends "package/read_base.html" %}
 
+{% block styles %}
+{{ super() }}
+<style>
+/* ===== NOTIFIKASI WALIDATA UNTUK PRODUSEN DATA ===== */
+.walidata-notif-wrap {
+  margin: 16px 0 20px;
+  border-radius: 14px;
+  overflow: hidden;
+  box-shadow: 0 4px 18px rgba(0,0,0,0.10);
+  font-family: 'Poppins', 'Segoe UI', sans-serif;
+}
+.walidata-notif-header {
+  display: flex; align-items: center; gap: 10px;
+  padding: 13px 18px;
+  font-size: 13px; font-weight: 700;
+}
+.walidata-notif-header.tolak   { background: linear-gradient(135deg, #ef4444, #dc2626); color: white; }
+.walidata-notif-header.catatan { background: linear-gradient(135deg, #3b82f6, #2563eb); color: white; }
+.walidata-notif-header.approve { background: linear-gradient(135deg, #10b981, #059669); color: white; }
+.walidata-notif-header.revisi  { background: linear-gradient(135deg, #f59e0b, #d97706); color: white; }
+.walidata-notif-header.pending { background: linear-gradient(135deg, #64748b, #475569); color: white; }
+
+.walidata-notif-body {
+  background: white; padding: 14px 18px;
+  border: 1.5px solid #e5e7eb; border-top: none;
+  border-radius: 0 0 14px 14px;
+}
+.walidata-catatan-item {
+  padding: 10px 14px; margin-bottom: 8px;
+  border-radius: 10px; font-size: 13px; line-height: 1.6;
+  border-left: 4px solid transparent;
+}
+.walidata-catatan-item.tolak   { background:#fef2f2; border-left-color:#ef4444; color:#7f1d1d; }
+.walidata-catatan-item.catatan { background:#eff6ff; border-left-color:#3b82f6; color:#1e3a5f; }
+.walidata-catatan-item.approve { background:#f0fdf4; border-left-color:#10b981; color:#064e3b; }
+.walidata-catatan-item.revisi  { background:#fffbeb; border-left-color:#f59e0b; color:#78350f; }
+.walidata-catatan-item:last-child { margin-bottom: 0; }
+.walidata-catatan-meta {
+  font-size: 11px; color: #94a3b8; margin-bottom: 5px;
+  display: flex; align-items: center; gap: 6px; flex-wrap: wrap;
+}
+.walidata-catatan-meta .badge-aksi {
+  font-weight: 700; padding: 2px 9px; border-radius: 20px; font-size: 10px;
+}
+.badge-aksi.tolak   { background:#fee2e2; color:#dc2626; }
+.badge-aksi.catatan { background:#dbeafe; color:#2563eb; }
+.badge-aksi.approve { background:#d1fae5; color:#059669; }
+.badge-aksi.revisi  { background:#fef3c7; color:#d97706; }
+.walidata-catatan-pesan { font-style: italic; color: inherit; }
+.walidata-notif-footer {
+  padding: 12px 18px 0; display: flex; align-items: center; justify-content: space-between;
+  flex-wrap: wrap; gap: 8px;
+}
+.btn-lihat-catatan {
+  display: inline-flex; align-items: center; gap: 6px;
+  background: #1e293b; color: white; text-decoration: none;
+  padding: 8px 17px; border-radius: 9px; font-size: 12px; font-weight: 700;
+  transition: all 0.2s;
+}
+.btn-lihat-catatan:hover { background: #0f172a; color: #f59e0b; text-decoration: none; }
+.walidata-notif-hint {
+  font-size: 11px; color: #6b7280;
+}
+/* Banner Pending (belum ada catatan) */
+.walidata-pending-wrap {
+  margin: 14px 0 18px;
+  background: #fffbeb; border: 1.5px solid #fde68a;
+  border-radius: 12px; padding: 13px 18px;
+  display: flex; align-items: center; gap: 10px;
+  font-size: 13px; color: #92400e;
+  font-family: 'Poppins', 'Segoe UI', sans-serif;
+}
+</style>
+{% endblock %}
+
 {% block primary_content_inner %}
   {{ super() }}
   {% block package_description %}
@@ -20,6 +95,81 @@
         {% endif %}
       {% endblock %}
     </h1>
+
+    {# ===== BLOK NOTIFIKASI CATATAN WALIDATA (Hanya untuk Pemilik / Produsen Data) ===== #}
+    {% if h.check_access('package_update', {'id':pkg.id }) %}
+      {% set catatan_list = h.get_catatan_walidata_for_dataset(pkg.id) %}
+      {% if catatan_list %}
+        {# Tentukan jenis catatan terbaru #}
+        {% set catatan_terbaru = catatan_list[0] %}
+        {% set aksi_label = {
+            'tolak': '✘ Dataset Ditolak — Perlu Revisi',
+            'catatan': '💬 Ada Catatan/Pertanyaan dari Walidata',
+            'approve': '✔ Dataset Disetujui',
+            'revisi': '🔄 Dataset Direvisi'
+          }.get(catatan_terbaru.aksi, '📋 Ada Notifikasi dari Walidata') %}
+
+        <div class="walidata-notif-wrap">
+          <div class="walidata-notif-header {{ catatan_terbaru.aksi }}">
+            <i class="fa fa-{{ 'times-circle' if catatan_terbaru.aksi == 'tolak' else ('comment' if catatan_terbaru.aksi == 'catatan' else ('check-circle' if catatan_terbaru.aksi == 'approve' else 'refresh')) }}"></i>
+            {{ aksi_label }}
+          </div>
+          <div class="walidata-notif-body">
+            {% for cat in catatan_list[:3] %}
+            <div class="walidata-catatan-item {{ cat.aksi }}">
+              <div class="walidata-catatan-meta">
+                <span class="badge-aksi {{ cat.aksi }}">
+                  {% if cat.aksi == 'tolak' %}Ditolak
+                  {% elif cat.aksi == 'catatan' %}Catatan
+                  {% elif cat.aksi == 'approve' %}Disetujui
+                  {% elif cat.aksi == 'revisi' %}Revisi
+                  {% else %}{{ cat.aksi }}{% endif %}
+                </span>
+                <i class="fa fa-shield"></i> {{ cat.walidata_user }}
+                &nbsp;·&nbsp;
+                <i class="fa fa-clock-o"></i>
+                {% if cat.created_at %}{{ cat.created_at.strftime('%d %b %Y, %H:%M') }}{% else %}—{% endif %}
+              </div>
+              {% if cat.pesan %}
+                <div class="walidata-catatan-pesan">"{{ cat.pesan }}"</div>
+              {% else %}
+                <div style="font-size:12px; color:#9ca3af; font-style:italic;">— Tidak ada pesan tambahan —</div>
+              {% endif %}
+            </div>
+            {% endfor %}
+
+            <div class="walidata-notif-footer">
+              <span class="walidata-notif-hint">
+                <i class="fa fa-info-circle"></i>
+                {% if catatan_terbaru.aksi == 'tolak' %}
+                  Perbaiki dataset Anda sesuai catatan, lalu simpan ulang untuk verifikasi ulang.
+                {% elif catatan_terbaru.aksi == 'catatan' %}
+                  Tim Walidata memiliki pertanyaan mengenai dataset ini.
+                {% else %}
+                  Lihat riwayat lengkap verifikasi dataset ini.
+                {% endif %}
+              </span>
+              <a href="/dataset/{{ pkg.name }}/catatan-walidata" class="btn-lihat-catatan">
+                <i class="fa fa-history"></i> Lihat Semua Catatan Walidata
+              </a>
+            </div>
+          </div>
+        </div>
+
+      {% else %}
+        {# Dataset Private tapi belum ada catatan apapun dari Walidata #}
+        <div class="walidata-pending-wrap">
+          <i class="fa fa-clock-o" style="color:#d97706; font-size:16px; flex-shrink:0;"></i>
+          <div>
+            <strong>Menunggu Verifikasi Walidata.</strong>
+            Dataset ini sedang dalam antrian review oleh Tim Walidata (Diskominfotik).
+            Anda akan mendapatkan notifikasi di halaman ini setelah ada review.
+          </div>
+        </div>
+      {% endif %}
+    {% endif %}
+    {# ===== /BLOK NOTIFIKASI ===== #}
+
     {% block package_notes %}
       {% if pkg.notes %}
         <div class="notes embedded-content">
