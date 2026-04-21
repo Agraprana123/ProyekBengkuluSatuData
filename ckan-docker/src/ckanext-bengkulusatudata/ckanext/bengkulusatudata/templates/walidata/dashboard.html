@@ -290,6 +290,10 @@ table.ds-t tbody td { padding:12px 15px; font-size:13px; color:#374151; vertical
         <i class="fa fa-th-large"></i> Dashboard
         {% if stats.pending > 0 %}<span class="nav-badge">{{ stats.pending }}</span>{% endif %}
       </a>
+      <a href="#section-jr" class="nav-link" onclick="scrollToSection('section-jr'); return false;">
+        <i class="fa fa-calendar"></i> Jadwal Rilis
+        {% if jadwal_rilis_pending|length > 0 %}<span class="nav-badge" style="background:#f59e0b; color:white;">{{ jadwal_rilis_pending|length }}</span>{% endif %}
+      </a>
       {% if c.userobj and c.userobj.sysadmin %}
       <div class="nav-section-lbl">Admin</div>
       <a href="/admin/walidata" class="nav-link">
@@ -437,6 +441,53 @@ table.ds-t tbody td { padding:12px 15px; font-size:13px; color:#374151; vertical
         {% endif %}
       </div>
 
+      <!-- JADWAL RILIS TABLE -->
+      <div class="tbl-card" id="section-jr">
+        <div class="tbl-card-hdr">
+          <h2><i class="fa fa-calendar" style="color:#B00000;"></i> Jadwal Rilis Menunggu Verifikasi</h2>
+          <span class="count-pill" style="background:#fee2e2; color:#B00000;">{{ jadwal_rilis_pending|length }} agenda</span>
+        </div>
+        {% if jadwal_rilis_pending %}
+        <table class="ds-t">
+          <thead>
+            <tr>
+              <th style="width:25%;">Indikator</th>
+              <th style="width:25%;">Nama Data</th>
+              <th style="width:15%;">OPD</th>
+              <th style="width:10%;">Bulan</th>
+              <th style="width:25%;">Aksi Verifikasi</th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for jr in jadwal_rilis_pending %}
+            <tr>
+              <td><strong style="color:#1e293b;">{{ jr.indikator }}</strong></td>
+              <td style="font-size:12px; color:#64748b;">{{ jr.nama_data }}</td>
+              <td><span class="org-chip"><i class="fa fa-building"></i>{{ jr.organisasi_nama or '—' }}</span></td>
+              <td><span class="res-chip" style="background:#B00000; color:white;">{{ jr.jadwal_bulan }}</span></td>
+              <td>
+                <div class="act-wrap">
+                  <button class="btn-app" onclick="openJRApprove('{{ jr.id }}', '{{ jr.indikator }}')">
+                    <i class="fa fa-check"></i> Setujui
+                  </button>
+                  <button class="btn-tol" onclick="openJRReject('{{ jr.id }}', '{{ jr.indikator }}')">
+                    <i class="fa fa-times"></i> Tolak
+                  </button>
+                </div>
+              </td>
+            </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+        {% else %}
+        <div class="empty-st" style="background:#fffaf0;">
+          <div class="empty-ico" style="background:#fef3c7;">📅</div>
+          <h3 style="color:#b45309;">Tidak Ada Antrian Jadwal Rilis</h3>
+          <p>Semua usulan jadwal rilis dari OPD sudah diproses.</p>
+        </div>
+        {% endif %}
+      </div>
+
       <!-- LOG -->
       <div class="log-card">
         <div class="log-hdr">
@@ -529,10 +580,44 @@ table.ds-t tbody td { padding:12px 15px; font-size:13px; color:#374151; vertical
   </div>
 </div>
 
+<!-- MODAL JR APPROVE -->
+<div class="modal-mask" id="modalJRApprove">
+  <div class="modal-box">
+    <div class="modal-ico m-green"><i class="fa fa-check-circle"></i></div>
+    <h3>Setujui Jadwal Rilis?</h3>
+    <p class="modal-sub">Data akan berstatus <strong>Aktif</strong> dan bisa dilihat publik.</p>
+    <div class="modal-ds"><i class="fa fa-calendar" style="color:#059669;"></i><span id="jrApproveTitle">—</span></div>
+    <div class="modal-acts">
+      <button class="btn-cancel" onclick="closeAll()">Batal</button>
+      <button class="btn-m-app" onclick="submitJRApprove()"><i class="fa fa-check"></i> Setujui</button>
+    </div>
+  </div>
+</div>
+
+<!-- MODAL JR REJECT -->
+<div class="modal-mask" id="modalJRReject">
+  <div class="modal-box">
+    <div class="modal-ico m-red"><i class="fa fa-times-circle"></i></div>
+    <h3>Tolak Jadwal Rilis?</h3>
+    <p class="modal-sub">Data tetap <strong>Pending</strong>. Catatan wajib diisi untuk produsen data.</p>
+    <div class="modal-ds"><i class="fa fa-calendar" style="color:#dc2626;"></i><span id="jrRejectTitle">—</span></div>
+    <label class="modal-lbl">Alasan Penolakan <span style="color:#ef4444;">*</span></label>
+    <textarea class="modal-ta" id="jrRejectPesan" placeholder="Jelaskan alasan penolakan atau revisi yang diperlukan..."></textarea>
+    <p class="err-hint" id="jrRejectErr"><i class="fa fa-exclamation-triangle"></i> Alasan wajib diisi!</p>
+    <div class="modal-acts">
+      <button class="btn-cancel" onclick="closeAll()">Batal</button>
+      <button class="btn-m-tol" onclick="submitJRReject()"><i class="fa fa-times"></i> Tolak & Kirim</button>
+    </div>
+  </div>
+</div>
+
 <!-- HIDDEN FORMS -->
 <form id="fApprove" method="POST" style="display:none;">{{ h.csrf_input() }}<input type="hidden" name="pesan" id="fApprovePesan"></form>
 <form id="fReject"  method="POST" style="display:none;">{{ h.csrf_input() }}<input type="hidden" name="pesan" id="fRejectPesan"></form>
 <form id="fNotes"   method="POST" style="display:none;">{{ h.csrf_input() }}<input type="hidden" name="pesan" id="fNotesPesan"></form>
+
+<form id="fJRApprove" method="POST" style="display:none;">{{ h.csrf_input() }}</form>
+<form id="fJRReject"  method="POST" style="display:none;">{{ h.csrf_input() }}<input type="hidden" name="pesan" id="fJRRejectPesan"></form>
 {% endblock %}
 
 {% block scripts %}
@@ -546,24 +631,71 @@ table.ds-t tbody td { padding:12px 15px; font-size:13px; color:#374151; vertical
 })();
 
 var _cid=null;
+
+// === Modal untuk Dataset CKAN ===
 function openApprove(id,name){_cid=id; document.getElementById('approveTitle').textContent=name; document.getElementById('approvePesan').value=''; document.getElementById('modalApprove').classList.add('open');}
 function openReject(id,name){_cid=id; document.getElementById('rejectTitle').textContent=name; document.getElementById('rejectPesan').value=''; document.getElementById('rejectErr').style.display='none'; document.getElementById('modalReject').classList.add('open');}
 function openNotes(id,name){_cid=id; document.getElementById('notesTitle').textContent=name; document.getElementById('notesPesan').value=''; document.getElementById('notesErr').style.display='none'; document.getElementById('modalNotes').classList.add('open');}
 function closeAll(){document.querySelectorAll('.modal-mask').forEach(function(m){m.classList.remove('open');}); _cid=null;}
+
 function doSubmit(fid,tid,req){
   if(!_cid) return;
+  var f=document.getElementById(fid);
+  // Untuk fJRApprove tidak ada textarea pesan - langsung submit
+  if(fid==='fJRApprove'){
+    f.action='/walidata/jadwal-rilis/approve/'+_cid;
+    f.submit(); return;
+  }
   var val=document.getElementById(tid).value.trim();
   if(req&&!val){
-    var errId=fid==='fReject'?'rejectErr':'notesErr';
-    document.getElementById(errId).style.display='block';
+    var errId=(fid==='fReject')?'rejectErr':'notesErr';
+    if(document.getElementById(errId)) document.getElementById(errId).style.display='block';
     document.getElementById(tid).focus(); return;
   }
-  var f=document.getElementById(fid);
-  f.querySelector('input[name="pesan"]').value=val;
+  var pesan=f.querySelector('input[name="pesan"]');
+  if(pesan) pesan.value=val;
   if(fid==='fApprove') f.action='/walidata/approve/'+_cid;
   else if(fid==='fReject') f.action='/walidata/tolak/'+_cid;
+  else if(fid==='fJRReject') f.action='/walidata/jadwal-rilis/tolak/'+_cid;
   else f.action='/walidata/catatan/'+_cid;
   f.submit();
+}
+
+// === Modal untuk Jadwal Rilis ===
+function openJRApprove(id,name){
+  _cid=id;
+  document.getElementById('jrApproveTitle').textContent=name;
+  document.getElementById('modalJRApprove').classList.add('open');
+}
+
+function openJRReject(id,name){
+  _cid=id;
+  document.getElementById('jrRejectTitle').textContent=name;
+  document.getElementById('jrRejectPesan').value='';
+  document.getElementById('jrRejectErr').style.display='none';
+  document.getElementById('modalJRReject').classList.add('open');
+}
+
+function submitJRApprove(){
+  if(!_cid) return;
+  var f=document.getElementById('fJRApprove');
+  f.action='/walidata/jadwal-rilis/approve/'+_cid;
+  f.submit();
+}
+
+function submitJRReject(){
+  if(!_cid) return;
+  var val=document.getElementById('jrRejectPesan').value.trim();
+  if(!val){ document.getElementById('jrRejectErr').style.display='block'; document.getElementById('jrRejectPesan').focus(); return; }
+  document.getElementById('fJRRejectPesan').value=val;
+  var f=document.getElementById('fJRReject');
+  f.action='/walidata/jadwal-rilis/tolak/'+_cid;
+  f.submit();
+}
+
+function scrollToSection(id){
+  const el = document.getElementById(id);
+  if(el) el.scrollIntoView({ behavior: 'smooth' });
 }
 document.querySelectorAll('.modal-mask').forEach(function(m){m.addEventListener('click',function(e){if(e.target===m)closeAll();});});
 document.addEventListener('keydown',function(e){if(e.key==='Escape')closeAll();});

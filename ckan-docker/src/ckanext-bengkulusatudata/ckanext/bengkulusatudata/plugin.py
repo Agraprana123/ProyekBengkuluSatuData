@@ -141,6 +141,39 @@ def ensure_standar_data_tables():
         print(f"Error creating tables: {e}")
     return False
 
+# ===== HELPER JADWAL RILIS =====
+def get_month_name(month_idx):
+    months = ['Januari', 'Februari', 'Maret', 'April', 'Mei', 'Juni', 
+              'Juli', 'Agustus', 'September', 'Oktober', 'November', 'Desember']
+    if 1 <= month_idx <= 12:
+        return months[month_idx - 1]
+    return 'Januari'
+
+def ensure_jadwal_rilis_table():
+    try:
+        engine = model.meta.engine
+        if engine:
+            with engine.begin() as conn:
+                conn.execute(text("""
+                    CREATE TABLE IF NOT EXISTS jadwal_rilis (
+                        id SERIAL PRIMARY KEY,
+                        indikator TEXT NOT NULL,
+                        nama_data TEXT NOT NULL,
+                        jenis_data VARCHAR(100),
+                        organisasi_id INTEGER,
+                        klasifikasi VARCHAR(100),
+                        jadwal_bulan VARCHAR(50),
+                        status VARCHAR(50) DEFAULT 'pending',
+                        catatan_walidata TEXT,
+                        created_at TIMESTAMP DEFAULT NOW(),
+                        updated_at TIMESTAMP DEFAULT NOW()
+                    )
+                """))
+            return True
+    except Exception as e:
+        print(f"Error: {e}")
+    return False
+
 
 # ===== HELPER WALIDATA =====
 def ensure_walidata_tables():
@@ -1322,6 +1355,22 @@ class BengkuluSatuDataPlugin(plugins.SingletonPlugin):
                 print(f"Walidata - Error stats: {e}")
                 stats = {'pending': 0, 'approved': 0, 'rejected': 0, 'total': 0}
 
+            # Ambil Jadwal Rilis Pending
+            try:
+                ensure_jadwal_rilis_table()
+                sess = model.Session
+                jr_pending_rows = sess.execute(text("""
+                    SELECT jr.*, oo.nama as organisasi_nama 
+                    FROM jadwal_rilis jr
+                    LEFT JOIN organisasi_opd oo ON jr.organisasi_id = oo.id
+                    WHERE jr.status = 'pending'
+                    ORDER BY jr.created_at ASC
+                """))
+                jadwal_rilis_pending = [dict(r._mapping) for r in jr_pending_rows]
+            except Exception as e:
+                print(f"Walidata - Error jr pending: {e}")
+                jadwal_rilis_pending = []
+
             # Log verifikasi terbaru (20 entri)
             try:
                 sess = model.Session
@@ -1338,7 +1387,8 @@ class BengkuluSatuDataPlugin(plugins.SingletonPlugin):
                 'selected_org': selected_org,
                 'search_query': search_query,
                 'stats': stats,
-                'log_list': log_list
+                'log_list': log_list,
+                'jadwal_rilis_pending': jadwal_rilis_pending
             })
 
         @walidata_bp.route('/walidata/approve/<dataset_id>', methods=['POST'], strict_slashes=False)
@@ -1620,10 +1670,192 @@ class BengkuluSatuDataPlugin(plugins.SingletonPlugin):
         def survey():
             return toolkit.render('lainnya/survey.html')
 
+        # ===== 9. BLUEPRINT JADWAL RILIS =====
+        jadwal_rilis_bp = Blueprint('jadwal_rilis_bp', __name__)
+
+        @jadwal_rilis_bp.route('/jadwal-rilis', strict_slashes=False, endpoint='index')
+        def jadwal_rilis_index():
+            ensure_jadwal_rilis_table()
+            search = request.args.get('q', '')
+            org_filter = request.args.get('organisasi', '')
+            
+            user_name = getattr(toolkit.g, 'user', '') or getattr(toolkit.c, 'user', '')
+            is_logged_in = bool(user_name)
+            
+            # Logged-in users melihat semua status (aktif + pending + ditolak)
+            # agar produsen bisa melihat catatan penolakan dari Walidata
+            if is_logged_in:
+                query = """
+                    SELECT jr.*, oo.nama as organisasi_nama 
+                    FROM jadwal_rilis jr
+                    LEFT JOIN organisasi_opd oo ON jr.organisasi_id = oo.id
+                    WHERE 1=1
+                """
+            else:
+                # Publik hanya melihat data yang sudah disetujui
+                query = """
+                    SELECT jr.*, oo.nama as organisasi_nama 
+                    FROM jadwal_rilis jr
+                    LEFT JOIN organisasi_opd oo ON jr.organisasi_id = oo.id
+                    WHERE jr.status = 'aktif'
+                """
+            
+            params = {}
+            if search:
+                query += " AND (jr.indikator ILIKE :s OR jr.nama_data ILIKE :s)"
+                params['s'] = f"%{search}%"
+            if org_filter:
+                query += " AND jr.organisasi_id = :org_id"
+                params['org_id'] = int(org_filter)
+            
+            query += " ORDER BY jr.created_at DESC"
+            
+            session = model.Session
+            try:
+                result = session.execute(text(query), params)
+                items = [dict(r._mapping) for r in result]
+            except Exception as e:
+                print(f"Jadwal Rilis Index Error: {e}")
+                items = []
+            
+            return toolkit.render('jadwal-rilis/index.html', extra_vars={
+                'jadwal_list': items,
+                'organisasi_list': get_organisasi_list(),
+                'search_query': search,
+                'selected_organisasi': org_filter,
+                'is_logged_in': is_logged_in
+            })
+
+        @jadwal_rilis_bp.route('/admin/jadwal-rilis/tambah', methods=['GET', 'POST'], strict_slashes=False)
+        def tambah_jadwal_rilis():
+            user = getattr(toolkit.g, 'userobj', None) or getattr(toolkit.c, 'userobj', None)
+            if not user:
+                return toolkit.redirect_to(toolkit.h.url_for('user.login'))
+            
+            ensure_jadwal_rilis_table()
+            
+            if request.method == 'POST':
+                try:
+                    indikator = request.form.get('indikator')
+                    nama_data = request.form.get('nama_data')
+                    jenis_data = request.form.get('jenis_data')
+                    organisasi_id = request.form.get('organisasi_id')
+                    klasifikasi = request.form.get('klasifikasi')
+                    jadwal_bulan = request.form.get('jadwal_bulan')
+                    
+                    if not jadwal_bulan:
+                        jadwal_bulan = get_month_name(datetime.now().month)
+                    
+                    with model.meta.engine.begin() as conn:
+                        conn.execute(text("""
+                            INSERT INTO jadwal_rilis (indikator, nama_data, jenis_data, organisasi_id, klasifikasi, jadwal_bulan, status)
+                            VALUES (:ind, :name, :type, :oid, :klas, :month, 'pending')
+                        """), {
+                            'ind': indikator, 'name': nama_data, 'type': jenis_data, 
+                            'oid': organisasi_id, 'klas': klasifikasi, 'month': jadwal_bulan
+                        })
+                    
+                    toolkit.h.flash_success('Berhasil! Jadwal rilis telah diajukan dan menunggu verifikasi Walidata.')
+                    return toolkit.redirect_to('/jadwal-rilis')
+                except Exception as e:
+                    toolkit.h.flash_error(f'Error: {str(e)}')
+            
+            current_month = get_month_name(datetime.now().month)
+            return toolkit.render('jadwal-rilis/admin_form.html', extra_vars={
+                'mode': 'tambah', 
+                'organisasi_list': get_organisasi_list(),
+                'current_month': current_month
+            })
+
+        @jadwal_rilis_bp.route('/admin/jadwal-rilis/edit/<int:id>', methods=['GET', 'POST'], strict_slashes=False)
+        def edit_jadwal_rilis(id):
+            user = getattr(toolkit.g, 'userobj', None) or getattr(toolkit.c, 'userobj', None)
+            if not user:
+                return toolkit.redirect_to(toolkit.h.url_for('user.login'))
+            
+            ensure_jadwal_rilis_table()
+            session = model.Session
+            data = session.execute(text("SELECT * FROM jadwal_rilis WHERE id = :id"), {'id': id}).fetchone()
+            if not data:
+                return toolkit.redirect_to('/jadwal-rilis')
+            
+            if request.method == 'POST':
+                try:
+                    indikator = request.form.get('indikator')
+                    nama_data = request.form.get('nama_data')
+                    jenis_data = request.form.get('jenis_data')
+                    organisasi_id = request.form.get('organisasi_id')
+                    klasifikasi = request.form.get('klasifikasi')
+                    jadwal_bulan = request.form.get('jadwal_bulan')
+                    
+                    with model.meta.engine.begin() as conn:
+                        conn.execute(text("""
+                            UPDATE jadwal_rilis SET 
+                                indikator=:ind, nama_data=:name, jenis_data=:type, 
+                                organisasi_id=:oid, klasifikasi=:klas, jadwal_bulan=:month,
+                                status='pending', updated_at=NOW()
+                            WHERE id=:id
+                        """), {
+                            'ind': indikator, 'name': nama_data, 'type': jenis_data, 
+                            'oid': organisasi_id, 'klas': klasifikasi, 'month': jadwal_bulan, 'id': id
+                        })
+                    
+                    toolkit.h.flash_success('Berhasil diupdate! Menunggu verifikasi ulang oleh Walidata.')
+                    return toolkit.redirect_to('/jadwal-rilis')
+                except Exception as e:
+                    toolkit.h.flash_error(f'Error: {str(e)}')
+            
+            return toolkit.render('jadwal-rilis/admin_form.html', extra_vars={
+                'data': dict(data._mapping), 'mode': 'edit', 'organisasi_list': get_organisasi_list()
+            })
+
+        @jadwal_rilis_bp.route('/admin/jadwal-rilis/hapus/<int:id>', methods=['POST'], strict_slashes=False)
+        def hapus_jadwal_rilis(id):
+            user = getattr(toolkit.g, 'userobj', None) or getattr(toolkit.c, 'userobj', None)
+            if not user: return toolkit.abort(403)
+            
+            try:
+                with model.meta.engine.begin() as conn:
+                    conn.execute(text("DELETE FROM jadwal_rilis WHERE id = :id"), {'id': id})
+                toolkit.h.flash_success('Jadwal rilis dihapus.')
+            except Exception as e:
+                toolkit.h.flash_error(f'Error: {str(e)}')
+            return toolkit.redirect_to('/jadwal-rilis')
+
+        @jadwal_rilis_bp.route('/walidata/jadwal-rilis/approve/<int:id>', methods=['POST'], strict_slashes=False)
+        def approve_jadwal_rilis(id):
+            user = getattr(toolkit.g, 'userobj', None) or getattr(toolkit.c, 'userobj', None)
+            if not user or not is_walidata(user):
+                return toolkit.abort(403)
+            
+            try:
+                with model.meta.engine.begin() as conn:
+                    conn.execute(text("UPDATE jadwal_rilis SET status = 'aktif', klasifikasi = 'Terbuka', catatan_walidata = NULL, updated_at = NOW() WHERE id = :id"), {'id': id})
+                toolkit.h.flash_success('Jadwal rilis telah disetujui, diklasifikasikan sebagai Terbuka, dan kini publik.')
+            except Exception as e:
+                toolkit.h.flash_error(f'Gagal: {str(e)}')
+            return toolkit.redirect_to('/walidata')
+
+        @jadwal_rilis_bp.route('/walidata/jadwal-rilis/tolak/<int:id>', methods=['POST'], strict_slashes=False)
+        def tolak_jadwal_rilis(id):
+            user = getattr(toolkit.g, 'userobj', None) or getattr(toolkit.c, 'userobj', None)
+            if not user or not is_walidata(user):
+                return toolkit.abort(403)
+            
+            catatan = request.form.get('pesan', '').strip()
+            try:
+                with model.meta.engine.begin() as conn:
+                    conn.execute(text("UPDATE jadwal_rilis SET status = 'ditolak', catatan_walidata = :c, updated_at = NOW() WHERE id = :id"), {'id': id, 'c': catatan})
+                toolkit.h.flash_success('Jadwal rilis ditolak dengan catatan.')
+            except Exception as e:
+                toolkit.h.flash_error(f'Gagal: {str(e)}')
+            return toolkit.redirect_to('/walidata')
+
         return [
             infografis_bp, standar_data_bp, arnold_bp,
             publikasi_bp, publikasi_admin_bp,
-            walidata_bp, walidata_admin_bp, lainnya_bp
+            walidata_bp, walidata_admin_bp, lainnya_bp,
+            jadwal_rilis_bp
         ]
 
 
