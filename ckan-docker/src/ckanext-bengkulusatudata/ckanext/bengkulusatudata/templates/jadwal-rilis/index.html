@@ -1,0 +1,344 @@
+{% extends "page.html" %}
+
+{% block subtitle %}Jadwal Rilis Data - Bengkulu Satu Data{% endblock %}
+
+{% block custom_styles %}
+{{ super() }}
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap');
+
+  /* =========================================
+     GLOBAL
+  ========================================= */
+  *, *::before, *::after { box-sizing: border-box; }
+  body { background: #f4f6f9 !important; font-family: 'Plus Jakarta Sans', sans-serif !important; }
+  #content, .wrapper, .main, .container,
+  .primary, .secondary, .module, .module-content {
+    background: transparent !important; border: none !important; box-shadow: none !important;
+  }
+  .jr-page { max-width: 1200px; margin: 0 auto; padding: 24px 16px 48px; }
+
+  /* =========================================
+     BREADCRUMB
+  ========================================= */
+  .jr-breadcrumb {
+    display: flex; align-items: center; gap: 8px;
+    font-size: 13px; font-weight: 600; color: #64748b; margin-bottom: 24px;
+  }
+  .jr-breadcrumb a { color: #64748b; text-decoration: none; transition: color .2s; display: flex; align-items: center; gap: 4px; }
+  .jr-breadcrumb a:hover { color: #B00000; }
+  .jr-breadcrumb .sep { color: #cbd5e1; font-size: 10px; }
+  .jr-breadcrumb .current { color: #B00000; font-weight: 700; }
+
+  /* =========================================
+     HERO BANNER
+  ========================================= */
+  .jr-hero {
+    background: linear-gradient(135deg, #7f0000 0%, #B00000 55%, #c62828 100%);
+    border-radius: 20px;
+    padding: 40px 40px 36px;
+    margin-bottom: 28px;
+    position: relative;
+    overflow: hidden;
+  }
+  .jr-hero::before {
+    content: '';
+    position: absolute; top: -60px; right: -60px;
+    width: 260px; height: 260px;
+    border-radius: 50%;
+    background: rgba(255,255,255,0.06);
+    pointer-events: none;
+  }
+  .jr-hero-inner { position: relative; z-index: 1; }
+  .jr-hero-label {
+    display: inline-flex; align-items: center; gap: 7px;
+    background: rgba(255,255,255,0.15);
+    color: rgba(255,255,255,0.9);
+    font-size: 12px; font-weight: 700; letter-spacing: 0.5px;
+    padding: 5px 12px; border-radius: 20px;
+    margin-bottom: 14px; text-transform: uppercase;
+  }
+  .jr-hero h1 {
+    font-size: 2rem; font-weight: 800; color: #fff;
+    margin: 0 0 8px; line-height: 1.2; letter-spacing: -0.3px;
+  }
+  .jr-hero p {
+    color: rgba(255,255,255,0.8); font-size: 15px; line-height: 1.65;
+    max-width: 620px; margin: 0 0 28px;
+  }
+
+  /* =========================================
+     ACTION BAR
+  ========================================= */
+  .jr-action-bar {
+    display: flex; align-items: center; justify-content: space-between;
+    flex-wrap: wrap; gap: 12px;
+    background: #fff;
+    border-radius: 14px;
+    padding: 16px 20px;
+    border: 1px solid #e8edf4;
+    box-shadow: 0 2px 12px rgba(0,0,0,0.04);
+    margin-bottom: 24px;
+  }
+  .btn-jr-primary {
+    display: inline-flex; align-items: center; gap: 7px;
+    background: #B00000; color: #fff !important;
+    padding: 10px 18px; border-radius: 10px;
+    font-weight: 700; font-size: 13.5px;
+    text-decoration: none !important; border: none;
+    cursor: pointer; transition: all .22s;
+    box-shadow: 0 3px 12px rgba(176,0,0,0.25);
+  }
+  .btn-jr-primary:hover { background: #8b0000; transform: translateY(-1px); }
+
+  /* =========================================
+     SEARCH & FILTER BAR
+  ========================================= */
+  .jr-filter-bar {
+    background: #fff; border-radius: 14px;
+    padding: 18px 20px; border: 1px solid #e8edf4;
+    box-shadow: 0 2px 12px rgba(0,0,0,0.04);
+    margin-bottom: 24px;
+  }
+  .jr-filter-form { display: flex; gap: 10px; align-items: center; flex-wrap: wrap; }
+  .jr-search-wrap { flex: 2; min-width: 200px; position: relative; }
+  .jr-search-wrap i {
+    position: absolute; left: 13px; top: 50%; transform: translateY(-50%);
+    color: #94a3b8; font-size: 15px;
+  }
+  .jr-search-input {
+    width: 100%; padding: 10px 14px 10px 38px;
+    border: 1.5px solid #e8edf4; border-radius: 10px;
+    font-family: 'Plus Jakarta Sans', sans-serif;
+    font-size: 14px; outline: none; background: #fafbfc;
+  }
+  .jr-search-input:focus { border-color: #B00000; background: #fff; }
+
+  .jr-select {
+    flex: 1; min-width: 150px;
+    padding: 10px 32px 10px 14px;
+    border: 1.5px solid #e8edf4; border-radius: 10px;
+    font-family: 'Plus Jakarta Sans', sans-serif;
+    font-size: 14px; outline: none; background: #fafbfc;
+    appearance: none;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='14' height='14' viewBox='0 0 24 24' fill='none' stroke='%2364748b' stroke-width='2.5'%3E%3Cpolyline points='6 9 12 15 18 9'%3E%3C/polyline%3E%3C/svg%3E");
+    background-repeat: no-repeat; background-position: right 10px center;
+  }
+  .jr-select:focus { border-color: #B00000; background-color: #fff; }
+
+  .btn-jr-filter {
+    padding: 10px 22px; background: #B00000; color: #fff;
+    border: none; border-radius: 10px; font-weight: 700; font-size: 14px;
+    cursor: pointer; display: flex; align-items: center; gap: 7px;
+  }
+
+  /* =========================================
+     DATA TABLE
+  ========================================= */
+  .jr-table-wrap {
+    background: #fff; border-radius: 16px;
+    border: 1px solid #e8edf4; overflow-x: auto;
+    box-shadow: 0 2px 16px rgba(0,0,0,0.05);
+  }
+  .jr-table { width: 100%; border-collapse: collapse; font-size: 14px; }
+  .jr-table thead tr { background: linear-gradient(90deg, #7f0000 0%, #B00000 100%); }
+  .jr-table thead th {
+    color: #fff; font-weight: 700; font-size: 12px;
+    text-transform: uppercase; letter-spacing: 0.5px;
+    padding: 16px; text-align: left;
+  }
+  .jr-table tbody tr { border-bottom: 1px solid #f1f5f9; transition: background .15s; }
+  .jr-table tbody tr:hover { background: #fef2f2; }
+  .jr-table tbody td { padding: 16px; color: #334155; vertical-align: middle; }
+
+  .badge-month {
+    background: #0ea5e9; color: #fff; padding: 4px 12px;
+    border-radius: 20px; font-weight: 800; font-size: 11px;
+    text-transform: uppercase; box-shadow: 0 2px 6px rgba(14,165,233,0.3);
+  }
+  .badge-klasifikasi {
+    background: #fef2f2; color: #B00000; border: 1px solid rgba(176,0,0,0.2);
+    padding: 4px 12px; border-radius: 20px; font-weight: 700; font-size: 11px;
+  }
+  .badge-status-aktif    { background:#d1fae5; color:#065f46; border:1px solid #6ee7b7; padding:4px 12px; border-radius:20px; font-weight:700; font-size:11px; }
+  .badge-status-pending  { background:#fef3c7; color:#92400e; border:1px solid #fcd34d; padding:4px 12px; border-radius:20px; font-weight:700; font-size:11px; }
+  .badge-status-ditolak  { background:#fee2e2; color:#991b1b; border:1px solid #fca5a5; padding:4px 12px; border-radius:20px; font-weight:700; font-size:11px; }
+  .catatan-box {
+    margin-top: 6px; padding: 7px 10px;
+    background: #fef2f2; border-left: 3px solid #ef4444;
+    border-radius: 6px; font-size: 12px; color: #7f1d1d;
+    display: flex; align-items: flex-start; gap: 6px;
+  }
+  .catatan-box i { margin-top: 2px; flex-shrink: 0; }
+  .btn-edit-small {
+    display: inline-flex; align-items: center; gap: 5px;
+    margin-top: 6px; padding: 4px 12px;
+    background: #fff; border: 1.5px solid #B00000; color: #B00000;
+    border-radius: 7px; font-size: 11px; font-weight: 700;
+    text-decoration: none !important; transition: all .2s;
+  }
+  .btn-edit-small:hover { background: #B00000; color: #fff; }
+  .indikator-text { font-weight: 700; color: #0f172a; }
+  .data-text { color: #64748b; font-size: 13px; }
+  tr.row-ditolak { background: #fff5f5; }
+  tr.row-pending { background: #fffdf0; }
+
+  @media (max-width: 768px) {
+    .jr-hero { padding: 28px 20px; }
+    .jr-hero h1 { font-size: 1.5rem; }
+    .jr-filter-form { flex-direction: column; }
+    .jr-search-wrap, .jr-select { min-width: 100%; }
+  }
+</style>
+{% endblock %}
+
+{% block toolbar %}{% endblock %}
+{% block page_header %}{% endblock %}
+{% block secondary %}{% endblock %}
+
+{% block primary %}
+<div class="jr-page">
+
+  {# Breadcrumb #}
+  <div class="jr-breadcrumb">
+    <a href="{{ h.url_for('home.index') }}"><i class="fa fa-home"></i> Home</a>
+    <span class="sep"><i class="fa fa-chevron-right"></i></span>
+    <span class="current"><i class="fa fa-calendar"></i> Jadwal Rilis</span>
+  </div>
+
+  {# Hero Banner #}
+  <div class="jr-hero">
+    <div class="jr-hero-inner">
+      <div class="jr-hero-label">
+        <i class="fa fa-clock-o"></i> Agenda Satu Data - Provinsi Bengkulu
+      </div>
+      <h1>Jadwal Rilis Satu Data</h1>
+      <p>Pantau keterbukaan informasi publik melalui jadwal rilis data dari berbagai Organisasi Perangkat Daerah (OPD) di Pemerintah Provinsi Bengkulu.</p>
+    </div>
+  </div>
+
+  {# Action Bar #}
+  <div class="jr-action-bar">
+    <div class="jr-action-left">
+      {% if c.userobj %}
+        <a href="/admin/jadwal-rilis/tambah" class="btn-jr-primary">
+          <i class="fa fa-plus"></i> Tambah Jadwal Rilis
+        </a>
+      {% endif %}
+    </div>
+    <div class="jr-result-count">
+      Total <strong>{{ jadwal_list|length }}</strong> Agenda ditemukan
+    </div>
+  </div>
+
+  {# Search & Filter Bar #}
+  <div class="jr-filter-bar">
+    <form method="GET" action="/jadwal-rilis" class="jr-filter-form">
+      <div class="jr-search-wrap">
+        <i class="fa fa-search"></i>
+        <input type="text" name="q" class="jr-search-input"
+               placeholder="Cari indikator atau nama data..."
+               value="{{ search_query or '' }}">
+      </div>
+      <select name="organisasi" class="jr-select">
+        <option value="">Semua Organisasi</option>
+        {% for org in organisasi_list %}
+          <option value="{{ org.id }}" {% if selected_organisasi == org.id|string %}selected{% endif %}>
+            {{ org.nama }}
+          </option>
+        {% endfor %}
+      </select>
+      <button type="submit" class="btn-jr-filter">
+        <i class="fa fa-filter"></i> Filter
+      </button>
+      {% if search_query or selected_organisasi %}
+        <a href="/jadwal-rilis" class="btn-jr-secondary" style="padding: 10px 18px; text-decoration: none; font-weight: 700; color: #64748b;">
+          <i class="fa fa-times"></i> Reset
+        </a>
+      {% endif %}
+    </form>
+  </div>
+
+  {# Data Table #}
+  <div class="jr-table-wrap">
+    <table class="jr-table">
+      <thead>
+        <tr>
+          <th style="width: 50px;">No</th>
+          <th>Nama Indikator</th>
+          <th>Nama Data</th>
+          <th>Jenis Data</th>
+          <th>Produsen Data</th>
+          <th>Klasifikasi</th>
+          <th style="text-align: center;">Jadwal Rilis</th>
+          {% if is_logged_in %}
+          <th style="text-align: center;">Status</th>
+          {% endif %}
+          {% if c.userobj and c.userobj.sysadmin %}
+          <th style="text-align: center;">Aksi</th>
+          {% endif %}
+        </tr>
+      </thead>
+      <tbody>
+        {% if jadwal_list %}
+          {% for data in jadwal_list %}
+            <tr class="{% if data.status == 'ditolak' %}row-ditolak{% elif data.status == 'pending' %}row-pending{% endif %}">
+              <td style="color:#94a3b8; font-weight:700; text-align: center;">{{ loop.index }}</td>
+              <td>
+                <div class="indikator-text">{{ data.indikator }}</div>
+                {% if is_logged_in and data.status == 'ditolak' and data.catatan_walidata %}
+                  <div class="catatan-box">
+                    <i class="fa fa-exclamation-circle"></i>
+                    <span><strong>Catatan Walidata:</strong> {{ data.catatan_walidata }}</span>
+                  </div>
+                  <a href="/admin/jadwal-rilis/edit/{{ data.id }}" class="btn-edit-small">
+                    <i class="fa fa-pencil"></i> Perbaiki & Kirim Ulang
+                  </a>
+                {% endif %}
+              </td>
+              <td><div class="data-text">{{ data.nama_data }}</div></td>
+              <td><span class="org-text">{{ data.jenis_data or '—' }}</span></td>
+              <td><span class="org-text">{{ data.organisasi_nama or '—' }}</span></td>
+              <td><span class="badge-klasifikasi">{{ data.klasifikasi or 'Terbuka' }}</span></td>
+              <td style="text-align: center;"><span class="badge-month">{{ data.jadwal_bulan }}</span></td>
+              {% if is_logged_in %}
+              <td style="text-align: center;">
+                {% if data.status == 'aktif' %}
+                  <span class="badge-status-aktif"><i class="fa fa-check"></i> Aktif</span>
+                {% elif data.status == 'pending' %}
+                  <span class="badge-status-pending"><i class="fa fa-clock-o"></i> Menunggu</span>
+                {% elif data.status == 'ditolak' %}
+                  <span class="badge-status-ditolak"><i class="fa fa-times"></i> Ditolak</span>
+                {% endif %}
+              </td>
+              {% endif %}
+              {% if c.userobj and c.userobj.sysadmin %}
+              <td style="text-align: center;">
+                <div style="display: flex; gap: 5px; justify-content: center;">
+                  <a href="/admin/jadwal-rilis/edit/{{ data.id }}" class="btn-jr-primary" style="padding: 5px 10px; font-size: 11px; box-shadow: none;">
+                    <i class="fa fa-edit"></i>
+                  </a>
+                  <form action="/admin/jadwal-rilis/hapus/{{ data.id }}" method="POST" style="margin:0;" onsubmit="return confirm('Hapus data ini?')">
+                    <button type="submit" class="btn-jr-secondary" style="padding: 5px 10px; font-size: 11px; border-radius: 8px; border: 1px solid #e2e8f0; cursor: pointer;">
+                      <i class="fa fa-trash" style="color: #ef4444;"></i>
+                    </button>
+                  </form>
+                </div>
+              </td>
+              {% endif %}
+            </tr>
+          {% endfor %}
+        {% else %}
+          <tr>
+            <td colspan="8" style="text-align: center; padding: 60px 20px; color: #94a3b8;">
+              <i class="fa fa-calendar-o" style="font-size: 40px; display: block; margin-bottom: 15px; opacity: 0.3;"></i>
+              Tidak ada jadwal rilis yang ditemukan.
+            </td>
+          </tr>
+        {% endif %}
+      </tbody>
+    </table>
+  </div>
+
+</div>
+{% endblock %}
